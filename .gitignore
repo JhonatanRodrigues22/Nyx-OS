@@ -1,18 +1,35 @@
-# Node modules
 node_modules/
-
-# Python virtual environment
-.venv/
-
-# Build output
+.next/
+.swc/
+out/
 dist/
-scripts/
+build/
+coverage/
 
-# Private docs
-Fundamentos/
+.env
+.env.local
+.env.*
+!.env.local.example
 
-# Environment files
-.env*
+public/sw.js
+public/workbox-*.js
+public/worker-*.js
+public/fallback-*.js
 
-# Misc
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+*.tmp
+*.temp
+*.bak
+
 .DS_Store
+Thumbs.db

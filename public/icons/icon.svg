@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Nyx OS</title>
+  <rect width="512" height="512" rx="96" fill="#111827"/>
+  <path d="M140 356V156h48l136 122V156h48v200h-44L188 230v126h-48Z" fill="#f7f5ef"/>
+  <circle cx="368" cy="144" r="26" fill="#14b8a6"/>
+</svg>
