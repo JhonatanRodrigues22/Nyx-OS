@@ -1,0 +1,18 @@
+# Node modules
+node_modules/
+
+# Python virtual environment
+.venv/
+
+# Build output
+dist/
+scripts/
+
+# Private docs
+Fundamentos/
+
+# Environment files
+.env*
+
+# Misc
+.DS_Store
