@@ -11,6 +11,7 @@ import {
 import { createInMemoryEventBus, type NyxSystemEventName, type NyxSystemEvents } from "@nyx-os/event-bus";
 import { createEventBus } from "@nyx-os/events";
 import { ConsoleLogger, type ConsoleLoggerSink, type NyxLogEntry } from "@nyx-os/logger";
+import type { NyxPlugin } from "@nyx-os/plugin";
 
 function createMemoryLoggerService() {
   const entries: NyxLogEntry[] = [];
@@ -113,7 +114,8 @@ describe("Nyx runtime foundation", () => {
     const snapshot = createDashboardSnapshot();
 
     expect(snapshot.runtime.name).toBe("Nyx OS");
-    expect(snapshot.cards).toHaveLength(3);
+    expect(snapshot.cards).toHaveLength(4);
+    expect(snapshot.plugins.map((plugin) => plugin.id)).toContain("runtime-diagnostics");
     expect(snapshot.navigation.map((item) => item.label)).toContain("Memória");
     expect(snapshot.recentEvents.map((event) => event.type)).toContain("dashboard.loaded");
   });
@@ -271,6 +273,58 @@ describe("Nyx runtime foundation", () => {
       name: "runtime.failed",
       status: "failed"
     });
+  });
+
+  it("registers, initializes, disposes and unregisters runtime plugins", async () => {
+    const { runtime, runtimeEvents } = createRuntimeWithMemoryLogger();
+    const received: string[] = [];
+    const plugin: NyxPlugin & { initialized: boolean; disposed: boolean } = {
+      id: "example-plugin",
+      name: "Example Plugin",
+      version: "0.1.0",
+      initialized: false,
+      disposed: false,
+      initialize(context) {
+        this.initialized = true;
+        expect(context.events).toBe(runtimeEvents);
+        expect(context.runtime).toBe(runtime);
+        expect(context.services.list().length).toBeGreaterThan(0);
+      },
+      dispose() {
+        this.disposed = true;
+      }
+    };
+
+    runtimeEvents.on("plugin.registered", (event) => received.push(event.name));
+    runtimeEvents.on("plugin.initialized", (event) => received.push(event.name));
+    runtimeEvents.on("plugin.disposed", (event) => received.push(event.name));
+    runtimeEvents.on("plugin.unregistered", (event) => received.push(event.name));
+
+    runtime.registerPlugin(plugin);
+
+    await runtime.start();
+
+    expect(plugin.initialized).toBe(true);
+    expect(runtime.getPlugin("example-plugin")).toBe(plugin);
+    expect(runtime.getPlugins()).toContainEqual(
+      expect.objectContaining({
+        id: "example-plugin",
+        status: "initialized"
+      })
+    );
+
+    await runtime.unregisterPlugin("example-plugin");
+
+    expect(plugin.disposed).toBe(true);
+    expect(runtime.getPlugin("example-plugin")).toBeUndefined();
+    expect(received).toEqual(
+      expect.arrayContaining([
+        "plugin.registered",
+        "plugin.initialized",
+        "plugin.disposed",
+        "plugin.unregistered"
+      ])
+    );
   });
 
   it("starts and stops base services through the runtime service manager", async () => {

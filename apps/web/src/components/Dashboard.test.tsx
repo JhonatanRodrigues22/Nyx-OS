@@ -12,6 +12,10 @@ describe("Dashboard", () => {
     expect(within(healthCheck).getByText("Runtime Ready")).toBeInTheDocument();
     expect(within(healthCheck).getByText("All core systems online")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Projetos/ })).toBeInTheDocument();
+    const plugins = screen.getByLabelText("Plugins registrados");
+
+    expect(within(plugins).getByRole("heading", { name: "Plugins" })).toBeInTheDocument();
+    expect(within(plugins).getByText("Runtime Diagnostics")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Eventos recentes" })).toBeInTheDocument();
   });
 });

@@ -11,6 +11,8 @@ Este package contém:
 - `ConfigService`;
 - `RuntimeStateService`;
 - integração com `NyxEventBus`;
+- integração com `PluginManager`;
+- `RuntimeDiagnosticsPlugin`;
 - contratos de serviços;
 - serviços de estado do runtime;
 - serviços de dashboard.

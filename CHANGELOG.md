@@ -1,5 +1,37 @@
 # Changelog
 
+## Sprint 09 - Plugin Framework
+
+### Criado
+
+- `@nyx-os/plugin` com contrato `NyxPlugin`.
+- `PluginManager` para registro, consulta, inicialização, descarte, remoção e estado de plugins.
+- Integração de plugins ao `NyxRuntime`.
+- Eventos `plugin.registered`, `plugin.initialized`, `plugin.disposed`, `plugin.unregistered` e `plugin.failed`.
+- `RuntimeDiagnosticsPlugin` como plugin interno mínimo de validação.
+- Painel de plugins no dashboard.
+- Documentação de arquitetura em `docs/arquitetura/plugin-framework.md`.
+- ADR-0016 sobre Plugin Framework como mecanismo de expansão.
+
+### Alterado
+
+- `NyxRuntime` passou a expor `registerPlugin`, `unregisterPlugin`, `getPlugin` e `getPlugins`.
+- Snapshot do Runtime e Dashboard passou a incluir plugins registrados.
+- Event Bus oficial passou a tipar eventos de lifecycle de plugins.
+- Testes ampliados para Plugin Manager, Runtime, Event Bus e Dashboard.
+
+### Mantido Fora do Escopo
+
+- Memory.
+- Scheduler.
+- IA.
+- Skills.
+- Automation.
+- Workflow Lens.
+- Descoberta automática de plugins.
+- Plugins externos.
+- Sandbox e permissões.
+
 ## Sprint 08 - Event Bus e Sistema de Eventos
 
 ### Criado

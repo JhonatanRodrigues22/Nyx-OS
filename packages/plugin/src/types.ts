@@ -1,0 +1,52 @@
+import type { NyxEventBus, NyxSystemEvents } from "@nyx-os/event-bus";
+import type { NyxStateService } from "@nyx-os/state";
+
+export type MaybePromise<T> = T | Promise<T>;
+
+export type NyxPluginStatus =
+  | "registered"
+  | "initializing"
+  | "initialized"
+  | "disposing"
+  | "disposed"
+  | "failed";
+
+export type NyxPluginServiceRegistry<TService = unknown> = {
+  list(): unknown[];
+  get?(name: string): TService | undefined;
+};
+
+export type NyxPluginRuntimeHost = {
+  getEventBus(): NyxEventBus<NyxSystemEvents>;
+  getRuntimeState?(): unknown;
+};
+
+export type NyxPluginContext = {
+  runtime: NyxPluginRuntimeHost;
+  events: NyxEventBus<NyxSystemEvents>;
+  services: NyxPluginServiceRegistry;
+  state: NyxStateService | null;
+};
+
+export interface NyxPlugin {
+  readonly id: string;
+  readonly name: string;
+  readonly version: string;
+  initialize(context: NyxPluginContext): MaybePromise<void>;
+  dispose?(context: NyxPluginContext): MaybePromise<void>;
+}
+
+export type NyxPluginSnapshot = {
+  id: string;
+  name: string;
+  version: string;
+  status: NyxPluginStatus;
+  initializedAt: string | null;
+  lastUpdated: string;
+  error: string | null;
+};
+
+export type NyxPluginRecord = {
+  plugin: NyxPlugin;
+  snapshot: NyxPluginSnapshot;
+};

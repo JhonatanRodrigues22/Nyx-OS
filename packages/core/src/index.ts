@@ -10,6 +10,12 @@ import type { SystemEvent } from "@nyx-os/events";
 import { createEventBus, type EventBus } from "@nyx-os/events";
 import { createConsoleLogger, type NyxLogger } from "@nyx-os/logger";
 import {
+  PluginManager,
+  type NyxPlugin,
+  type NyxPluginContext,
+  type NyxPluginSnapshot
+} from "@nyx-os/plugin";
+import {
   InMemoryNyxStateService,
   type NyxRuntimeState,
   type NyxStateService
@@ -48,6 +54,7 @@ export type RuntimeServiceSnapshot = {
 export type NyxRuntimeSnapshot = {
   status: NyxRuntimeStatus;
   services: RuntimeServiceSnapshot[];
+  plugins: NyxPluginSnapshot[];
   events: SystemEvent[];
   state: NyxRuntimeState | null;
 };
@@ -111,6 +118,7 @@ export type DashboardSnapshot = {
   systemStatus: SystemStatus;
   navigation: NavigationItem[];
   cards: DashboardCard[];
+  plugins: NyxPluginSnapshot[];
   recentEvents: SystemEvent[];
 };
 
@@ -268,6 +276,10 @@ export class ServiceManager {
     }));
   }
 
+  get(name: string): NyxService | undefined {
+    return this.services.get(name);
+  }
+
   onLifecycle(handler: ServiceLifecycleHandler): () => void {
     this.lifecycleHandlers.add(handler);
 
@@ -374,19 +386,23 @@ export class NyxRuntime {
   readonly loggerService: LoggerService | null;
   readonly configService: ConfigService | null;
   readonly stateService: RuntimeStateService | null;
+  readonly pluginManager: PluginManager;
 
   constructor(
     readonly eventBus: EventBus = createEventBus(),
     readonly serviceManager: ServiceManager = new ServiceManager(),
     options: {
       registerBaseServices?: boolean;
+      registerBasePlugins?: boolean;
       events?: NyxEventBus<NyxSystemEvents>;
       loggerService?: LoggerService;
       configService?: ConfigService;
       stateService?: RuntimeStateService;
+      pluginManager?: PluginManager;
     } = {}
   ) {
     this.events = options.events ?? createInMemoryEventBus<NyxSystemEvents>();
+    this.pluginManager = options.pluginManager ?? new PluginManager(this.events);
     this.loggerService =
       options.registerBaseServices === false ? null : (options.loggerService ?? new LoggerService());
     this.configService =
@@ -414,6 +430,10 @@ export class NyxRuntime {
     if (this.stateService) {
       this.registerService(this.stateService);
     }
+
+    if (options.registerBasePlugins !== false) {
+      this.registerPlugin(new RuntimeDiagnosticsPlugin());
+    }
   }
 
   readonly events: NyxEventBus<NyxSystemEvents>;
@@ -437,6 +457,22 @@ export class NyxRuntime {
     );
   }
 
+  registerPlugin(plugin: NyxPlugin): void {
+    this.pluginManager.register(plugin);
+  }
+
+  async unregisterPlugin(id: string): Promise<void> {
+    await this.pluginManager.unregister(id, this.createPluginContext());
+  }
+
+  getPlugin(id: string): NyxPlugin | undefined {
+    return this.pluginManager.get(id);
+  }
+
+  getPlugins(): NyxPluginSnapshot[] {
+    return this.pluginManager.list();
+  }
+
   async start(): Promise<void> {
     if (this.status === "running" || this.status === "starting") {
       return;
@@ -456,6 +492,7 @@ export class NyxRuntime {
     try {
       await this.serviceManager.setupAll(this.createServiceContext());
       await this.serviceManager.startAll();
+      await this.pluginManager.initializeAll(this.createPluginContext());
       this.status = "running";
       this.stateService?.getStateStore().updateRuntimeStatus("running");
       logger.info("Runtime started", { status: this.status });
@@ -500,6 +537,7 @@ export class NyxRuntime {
     });
 
     try {
+      await this.pluginManager.disposeAll(this.createPluginContext());
       await this.serviceManager.stopAll();
       this.status = "stopped";
       this.stateService?.getStateStore().updateRuntimeStatus("stopped");
@@ -533,6 +571,7 @@ export class NyxRuntime {
     return {
       status: this.status,
       services: this.serviceManager.list(),
+      plugins: this.pluginManager.list(),
       events: this.eventBus.listRecent(),
       state: this.stateService?.getRuntimeState() ?? null
     };
@@ -557,6 +596,18 @@ export class NyxRuntime {
           ...input,
           source: input.source ?? "service"
         })
+    };
+  }
+
+  private createPluginContext(): NyxPluginContext {
+    return {
+      runtime: this,
+      events: this.events,
+      services: {
+        list: () => this.serviceManager.list(),
+        get: (name) => this.serviceManager.get(name)
+      },
+      state: this.stateService?.getStateStore() ?? null
     };
   }
 
@@ -624,6 +675,20 @@ export class NyxRuntime {
         })
       );
     }
+  }
+}
+
+export class RuntimeDiagnosticsPlugin implements NyxPlugin {
+  readonly id = "runtime-diagnostics";
+  readonly name = "Runtime Diagnostics";
+  readonly version = "0.1.0";
+
+  initialize(context: NyxPluginContext): MaybePromise<void> {
+    void context;
+  }
+
+  dispose(): MaybePromise<void> {
+    return undefined;
   }
 }
 
@@ -725,7 +790,8 @@ export class DashboardService {
   constructor(
     private readonly runtimeService: RuntimeService,
     private readonly systemStatusService: SystemStatusService,
-    private readonly eventService: EventService
+    private readonly eventService: EventService,
+    private readonly plugins: NyxPluginSnapshot[] = []
   ) {}
 
   getSnapshot(): DashboardSnapshot {
@@ -764,8 +830,15 @@ export class DashboardService {
           }`,
           description: "Only foundation modules are online.",
           status: "ready"
+        },
+        {
+          title: "Plugins",
+          value: `Loaded: ${this.plugins.length}`,
+          description: "Plugin framework is available for modular runtime extensions.",
+          status: "ready"
         }
       ],
+      plugins: this.plugins,
       recentEvents: this.eventService.listRecent()
     };
   }
@@ -775,9 +848,15 @@ export function createDashboardSnapshot(): DashboardSnapshot {
   const config = getNyxConfig();
   const eventBus = createEventBus();
   const eventService = new EventService(eventBus);
+  const runtime = new NyxRuntime(eventBus);
   const runtimeService = new RuntimeService(config);
   const systemStatusService = new SystemStatusService();
-  const dashboardService = new DashboardService(runtimeService, systemStatusService, eventService);
+  const dashboardService = new DashboardService(
+    runtimeService,
+    systemStatusService,
+    eventService,
+    runtime.getPlugins()
+  );
 
   eventService.startRuntime();
 

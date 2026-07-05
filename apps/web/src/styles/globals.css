@@ -249,7 +249,8 @@ h1 {
 
 .metric-card p,
 .module-card p,
-.event-list p {
+.event-list p,
+.plugin-list p {
   color: var(--muted);
   line-height: 1.5;
 }
@@ -318,6 +319,40 @@ h1 {
   margin: var(--space-4) 0 0;
   padding: 0;
   list-style: none;
+}
+
+.side-stack {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.plugin-list {
+  display: grid;
+  gap: var(--space-3);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.plugin-list li {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #11171c;
+}
+
+.plugin-list strong,
+.plugin-list p {
+  display: block;
+}
+
+.plugin-list p {
+  margin: var(--space-1) 0 0;
 }
 
 .event-list li {

@@ -9,9 +9,11 @@ Estes diretórios documentam a arquitetura alvo. Eles não implementam funcional
 - `core/`: entidades, casos de uso e regras centrais.
 - `memory/`: memória persistente e contexto reutilizável.
 - `ai/`: contratos de interação com IA.
-- `events/`: eventos de domínio e barramento interno.
+- `event-bus/`: barramento oficial e tipado de eventos técnicos.
+- `events/`: stream em memória de eventos recentes para snapshots e dashboard.
 - `automation/`: automações auditáveis.
-- `plugins/`: integrações extensíveis.
+- `plugin/`: contrato oficial e manager de plugins.
+- `plugins/`: espaço reservado para integrações extensíveis futuras.
 - `shared/`: utilitários compartilhados de baixo acoplamento.
 - `config/`: configuração tipada e carregamento de ambientes.
 - `logging/`: logging e observabilidade.
