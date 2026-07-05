@@ -5,6 +5,7 @@ import { AppShell } from "@/components/AppShell";
 import { DashboardCardGrid } from "@/components/DashboardCardGrid";
 import { EventList } from "@/components/EventList";
 import { ModuleGrid } from "@/components/ModuleGrid";
+import { PluginList } from "@/components/PluginList";
 import { StatusPanel } from "@/components/StatusPanel";
 
 type HomeProps = {
@@ -39,7 +40,10 @@ export default function Home({ snapshot }: HomeProps) {
 
         <section className="dashboard-grid" aria-label="Estado do sistema">
           <ModuleGrid modules={snapshot.runtime.modules} />
-          <EventList events={snapshot.recentEvents} />
+          <div className="side-stack">
+            <PluginList plugins={snapshot.plugins} />
+            <EventList events={snapshot.recentEvents} />
+          </div>
         </section>
       </AppShell>
     </>

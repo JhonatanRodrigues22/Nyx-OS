@@ -23,6 +23,7 @@ Ele inicializa, coordena e encerra serviços internos sem conhecer clientes espe
 - `@nyx-os/event-bus`: Event Bus oficial e tipado para comunicação desacoplada entre Runtime e serviços.
 - `@nyx-os/events`: stream em memória de eventos recentes usado por snapshots e dashboard.
 - `@nyx-os/logger`: contrato central de logging e implementação inicial em console.
+- `@nyx-os/plugin`: contrato oficial de plugins e manager de lifecycle.
 - `@nyx-os/state`: contrato central de estado do Runtime e serviços.
 - `@nyx-os/core`: runtime genérico, service manager, contratos de serviço, Logger Service, Config Service, State Service, status do sistema e serviços do dashboard.
 - `apps/web`: interface visual que consome snapshots produzidos pelos serviços.
@@ -147,6 +148,21 @@ O stream em `@nyx-os/events` continua existindo para eventos recentes do dashboa
 
 Ele ainda não é persistente, distribuído ou conectado a integrações externas.
 
+## Plugin Framework
+
+O Plugin Framework vive em `@nyx-os/plugin` e é orquestrado pelo `NyxRuntime`.
+
+O Runtime expõe:
+
+- `registerPlugin(plugin)`;
+- `unregisterPlugin(id)`;
+- `getPlugin(id)`;
+- `getPlugins()`.
+
+Plugins são inicializados depois dos serviços base e descartados antes do encerramento dos serviços. O lifecycle emite eventos `plugin.registered`, `plugin.initialized`, `plugin.disposed`, `plugin.unregistered` e `plugin.failed` pelo Event Bus oficial.
+
+O `RuntimeDiagnosticsPlugin` é um plugin interno mínimo para validar a arquitetura e tornar o framework visível no dashboard. Ele não implementa regra de produto.
+
 ## Dados Mockados
 
 Dados mockados vivem nos services/providers de runtime e dashboard dentro de `packages/core`.
@@ -156,7 +172,7 @@ Componentes React recebem um snapshot pronto para renderização.
 ## Fora do Núcleo Agora
 
 - Scheduler recorrente.
-- Plugin loader automático.
+- Descoberta automática de plugins.
 - Autenticação real.
 - Banco real.
 - Memória persistente.
@@ -169,4 +185,4 @@ Componentes React recebem um snapshot pronto para renderização.
 - WebSocket.
 - Captura de dados do computador.
 
-Scheduler e plugin loader continuam ideias válidas, mas exigem contratos próprios e um ambiente de execução adequado. Eles não devem ser adicionados ao núcleo apenas por expectativa futura.
+Scheduler, descoberta automática de plugins e plugins externos continuam ideias válidas, mas exigem contratos próprios e um ambiente de execução adequado. Eles não devem ser adicionados ao núcleo apenas por expectativa futura.

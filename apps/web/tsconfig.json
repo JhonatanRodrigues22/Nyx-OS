@@ -25,6 +25,7 @@
       "@nyx-os/event-bus": ["../../packages/event-bus/src/index.ts"],
       "@nyx-os/events": ["../../packages/events/src/index.ts"],
       "@nyx-os/logger": ["../../packages/logger/src/index.ts"],
+      "@nyx-os/plugin": ["../../packages/plugin/src/index.ts"],
       "@nyx-os/state": ["../../packages/state/src/index.ts"]
     }
   },

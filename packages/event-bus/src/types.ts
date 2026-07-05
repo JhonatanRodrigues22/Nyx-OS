@@ -5,6 +5,7 @@ export type NyxEventName<TEvents extends NyxEventMap> = Extract<keyof TEvents, s
 export type NyxEventPayload = {
   timestamp: string;
   service?: string;
+  plugin?: string;
   status?: string;
   metadata?: Record<string, unknown>;
 };
@@ -41,7 +42,14 @@ export type NyxServiceEventName =
   | "service.stopped"
   | "service.failed";
 
-export type NyxSystemEventName = NyxRuntimeEventName | NyxServiceEventName;
+export type NyxPluginEventName =
+  | "plugin.registered"
+  | "plugin.initialized"
+  | "plugin.disposed"
+  | "plugin.unregistered"
+  | "plugin.failed";
+
+export type NyxSystemEventName = NyxRuntimeEventName | NyxServiceEventName | NyxPluginEventName;
 
 export type NyxSystemEvents = Record<NyxSystemEventName, NyxEventPayload>;
 
