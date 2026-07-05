@@ -180,6 +180,16 @@ Dados mockados vivem nos services/providers de runtime e dashboard dentro de `pa
 
 Componentes React recebem um snapshot pronto para renderização.
 
+## Dev Dashboard
+
+O Dev Dashboard consome `DashboardSnapshot` produzido por `@nyx-os/core`.
+
+Ele é uma interface técnica de desenvolvimento para tornar visível o estado do Runtime, serviços, plugins, Scheduler, uptime, ambiente, versão, saúde geral e eventos recentes.
+
+O dashboard possui um snapshot estático para SSR e testes, além de um modo vivo no navegador durante `npm run dev`. No modo vivo, a página inicia um `NyxRuntime` local para visualizar o lifecycle em execução e atualizar a tela periodicamente.
+
+Esse painel não é o Cockpit do usuário final e não implementa IA, widgets pessoais ou automações de produto.
+
 ## Fora do Núcleo Agora
 
 - Descoberta automática de plugins.

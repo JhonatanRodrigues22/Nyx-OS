@@ -1,5 +1,32 @@
 # Changelog
 
+## Sprint 11 - Dev Dashboard: Estado Visual do Sistema
+
+### Criado
+
+- `DashboardOverview` em `@nyx-os/core` com métricas derivadas para saúde, infraestrutura, serviços, plugins, Scheduler, eventos, uptime, versão e ambiente.
+- `createDashboardSnapshotFromRuntime` para gerar snapshots a partir de um `NyxRuntime` em execução.
+- Painel visual de infraestrutura no dashboard web.
+- Documentação de arquitetura em `docs/arquitetura/dev-dashboard.md`.
+
+### Alterado
+
+- Dashboard web passou a exibir estado visual do sistema com blocos de leitura rápida, barras de progresso, uptime, saúde geral, serviços, plugins, Scheduler e eventos recentes.
+- Página inicial passou a iniciar um Runtime local no navegador durante `npm run dev` para refletir estado vivo de desenvolvimento.
+- Testes do dashboard passaram a validar o novo painel técnico de estado.
+- `docs/arquitetura/core-runtime.md` passou a documentar o papel do Dev Dashboard.
+
+### Mantido Fora do Escopo
+
+- Cockpit do usuário final.
+- Interface Jarvis.
+- Avatar.
+- IA conversacional.
+- Widgets pessoais.
+- Persistência de histórico visual.
+- WebSocket.
+- Telemetria remota.
+
 ## Sprint 10 - Scheduler Engine
 
 ### Criado

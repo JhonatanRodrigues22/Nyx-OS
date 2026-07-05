@@ -1,4 +1,4 @@
-import type { NyxConfig, NyxConfigEnvironment, NyxModuleId } from "@nyx-os/config";
+import type { NyxConfig, NyxConfigEnvironment, NyxEnvironment, NyxModuleId } from "@nyx-os/config";
 import { getNyxConfig } from "@nyx-os/config";
 import {
   createInMemoryEventBus,
@@ -118,9 +118,41 @@ export type DashboardCard = {
   status: "ready" | "planned" | "mocked";
 };
 
+export type DashboardOverview = {
+  statusLabel: string;
+  runtimeStatus: NyxRuntimeStatus;
+  uptimeMs: number;
+  uptimeLabel: string;
+  version: string;
+  environment: NyxEnvironment;
+  healthScore: number;
+  healthBar: string;
+  infrastructureScore: number;
+  infrastructureBar: string;
+  services: {
+    total: number;
+    running: number;
+  };
+  plugins: {
+    total: number;
+    initialized: number;
+  };
+  scheduler: {
+    status: ReturnType<NyxScheduler["getStatus"]>;
+    taskCount: number;
+    activeTasks: number;
+    lastHeartbeatLabel: string;
+  };
+  events: {
+    total: number;
+    recent: number;
+  };
+};
+
 export type DashboardSnapshot = {
   runtime: RuntimeState;
   systemStatus: SystemStatus;
+  overview: DashboardOverview;
   navigation: NavigationItem[];
   cards: DashboardCard[];
   plugins: NyxPluginSnapshot[];
@@ -844,6 +876,144 @@ export class EventService {
   }
 }
 
+function clampPercentage(value: number): number {
+  if (Number.isNaN(value)) {
+    return 0;
+  }
+
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+function ratioToPercentage(value: number, fallback = 0): number {
+  if (!Number.isFinite(value)) {
+    return fallback;
+  }
+
+  return clampPercentage(value * 100);
+}
+
+function createProgressBar(value: number, size = 16): string {
+  const percentage = clampPercentage(value);
+  const filled = Math.round((percentage / 100) * size);
+
+  return `${"█".repeat(filled)}${"░".repeat(size - filled)}`;
+}
+
+function formatDuration(milliseconds: number): string {
+  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return [hours, minutes, seconds].map((part) => String(part).padStart(2, "0")).join(":");
+}
+
+function resolveDashboardEnvironment(value: string): NyxEnvironment {
+  if (value === "development" || value === "test" || value === "production" || value === "local") {
+    return value;
+  }
+
+  return "development";
+}
+
+function getRuntimeUptime(runtimeSnapshot: NyxRuntimeSnapshot, runtime: RuntimeState): number {
+  void runtime;
+
+  if (runtimeSnapshot.state) {
+    return runtimeSnapshot.state.uptimeMs;
+  }
+
+  return 0;
+}
+
+function createSyntheticEvent(type: string, index: number): SystemEvent {
+  return {
+    id: `system-${index}-${type}`,
+    type,
+    message: "Evento emitido pelo barramento oficial do Runtime.",
+    level: type.endsWith(".failed") ? "error" : "info",
+    source: type.split(".")[0] ?? "runtime",
+    timestamp: new Date().toISOString()
+  };
+}
+
+function mergeRecentEvents(runtimeEvents: SystemEvent[], officialEventTypes: readonly string[] = []): SystemEvent[] {
+  const officialEvents = officialEventTypes.map((type, index) => createSyntheticEvent(type, index));
+  const events = [...officialEvents, ...runtimeEvents];
+  const seen = new Set<string>();
+
+  return events
+    .filter((event) => {
+      const key = `${event.type}:${event.source}`;
+
+      if (seen.has(key)) {
+        return false;
+      }
+
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 6);
+}
+
+function createDashboardOverview(
+  config: ConfigServiceSnapshot,
+  runtime: RuntimeState,
+  runtimeSnapshot: NyxRuntimeSnapshot,
+  recentEvents: SystemEvent[]
+): DashboardOverview {
+  const services = runtimeSnapshot.services;
+  const runningServices = services.filter((service) => service.status === "running").length;
+  const plugins = runtimeSnapshot.plugins;
+  const initializedPlugins = plugins.filter((plugin) => plugin.status === "initialized").length;
+  const schedulerTasks = runtimeSnapshot.scheduler.tasks;
+  const activeTasks = schedulerTasks.filter((task) => task.status === "scheduled" || task.status === "executing").length;
+  const readyModules = runtime.modules.filter((module) => module.status === "ready").length;
+  const runtimeScore = runtimeSnapshot.status === "running" ? 100 : runtime.status === "ready" ? 70 : 45;
+  const serviceScore = services.length > 0 ? ratioToPercentage(runningServices / services.length) : 70;
+  const pluginScore = plugins.length > 0 ? ratioToPercentage(initializedPlugins / plugins.length) : 70;
+  const schedulerScore =
+    runtimeSnapshot.scheduler.status === "running" ? 100 : runtimeSnapshot.scheduler.status === "paused" ? 65 : 50;
+  const moduleScore = runtime.modules.length > 0 ? ratioToPercentage(readyModules / runtime.modules.length) : 0;
+  const healthScore = clampPercentage((runtimeScore + serviceScore + pluginScore + schedulerScore + moduleScore) / 5);
+  const infrastructureScore = clampPercentage(
+    (moduleScore + serviceScore + pluginScore + (schedulerTasks.length > 0 ? 100 : 60)) / 4
+  );
+  const uptimeMs = getRuntimeUptime(runtimeSnapshot, runtime);
+  const heartbeatTask = schedulerTasks.find((task) => task.id === "scheduler.heartbeat");
+
+  return {
+    statusLabel: runtimeSnapshot.status === "running" ? "ONLINE" : runtime.status === "ready" ? "PRONTO" : "INICIAL",
+    runtimeStatus: runtimeSnapshot.status,
+    uptimeMs,
+    uptimeLabel: formatDuration(uptimeMs),
+    version: config.version,
+    environment: config.environment,
+    healthScore,
+    healthBar: createProgressBar(healthScore),
+    infrastructureScore,
+    infrastructureBar: createProgressBar(infrastructureScore),
+    services: {
+      total: services.length,
+      running: runningServices
+    },
+    plugins: {
+      total: plugins.length,
+      initialized: initializedPlugins
+    },
+    scheduler: {
+      status: runtimeSnapshot.scheduler.status,
+      taskCount: schedulerTasks.length,
+      activeTasks,
+      lastHeartbeatLabel: heartbeatTask ? "aguardando ciclo" : "indisponível"
+    },
+    events: {
+      total: recentEvents.length,
+      recent: recentEvents.length
+    }
+  };
+}
+
 export class DashboardService {
   constructor(
     private readonly runtimeService: RuntimeService,
@@ -853,15 +1023,46 @@ export class DashboardService {
     private readonly scheduler: DashboardSnapshot["scheduler"] = {
       status: "idle",
       tasks: []
-    }
+    },
+    private readonly runtimeSnapshot: NyxRuntimeSnapshot | null = null,
+    private readonly configSnapshot: ConfigServiceSnapshot | null = null,
+    private readonly officialEventTypes: readonly string[] = []
   ) {}
 
   getSnapshot(): DashboardSnapshot {
     const runtime = this.runtimeService.getState();
+    const runtimeSnapshot =
+      this.runtimeSnapshot ??
+      ({
+        status: runtime.status === "ready" ? "created" : "failed",
+        services: [],
+        plugins: this.plugins,
+        scheduler: this.scheduler,
+        events: this.eventService.listRecent(),
+        state: null
+      } satisfies NyxRuntimeSnapshot);
+    const runtimeEvents = runtimeSnapshot.events.length > 0 ? runtimeSnapshot.events : this.eventService.listRecent();
+    const recentEvents = mergeRecentEvents(runtimeEvents, this.officialEventTypes);
+    const config =
+      this.configSnapshot ??
+      ({
+        appName: "Nyx OS",
+        version: runtime.version,
+        environment: resolveDashboardEnvironment(runtime.environment),
+        enabledModules: [],
+        featureFlags: {
+          useMockData: true,
+          enablePersistentMemory: false,
+          enableAutomation: false,
+          enableAiRuntime: false
+        }
+      } satisfies ConfigServiceSnapshot);
+    const overview = createDashboardOverview(config, runtime, runtimeSnapshot, recentEvents);
 
     return {
       runtime,
       systemStatus: this.systemStatusService.getStatus(runtime),
+      overview,
       navigation: [
         { label: "Home", area: "home", status: "active" },
         { label: "Projetos", area: "projects", status: "planned" },
@@ -875,42 +1076,63 @@ export class DashboardService {
       cards: [
         {
           title: "Runtime",
-          value: "Ready",
-          description: "Core services are available for the dashboard.",
+          value: overview.statusLabel,
+          description: `Status interno: ${overview.runtimeStatus}.`,
           status: "ready"
         },
         {
-          title: "Providers",
-          value: "Mocked",
-          description: "No real database or integrations are connected.",
-          status: "mocked"
+          title: "Serviços",
+          value: `${overview.services.running}/${overview.services.total}`,
+          description: "Serviços internos registrados no Runtime.",
+          status: "ready"
         },
         {
-          title: "Modules",
-          value: `${runtime.modules.filter((module) => module.status === "ready").length}/${
-            runtime.modules.length
-          }`,
-          description: "Only foundation modules are online.",
+          title: "Infraestrutura",
+          value: `${overview.infrastructureScore}%`,
+          description: "Progresso técnico da fundação disponível.",
           status: "ready"
         },
         {
           title: "Plugins",
-          value: `Loaded: ${this.plugins.length}`,
-          description: "Plugin framework is available for modular runtime extensions.",
+          value: `${overview.plugins.initialized}/${overview.plugins.total}`,
+          description: "Plugins carregados pelo Runtime.",
           status: "ready"
         },
         {
           title: "Scheduler",
-          value: this.scheduler.status === "running" ? "Running" : "Ready",
-          description: `Tasks: ${this.scheduler.tasks.length}`,
+          value: overview.scheduler.status,
+          description: `Tasks registradas: ${overview.scheduler.taskCount}.`,
           status: "ready"
         }
       ],
-      plugins: this.plugins,
-      scheduler: this.scheduler,
-      recentEvents: this.eventService.listRecent()
+      plugins: runtimeSnapshot.plugins,
+      scheduler: runtimeSnapshot.scheduler,
+      recentEvents
     };
   }
+}
+
+export function createDashboardSnapshotFromRuntime(
+  runtime: NyxRuntime,
+  officialEventTypes: readonly string[] = []
+): DashboardSnapshot {
+  const config = runtime.configService?.getSnapshot() ?? getNyxConfig();
+  const runtimeSnapshot = runtime.getSnapshot();
+  const runtimeService = new RuntimeService(config);
+  const systemStatusService = new SystemStatusService();
+  const eventService = new EventService(runtime.eventBus);
+  const dashboardService = new DashboardService(
+    runtimeService,
+    systemStatusService,
+    eventService,
+    runtimeSnapshot.plugins,
+    runtimeSnapshot.scheduler,
+    runtimeSnapshot,
+    config,
+    officialEventTypes
+  );
+
+  return dashboardService.getSnapshot();
 }
 
 export function createDashboardSnapshot(): DashboardSnapshot {
@@ -928,7 +1150,9 @@ export function createDashboardSnapshot(): DashboardSnapshot {
     {
       status: runtime.getScheduler().getStatus(),
       tasks: runtime.getScheduler().getTasks()
-    }
+    },
+    runtime.getSnapshot(),
+    config
   );
 
   eventService.startRuntime();

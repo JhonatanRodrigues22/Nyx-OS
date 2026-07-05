@@ -56,6 +56,7 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `arquitetura/event-bus.md`: contrato oficial de eventos, lifecycle e boas praticas.
 - `arquitetura/plugin-framework.md`: contrato de plugins, lifecycle e integração com Runtime.
 - `arquitetura/scheduler.md`: contrato do Scheduler, ciclo de tarefas e integração com plugins.
+- `arquitetura/dev-dashboard.md`: painel visual de estado do sistema para desenvolvimento.
 - `arquitetura/logging.md`: contrato central de logging e Logger Service.
 - `packages/state/README.md`: contrato central de estado do Runtime.
 - `workflow/desenvolvimento.md`: ciclo oficial de branches, commits e Pull Requests.
@@ -81,3 +82,4 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `@nyx-os/event-bus` é o contrato oficial de comunicação por eventos do Runtime.
 - `@nyx-os/plugin` é o mecanismo oficial de expansão modular do Runtime.
 - `@nyx-os/scheduler` é o mecanismo oficial de execução de tarefas recorrentes.
+- O Dev Dashboard é um painel técnico de estado do sistema e não representa o Cockpit do usuário final.
