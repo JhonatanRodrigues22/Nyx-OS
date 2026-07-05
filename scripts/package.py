@@ -29,6 +29,10 @@ EXCLUDED_PATTERNS = (
     "public/workbox-*.js",
     "public/worker-*.js",
     "public/fallback-*.js",
+    "apps/*/public/sw.js",
+    "apps/*/public/workbox-*.js",
+    "apps/*/public/worker-*.js",
+    "apps/*/public/fallback-*.js",
 )
 
 
