@@ -13,6 +13,29 @@ Definir um ciclo de trabalho consistente para humanos e agentes de IA.
 - `fix/*`: correções.
 - `experiment/*`: investigação descartável ou protótipo controlado.
 
+Toda branch de sprint, hotfix, refactor ou mudança significativa deve nascer diretamente de `main`.
+
+Fluxo oficial:
+
+```text
+main
+  -> nova branch
+  -> implementação
+  -> commit
+  -> push
+  -> Pull Request com base em main
+  -> review
+  -> merge
+  -> exclusão da branch
+```
+
+Branches empilhadas só podem ser usadas quando houver dependência técnica real, a sprint anterior ainda não puder ser mergeada e isso tiver sido solicitado explicitamente.
+
+Na ausência dessa autorização, a Pull Request deve sempre ter:
+
+- base: `main`;
+- head: branch da sprint ou alteração atual.
+
 ## Commits
 
 Usar Conventional Commits:
@@ -48,6 +71,8 @@ Todo PR deve explicar:
 - como validar;
 - riscos;
 - pendências.
+
+Após o merge, a branch remota deve ser removida. A próxima sprint deve nascer novamente de `main`.
 
 ## Estrutura obrigatória da Pull Request
 
@@ -112,12 +137,14 @@ Depois de abrir a Pull Request, o responsável deve entregar:
 
 1. Ler `docs/README.md`.
 2. Confirmar se a mudança é documentação, setup, correção ou feature.
-3. Criar branch com prefixo adequado.
-4. Fazer mudanças pequenas e auditáveis.
-5. Atualizar documentação/ADRs quando houver decisão permanente.
-6. Rodar checks relevantes.
-7. Abrir PR.
-8. Fazer merge apenas após revisão.
+3. Atualizar `main` localmente.
+4. Criar branch com prefixo adequado a partir de `main`.
+5. Fazer mudanças pequenas e auditáveis.
+6. Atualizar documentação/ADRs quando houver decisão permanente.
+7. Rodar checks relevantes.
+8. Abrir PR com base em `main`.
+9. Fazer merge apenas após revisão.
+10. Excluir a branch após merge.
 
 ## Regras para agentes de IA
 
