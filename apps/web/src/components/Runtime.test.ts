@@ -1,5 +1,11 @@
 import { getNyxConfig } from "@nyx-os/config";
-import { createDashboardSnapshot, RuntimeService, SystemStatusService } from "@nyx-os/core";
+import {
+  BaseNyxService,
+  createDashboardSnapshot,
+  NyxRuntime,
+  RuntimeService,
+  SystemStatusService
+} from "@nyx-os/core";
 import { createEventBus } from "@nyx-os/events";
 
 describe("Nyx runtime foundation", () => {
@@ -14,6 +20,11 @@ describe("Nyx runtime foundation", () => {
 
   it("stores recent events in memory", () => {
     const eventBus = createEventBus();
+    const receivedTypes: string[] = [];
+
+    const unsubscribe = eventBus.subscribe("runtime.started", (event) => {
+      receivedTypes.push(event.type);
+    });
 
     const event = eventBus.emit({
       type: "runtime.started",
@@ -22,6 +33,17 @@ describe("Nyx runtime foundation", () => {
     });
 
     expect(eventBus.listRecent()).toEqual([event]);
+    expect(receivedTypes).toEqual(["runtime.started"]);
+
+    unsubscribe();
+
+    eventBus.emit({
+      type: "runtime.started",
+      message: "Runtime started again.",
+      source: "runtime"
+    });
+
+    expect(receivedTypes).toEqual(["runtime.started"]);
   });
 
   it("returns runtime and system status through services", () => {
@@ -30,8 +52,7 @@ describe("Nyx runtime foundation", () => {
     const status = new SystemStatusService().getStatus(runtime);
 
     expect(runtime.status).toBe("ready");
-    expect(runtime.modules.some((module) => module.id === "memory" && module.status === "planned"))
-      .toBe(true);
+    expect(runtime.modules.some((module) => module.id === "memory" && module.status === "planned")).toBe(true);
     expect(status.health).toBe("online");
   });
 
@@ -42,5 +63,49 @@ describe("Nyx runtime foundation", () => {
     expect(snapshot.cards).toHaveLength(3);
     expect(snapshot.navigation.map((item) => item.label)).toContain("Memória");
     expect(snapshot.recentEvents.map((event) => event.type)).toContain("dashboard.loaded");
+  });
+
+  it("starts generic runtime services respecting dependencies", async () => {
+    const started: string[] = [];
+    const stopped: string[] = [];
+
+    class TestService extends BaseNyxService {
+      async start() {
+        started.push(this.name);
+        await super.start();
+      }
+
+      async stop() {
+        stopped.push(this.name);
+        await super.stop();
+      }
+    }
+
+    const runtime = new NyxRuntime();
+
+    runtime.registerService(new TestService("storage"));
+    runtime.registerService(new TestService("memory", ["storage"]));
+
+    await runtime.start();
+
+    expect(started).toEqual(["storage", "memory"]);
+    expect(runtime.getSnapshot().status).toBe("running");
+    expect(runtime.getSnapshot().services.map((service) => service.status)).toEqual(["running", "running"]);
+
+    await runtime.stop();
+
+    expect(stopped).toEqual(["memory", "storage"]);
+    expect(runtime.getSnapshot().status).toBe("stopped");
+    expect(runtime.getSnapshot().events.map((event) => event.type)).toContain("runtime.stopped");
+  });
+
+  it("rejects services with missing dependencies", async () => {
+    const runtime = new NyxRuntime();
+
+    runtime.registerService(new BaseNyxService("memory", ["storage"]));
+
+    await expect(runtime.start()).rejects.toThrow("missing dependencies");
+    expect(runtime.getSnapshot().status).toBe("failed");
+    expect(runtime.getSnapshot().events[0].type).toBe("runtime.failed");
   });
 });

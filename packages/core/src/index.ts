@@ -3,8 +3,38 @@ import { getNyxConfig } from "@nyx-os/config";
 import type { SystemEvent } from "@nyx-os/events";
 import { createEventBus, type EventBus } from "@nyx-os/events";
 
+type MaybePromise<T> = T | Promise<T>;
+
 export type RuntimeStatus = "ready" | "starting" | "degraded";
 export type ModuleStatus = "ready" | "planned" | "offline";
+export type ServiceStatus = "created" | "starting" | "running" | "stopping" | "stopped" | "failed";
+export type NyxRuntimeStatus = "created" | "starting" | "running" | "stopping" | "stopped" | "failed";
+
+export type NyxServiceContext = {
+  eventBus: EventBus;
+  emit: (input: Omit<Parameters<EventBus["emit"]>[0], "source"> & { source?: string }) => SystemEvent;
+};
+
+export interface NyxService {
+  readonly name: string;
+  readonly dependencies: readonly string[];
+  status: ServiceStatus;
+  setup(context: NyxServiceContext): MaybePromise<void>;
+  start(): MaybePromise<void>;
+  stop(): MaybePromise<void>;
+}
+
+export type RuntimeServiceSnapshot = {
+  name: string;
+  status: ServiceStatus;
+  dependencies: readonly string[];
+};
+
+export type NyxRuntimeSnapshot = {
+  status: NyxRuntimeStatus;
+  services: RuntimeServiceSnapshot[];
+  events: SystemEvent[];
+};
 
 export type RuntimeState = {
   name: string;
@@ -45,6 +75,212 @@ export type DashboardSnapshot = {
   cards: DashboardCard[];
   recentEvents: SystemEvent[];
 };
+
+export class BaseNyxService implements NyxService {
+  status: ServiceStatus = "created";
+
+  constructor(
+    readonly name: string,
+    readonly dependencies: readonly string[] = []
+  ) {}
+
+  setup(context: NyxServiceContext): MaybePromise<void> {
+    void context;
+  }
+
+  start(): MaybePromise<void> {
+    this.status = "running";
+  }
+
+  stop(): MaybePromise<void> {
+    this.status = "stopped";
+  }
+}
+
+export class ServiceManager {
+  private readonly services = new Map<string, NyxService>();
+  private startOrder: string[] = [];
+
+  register(service: NyxService): void {
+    if (this.services.has(service.name)) {
+      throw new Error(`Service already registered: ${service.name}`);
+    }
+
+    this.services.set(service.name, service);
+  }
+
+  list(): RuntimeServiceSnapshot[] {
+    return Array.from(this.services.values()).map((service) => ({
+      name: service.name,
+      status: service.status,
+      dependencies: service.dependencies
+    }));
+  }
+
+  async setupAll(context: NyxServiceContext): Promise<void> {
+    for (const service of Array.from(this.services.values())) {
+      await service.setup(context);
+    }
+  }
+
+  async startAll(): Promise<void> {
+    const started = new Set<string>();
+    this.startOrder = [];
+
+    while (started.size < this.services.size) {
+      let progressed = false;
+
+      for (const [name, service] of Array.from(this.services.entries())) {
+        if (started.has(name)) {
+          continue;
+        }
+
+        const missingDependencies = service.dependencies.filter((dependency) => !this.services.has(dependency));
+
+        if (missingDependencies.length > 0) {
+          throw new Error(`Service ${name} has missing dependencies: ${missingDependencies.join(", ")}`);
+        }
+
+        if (service.dependencies.every((dependency) => started.has(dependency))) {
+          await this.startOne(service);
+          started.add(name);
+          this.startOrder.push(name);
+          progressed = true;
+        }
+      }
+
+      if (!progressed) {
+        const unresolved = Array.from(this.services.keys()).filter((name) => !started.has(name));
+        throw new Error(`Circular service dependencies detected: ${unresolved.join(", ")}`);
+      }
+    }
+  }
+
+  async stopAll(): Promise<void> {
+    for (const name of [...this.startOrder].reverse()) {
+      const service = this.services.get(name);
+
+      if (service) {
+        await this.stopOne(service);
+      }
+    }
+
+    this.startOrder = [];
+  }
+
+  private async startOne(service: NyxService): Promise<void> {
+    try {
+      service.status = "starting";
+      await service.start();
+      service.status = "running";
+    } catch (error) {
+      service.status = "failed";
+      throw error;
+    }
+  }
+
+  private async stopOne(service: NyxService): Promise<void> {
+    if (service.status !== "running" && service.status !== "failed") {
+      return;
+    }
+
+    try {
+      service.status = "stopping";
+      await service.stop();
+      service.status = "stopped";
+    } catch (error) {
+      service.status = "failed";
+      throw error;
+    }
+  }
+}
+
+export class NyxRuntime {
+  private status: NyxRuntimeStatus = "created";
+
+  constructor(
+    readonly eventBus: EventBus = createEventBus(),
+    readonly serviceManager: ServiceManager = new ServiceManager()
+  ) {}
+
+  registerService(service: NyxService): void {
+    this.serviceManager.register(service);
+  }
+
+  async start(): Promise<void> {
+    if (this.status === "running" || this.status === "starting") {
+      return;
+    }
+
+    this.status = "starting";
+    this.eventBus.emit({
+      type: "runtime.starting",
+      message: "Nyx runtime is starting.",
+      source: "runtime"
+    });
+
+    try {
+      await this.serviceManager.setupAll(this.createServiceContext());
+      await this.serviceManager.startAll();
+      this.status = "running";
+      this.eventBus.emit({
+        type: "runtime.started",
+        message: "Nyx runtime started.",
+        source: "runtime"
+      });
+    } catch (error) {
+      this.status = "failed";
+      this.eventBus.emit({
+        type: "runtime.failed",
+        message: error instanceof Error ? error.message : "Nyx runtime failed.",
+        level: "error",
+        source: "runtime"
+      });
+      throw error;
+    }
+  }
+
+  async stop(): Promise<void> {
+    if (this.status === "stopped" || this.status === "created") {
+      this.status = "stopped";
+      return;
+    }
+
+    this.status = "stopping";
+    this.eventBus.emit({
+      type: "runtime.stopping",
+      message: "Nyx runtime is stopping.",
+      source: "runtime"
+    });
+
+    await this.serviceManager.stopAll();
+    this.status = "stopped";
+    this.eventBus.emit({
+      type: "runtime.stopped",
+      message: "Nyx runtime stopped.",
+      source: "runtime"
+    });
+  }
+
+  getSnapshot(): NyxRuntimeSnapshot {
+    return {
+      status: this.status,
+      services: this.serviceManager.list(),
+      events: this.eventBus.listRecent()
+    };
+  }
+
+  private createServiceContext(): NyxServiceContext {
+    return {
+      eventBus: this.eventBus,
+      emit: (input) =>
+        this.eventBus.emit({
+          ...input,
+          source: input.source ?? "service"
+        })
+    };
+  }
+}
 
 const plannedModules: RuntimeState["modules"] = [
   {

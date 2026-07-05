@@ -55,6 +55,7 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `arquitetura/core-runtime.md`: runtime base, event bus, services e dashboard executavel.
 - `workflow/desenvolvimento.md`: ciclo oficial de branches, commits e Pull Requests.
 - `workflow/dx-validation.md`: validacao oficial de experiencia de desenvolvimento.
+- `decisoes/ADR-0013-runtime-generico-servicos.md`: decisão de runtime genérico e serviços desacoplados.
 
 ## Decisoes recentes
 
@@ -64,3 +65,4 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - Memoria e contexto persistente vivo, nao apenas historico de conversa ou embeddings.
 - Toda Sprint deve nascer diretamente de `main`, abrir Pull Request para `main`, passar por DX Validation e remover a branch depois do merge.
 - A documentação oficial deve permanecer em Português do Brasil, com exceções técnicas documentadas no workflow.
+- O Runtime deve ser genérico, conhecer apenas serviços registrados e manter integrações futuras desacopladas.

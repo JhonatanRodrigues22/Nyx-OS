@@ -1,5 +1,14 @@
 # @nyx-os/core
 
-Responsável pelo domínio central do Nyx OS.
+Responsável pelo núcleo central do Nyx OS.
 
-Deve conter entidades, regras e contratos essenciais independentes de UI, banco ou provedor externo.
+Este package contém:
+
+- `NyxRuntime`;
+- `ServiceManager`;
+- `BaseNyxService`;
+- contratos de serviços;
+- serviços de estado do runtime;
+- serviços de dashboard.
+
+O core deve permanecer independente de UI, banco, provedores externos, clientes específicos e projetos futuros.

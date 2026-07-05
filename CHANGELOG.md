@@ -1,5 +1,26 @@
 # Changelog
 
+## Runtime Genérico e Serviços de Base
+
+### Criado
+
+- `NyxRuntime` genérico em `packages/core`.
+- `ServiceManager` com validação de dependências explícitas.
+- `BaseNyxService` e contratos de serviço.
+- Assinaturas por tipo no Event Bus em `packages/events`.
+- ADR-0013 sobre runtime genérico e serviços desacoplados.
+
+### Alterado
+
+- Documentação do Core Runtime atualizada para separar runtime, dashboard, serviços e eventos.
+- Testes de runtime ampliados para lifecycle, dependências e falhas.
+- READMEs de `packages/core` e `packages/events` atualizados.
+
+### Decisão
+
+- Scheduler e plugin loader permanecem fora do núcleo por enquanto.
+- Nyx Assistente e integrações futuras devem consumir o Nyx OS como clientes, serviços ou plugins desacoplados.
+
 ## Padronização de Idioma da Documentação
 
 ### Alterado
