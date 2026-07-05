@@ -1,91 +1,144 @@
 # Nyx OS
 
-Nyx OS e um sistema operacional pessoal em fase inicial. A proposta e centralizar captura, organizacao e recuperacao de dados pessoais como tarefas, projetos, habitos, financas, check-ins, notas, decisoes e memorias, com o minimo de atrito.
+Nyx OS is a personal operating system in its early foundation stage. Its purpose is to centralize capture, organization and retrieval of personal information such as tasks, projects, habits, finances, check-ins, notes, decisions and memories with minimal friction.
 
-O projeto ainda nao e um produto pronto. Esta base existe para tornar a arquitetura compreensivel, versionavel e segura antes de avancar para novas funcionalidades.
+This repository is not a finished product yet. It exists to keep the architecture, workflow and technical base understandable, versioned and safe before the product grows.
 
-## Status atual
-
-- 00 — Constituicao do Projeto.
-- 01 — Arquitetura e Roadmap.
-- 02 — Visao do Produto e MVP.
-- 03 — Fundacao Tecnica e Setup do Projeto.
-- 04 — Core Runtime e Dashboard Base.
-
-A Sprint 04 inicia a primeira fase executavel do Nyx OS: runtime base, servicos internos, event bus em memoria e dashboard visual com dados mockados isolados.
-
-## Stack
-
-- Next.js com React e TypeScript
-- Supabase para banco de dados e autenticacao
-- PWA com manifesto e service worker gerado no build
-- Jest e React Testing Library para testes
-- ESLint para verificacao estatica
-
-## Instalacao
+## Quick Start
 
 ```bash
+git clone https://github.com/JhonatanRodrigues22/Nyx-OS.git
+cd Nyx-OS
 npm install
-```
-
-Crie um projeto no Supabase free tier e copie o arquivo de exemplo:
-
-```bash
 cp apps/web/.env.local.example apps/web/.env.local
+npm run dev
 ```
 
-No Windows PowerShell:
+On Windows PowerShell, use this command to create the local environment file:
 
 ```powershell
 Copy-Item apps/web/.env.local.example apps/web/.env.local
 ```
 
-Preencha `apps/web/.env.local`:
+Then open `http://localhost:3000`.
+
+## Requirements
+
+- Git
+- Node.js 20 or newer
+- npm
+- A Supabase project for real database and authentication usage
+
+The app can start locally with placeholder Supabase values, but real persistence requires a Supabase free tier project.
+
+## Setup From Scratch
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/JhonatanRodrigues22/Nyx-OS.git
+```
+
+2. Enter the project folder:
+
+```bash
+cd Nyx-OS
+```
+
+3. Install dependencies from the repository root:
+
+```bash
+npm install
+```
+
+4. Create the local environment file:
+
+```bash
+cp apps/web/.env.local.example apps/web/.env.local
+```
+
+On Windows PowerShell:
+
+```powershell
+Copy-Item apps/web/.env.local.example apps/web/.env.local
+```
+
+5. Fill `apps/web/.env.local`:
 
 ```bash
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_KEY=your-anon-key
 ```
 
-## Como rodar
+6. Start the development server:
 
 ```bash
 npm run dev
 ```
 
-Acesse `http://localhost:3000`.
-
-O app web vive em `apps/web`, mas os comandos principais devem ser executados pela raiz do monorepo.
-
-## Como testar
-
-```bash
-npm test
-npm run lint
-npm run build
-```
-
-## Estrutura de pastas
+7. Open the app:
 
 ```text
-.ai/             Contexto, prompts e protocolo para agentes de IA.
-apps/            Aplicações executáveis.
-packages/        Packages compartilhados e módulos planejados.
-configs/         Configurações compartilhadas.
-docs/            Fonte de verdade conceitual do projeto.
-scripts/         Automacoes auxiliares versionaveis.
-tests/           Testes transversais futuros.
+http://localhost:3000
 ```
 
-Arquivos gerados, caches, dependencias instaladas, credenciais e builds nao devem ser versionados.
+The web app lives in `apps/web`, but the main commands should be executed from the repository root.
 
-## Documentacao
+## Available Commands
 
-`docs/` e a fonte de verdade conceitual do Nyx OS. Use essa pasta para arquitetura, fundamentos, decisoes, roadmap e relatorios de sprint.
+```bash
+npm run dev
+npm run lint
+npm test
+npm run build
+npm run start
+```
 
-`.ai/` e apenas apoio operacional para agentes de IA. Prompts e protocolos podem ficar ali, mas decisoes arquiteturais permanentes devem ser registradas em `docs/`.
+`npm run start` should be used after `npm run build`.
 
-Leitura recomendada:
+## Status
+
+- 00: Project Constitution.
+- 01: Architecture and Roadmap.
+- 02: Product Vision and MVP.
+- 03: Technical Foundation and Project Setup.
+- 04: Core Runtime and Dashboard Base.
+- 04.1: Developer Experience and Workflow Validation.
+
+Sprint 04 introduced the first executable base of Nyx OS: core runtime, internal services, in-memory event bus and a visual dashboard with isolated mock data.
+
+Sprint 04.1 consolidates onboarding documentation and the official Git workflow.
+
+## Stack
+
+- Next.js with React and TypeScript
+- Supabase for database and authentication
+- PWA manifest and generated service worker
+- Jest and React Testing Library for tests
+- ESLint for static checks
+- npm workspaces for the monorepo
+
+## Project Structure
+
+```text
+.ai/             Local operational context and prompts.
+apps/            Executable applications.
+packages/        Shared packages and planned modules.
+configs/         Shared configuration.
+docs/            Conceptual source of truth for the project.
+scripts/         Auxiliary project scripts.
+tests/           Future cross-project tests.
+```
+
+Generated files, caches, installed dependencies, secrets and build outputs must not be committed.
+
+## Documentation
+
+`docs/` is the conceptual source of truth for Nyx OS. Use it for architecture, fundamentals, decisions, roadmap and sprint records.
+
+`.ai/` is operational support. Prompts and session protocols may live there, but permanent architectural decisions belong in `docs/`.
+
+Recommended reading:
 
 1. `docs/README.md`
 2. `docs/fundamentos/constituicao.md`
@@ -94,17 +147,31 @@ Leitura recomendada:
 5. `docs/arquitetura/visao-geral.md`
 6. `docs/fundamentos/glossario.md`
 7. `docs/arquitetura/fundacao-tecnica.md`
+8. `docs/workflow/desenvolvimento.md`
+9. `docs/workflow/dx-validation.md`
 
-## Fluxo de contribuicao
+## Contributing
 
-1. Crie uma branch a partir de `main`.
-2. Faca mudancas pequenas e auditaveis.
-3. Rode testes, lint e build quando aplicavel.
-4. Abra um Pull Request para `main`.
-5. Descreva contexto, alteracoes, como testar e pendencias conhecidas.
+Before opening a Pull Request, make sure you can follow this README from a clean environment. If the documented setup no longer works, update the documentation as part of your contribution.
 
-Evite commits diretos em `main`. Toda sprint deve ter um PR claro.
+Every Sprint, hotfix, refactor or significant change must use the official workflow:
 
-## Aviso
+```text
+main
+  -> new branch
+  -> implementation
+  -> commit
+  -> push
+  -> Pull Request to main
+  -> review
+  -> merge
+  -> delete branch
+```
 
-Este repositorio esta em fase inicial. A prioridade atual e manter uma base limpa, compreensivel e segura para evolucao gradual.
+Each Sprint branch must be created directly from `main`. Each Pull Request must target `main`. Stacked branches are allowed only when there is an explicit technical need and prior authorization.
+
+Before considering a Sprint complete, run the Developer Experience Validation documented in `docs/workflow/dx-validation.md`.
+
+## Notice
+
+This repository is in an early stage. The current priority is to keep a clean, understandable and safe base for gradual evolution.
