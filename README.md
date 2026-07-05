@@ -104,10 +104,19 @@ Use `npm run start` depois de executar `npm run build`.
 - 03: Fundação Técnica e Setup do Projeto.
 - 04: Core Runtime e Dashboard Base.
 - 04.1: Developer Experience e Validação de Workflow.
+- 05: Config Service e limpeza de ambiente.
+- 06: Logging Service.
+- 07: Runtime State Service.
+- 08: Event Bus e sistema de eventos.
+- 09: Plugin Framework.
+- 10: Scheduler Engine.
+- 11: Dev Dashboard: Estado Visual do Sistema.
 
 A Sprint 04 introduziu a primeira base executável do Nyx OS: core runtime, serviços internos, event bus em memória e dashboard visual com dados mockados isolados.
 
 A Sprint 04.1 consolidou a documentação de onboarding e o workflow oficial de Git.
+
+A Sprint 11 transformou a tela inicial em um Dev Dashboard para visualizar saúde do sistema, Runtime, serviços, plugins, Scheduler, uptime, versão, ambiente e eventos recentes durante `npm run dev`.
 
 ## Stack
 
@@ -149,6 +158,7 @@ Leitura recomendada:
 7. `docs/arquitetura/fundacao-tecnica.md`
 8. `docs/workflow/desenvolvimento.md`
 9. `docs/workflow/dx-validation.md`
+10. `docs/arquitetura/dev-dashboard.md`
 
 ## Contributing
 

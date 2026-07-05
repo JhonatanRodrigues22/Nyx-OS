@@ -5,11 +5,18 @@ type ModuleGridProps = {
 };
 
 export function ModuleGrid({ modules }: ModuleGridProps) {
+  const readyModules = modules.filter((module) => module.status === "ready").length;
+
   return (
     <section className="panel" aria-labelledby="modules-title">
       <div className="section-heading">
-        <h2 id="modules-title">Módulos</h2>
-        <span className="badge mocked">planned</span>
+        <div>
+          <p className="panel-kicker">Fundacao tecnica</p>
+          <h2 id="modules-title">Modulos</h2>
+        </div>
+        <span className="badge ready">
+          {readyModules}/{modules.length}
+        </span>
       </div>
       <div className="module-grid">
         {modules.map((module) => (
