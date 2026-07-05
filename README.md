@@ -6,10 +6,13 @@ O projeto ainda nao e um produto pronto. Esta base existe para tornar a arquitet
 
 ## Status atual
 
-- Sprint 0 concluida: fundacao tecnica com Next.js, TypeScript, Supabase, PWA, tipos iniciais e testes basicos.
-- Sprint 0.5: limpeza estrutural, organizacao de documentacao e controle do repositorio.
-- Sprint 1 planejada: fundacao operacional do Nyx OS, conforme `docs/sprints/plano-sprint-01.md`.
-- Captura rapida faz parte do MVP, mas deve nascer em camadas e sem atropelar dashboard, dominio e contratos.
+- 00 — Constituicao do Projeto.
+- 01 — Arquitetura e Roadmap.
+- 02 — Visao do Produto e MVP.
+- 03 — Fundacao Tecnica e Setup do Projeto.
+- 04 — Core Runtime e Dashboard Base.
+
+A Sprint 04 inicia a primeira fase executavel do Nyx OS: runtime base, servicos internos, event bus em memoria e dashboard visual com dados mockados isolados.
 
 ## Stack
 
@@ -28,10 +31,16 @@ npm install
 Crie um projeto no Supabase free tier e copie o arquivo de exemplo:
 
 ```bash
-cp .env.local.example .env.local
+cp apps/web/.env.local.example apps/web/.env.local
 ```
 
-Preencha `.env.local`:
+No Windows PowerShell:
+
+```powershell
+Copy-Item apps/web/.env.local.example apps/web/.env.local
+```
+
+Preencha `apps/web/.env.local`:
 
 ```bash
 SUPABASE_URL=https://your-project.supabase.co

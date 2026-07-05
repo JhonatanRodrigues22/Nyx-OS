@@ -19,9 +19,10 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["src/*"],
+      "@nyx-os/config": ["../../packages/config/src/index.ts"],
+      "@nyx-os/core": ["../../packages/core/src/index.ts"],
+      "@nyx-os/events": ["../../packages/events/src/index.ts"]
     }
   },
   "include": [
