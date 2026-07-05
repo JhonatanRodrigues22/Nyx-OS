@@ -2,48 +2,101 @@
 
 ## Objetivo
 
-O Core Runtime representa o estado inicial executavel do Nyx OS.
+O Core Runtime representa a base executável e genérica do Nyx OS.
 
-Nesta sprint, ele nao persiste dados e nao conecta banco real. Seu papel e estabelecer a separacao entre UI, configuracao, servicos, eventos e dados mockados.
+Ele inicializa, coordena e encerra serviços internos sem conhecer clientes específicos, produtos futuros ou integrações externas. Seu papel é manter fronteiras claras entre UI, configuração, serviços, eventos e estado do sistema.
+
+## Princípios
+
+- O runtime deve ser pequeno.
+- O runtime não concentra regra de produto.
+- Serviços declaram dependências explicitamente.
+- Serviços sobem respeitando dependências e descem na ordem inversa.
+- Comunicação entre serviços deve priorizar eventos.
+- Integrações futuras entram por serviços ou plugins desacoplados.
+- A Nyx Assistente é um cliente previsto do Nyx OS, mas não faz parte do runtime.
+- Projetos futuros não devem virar dependência do núcleo antes de existir.
 
 ## Componentes
 
-- `@nyx-os/config`: configuracao central do sistema.
-- `@nyx-os/events`: Event Bus em memoria.
-- `@nyx-os/core`: runtime, status do sistema e servicos do dashboard.
-- `apps/web`: interface visual que consome snapshots produzidos pelos servicos.
+- `@nyx-os/config`: configuração central do sistema.
+- `@nyx-os/events`: Event Bus em memória, com emissão, listagem recente e assinatura de eventos.
+- `@nyx-os/core`: runtime genérico, service manager, contratos de serviço, status do sistema e serviços do dashboard.
+- `apps/web`: interface visual que consome snapshots produzidos pelos serviços.
+
+## Runtime Genérico
+
+`NyxRuntime` é o núcleo de execução genérico. Ele oferece:
+
+- registro de serviços;
+- ciclo `start` e `stop`;
+- emissão de eventos de lifecycle;
+- snapshot do runtime;
+- integração com `ServiceManager`;
+- acesso compartilhado ao `EventBus`.
+
+O runtime não descobre serviços automaticamente e não conhece módulos futuros por nome.
+
+## Serviços
+
+Serviços implementam o contrato `NyxService` ou estendem `BaseNyxService`.
+
+Cada serviço possui:
+
+- `name`;
+- `dependencies`;
+- `status`;
+- `setup`;
+- `start`;
+- `stop`.
+
+O `ServiceManager` valida dependências ausentes, detecta dependências circulares e preserva a ordem de inicialização para desligamento reverso.
 
 ## Fluxo
 
 ```text
-Dashboard UI -> DashboardService -> RuntimeService / SystemStatusService / EventService
+Dashboard UI
+  -> DashboardService
+  -> RuntimeService / SystemStatusService / EventService
+  -> EventBus
+
+Serviços internos
+  -> NyxRuntime
+  -> ServiceManager
+  -> EventBus
 ```
 
-A UI renderiza dados e dispara interacoes visuais. Ela nao deve concentrar regra de dominio nem acessar banco diretamente.
-
-## Dados mockados
-
-Dados mockados vivem nos services/providers de runtime e dashboard dentro de `packages/core`.
-
-Componentes React recebem um snapshot pronto para renderizacao.
+A UI renderiza dados e dispara interações visuais. Ela não deve concentrar regra de domínio nem acessar banco diretamente.
 
 ## Event Bus
 
-O Event Bus inicial fica em memoria e permite:
+O Event Bus inicial fica em memória e permite:
 
 - emitir eventos internos;
 - listar eventos recentes;
-- representar eventos como `runtime.started`, `module.ready` e `dashboard.loaded`.
+- assinar eventos por tipo;
+- assinar todos os eventos com `*`;
+- representar eventos como `runtime.started`, `module.ready`, `dashboard.loaded` e eventos de lifecycle do runtime.
 
-Ele ainda nao e persistente, distribuido ou conectado a integracoes externas.
+Ele ainda não é persistente, distribuído ou conectado a integrações externas.
 
-## O que ainda nao existe
+## Dados Mockados
 
-- Autenticacao real.
+Dados mockados vivem nos services/providers de runtime e dashboard dentro de `packages/core`.
+
+Componentes React recebem um snapshot pronto para renderização.
+
+## Fora do Núcleo Agora
+
+- Scheduler recorrente.
+- Plugin loader automático.
+- Autenticação real.
 - Banco real.
-- Memoria persistente.
+- Memória persistente.
 - IA real.
-- Automacoes reais.
-- Integracoes externas.
-- Notificacoes reais.
+- Automações reais.
+- Integrações externas.
+- Notificações reais.
 - Captura de dados do computador.
+
+Scheduler e plugin loader continuam ideias válidas, mas exigem contratos próprios e um ambiente de execução adequado. Eles não devem ser adicionados ao núcleo apenas por expectativa futura.
