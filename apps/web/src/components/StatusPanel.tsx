@@ -1,4 +1,5 @@
 import type { DashboardOverview, SystemStatus } from "@nyx-os/core";
+import type { CSSProperties } from "react";
 
 type StatusPanelProps = {
   overview: DashboardOverview;
@@ -6,13 +7,18 @@ type StatusPanelProps = {
 };
 
 export function StatusPanel({ overview, status }: StatusPanelProps) {
+  const healthStyle = { "--health": `${overview.healthScore}%` } as CSSProperties;
+
   return (
-    <aside className="status-panel" aria-label="Estado Atual">
+    <aside className="status-panel" aria-label="Estado Atual" style={healthStyle}>
       <div className={`pulse ${status.health}`} aria-hidden="true" />
       <div className="status-panel-content">
         <div className="status-header">
           <span>Estado Atual</span>
           <strong>{overview.statusLabel}</strong>
+        </div>
+        <div className="status-orbital" aria-hidden="true">
+          <span />
         </div>
         <dl className="status-metrics">
           <div>
@@ -36,8 +42,8 @@ export function StatusPanel({ overview, status }: StatusPanelProps) {
           <span>Saude do Sistema</span>
           <strong>{overview.healthScore}%</strong>
         </div>
-        <div className="progress-line" aria-hidden="true">
-          {overview.healthBar}
+        <div className="progress-track" aria-hidden="true">
+          <span />
         </div>
       </div>
     </aside>

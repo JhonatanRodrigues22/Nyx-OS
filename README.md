@@ -111,12 +111,15 @@ Use `npm run start` depois de executar `npm run build`.
 - 09: Plugin Framework.
 - 10: Scheduler Engine.
 - 11: Dev Dashboard: Estado Visual do Sistema.
+- 12: Nyx Visual Overhaul.
 
 A Sprint 04 introduziu a primeira base executável do Nyx OS: core runtime, serviços internos, event bus em memória e dashboard visual com dados mockados isolados.
 
 A Sprint 04.1 consolidou a documentação de onboarding e o workflow oficial de Git.
 
 A Sprint 11 transformou a tela inicial em um Dev Dashboard para visualizar saúde do sistema, Runtime, serviços, plugins, Scheduler, uptime, versão, ambiente e eventos recentes durante `npm run dev`.
+
+A Sprint 12 redesenhou visualmente o Dev Dashboard com identidade Nyx premium, glassmorphism, neon roxo, magenta, azul elétrico, gauges, microindicadores e animações discretas, sem alterar a arquitetura do Runtime.
 
 ## Stack
 

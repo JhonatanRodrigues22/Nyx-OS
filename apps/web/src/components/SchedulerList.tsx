@@ -34,6 +34,13 @@ export function SchedulerList({ overview, tasks }: SchedulerListProps) {
         </div>
       </dl>
 
+      <div className="scheduler-orbit" aria-hidden="true">
+        <div>
+          <strong>{overview.uptimeLabel}</strong>
+          <span>ultima leitura</span>
+        </div>
+      </div>
+
       <ul className="scheduler-list">
         {tasks.length === 0 ? (
           <li className="empty-row">Nenhuma task registrada ainda.</li>

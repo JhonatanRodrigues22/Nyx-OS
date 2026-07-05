@@ -20,11 +20,14 @@ export function EventList({ overview, events }: EventListProps) {
         {events.length === 0 ? (
           <li className="empty-row">Nenhum evento emitido ainda.</li>
         ) : (
-          events.map((event) => (
+          events.map((event, index) => (
             <li key={event.id}>
               <span className={`event-dot ${event.level}`} />
               <div>
-                <strong>{event.type}</strong>
+                <strong>
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  {event.type}
+                </strong>
                 <p>{event.message}</p>
                 <small>{event.source}</small>
               </div>

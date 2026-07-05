@@ -21,6 +21,7 @@ export function ModuleGrid({ modules }: ModuleGridProps) {
       <div className="module-grid">
         {modules.map((module) => (
           <article className="module-card" key={module.id}>
+            <span className="module-node" aria-hidden="true" />
             <div>
               <h3>{module.label}</h3>
               <p>{module.description}</p>
