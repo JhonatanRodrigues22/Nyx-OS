@@ -1,0 +1,10 @@
+{
+  "name": "@nyx-os/memory",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@nyx-os/event-bus": "0.1.0"
+  }
+}

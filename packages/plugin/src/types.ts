@@ -1,5 +1,6 @@
 import type { NyxEventBus, NyxSystemEvents } from "@nyx-os/event-bus";
 import type { NyxLogger } from "@nyx-os/logger";
+import type { NyxMemoryService } from "@nyx-os/memory";
 import type { NyxScheduler } from "@nyx-os/scheduler";
 import type { NyxStateService } from "@nyx-os/state";
 
@@ -20,6 +21,7 @@ export type NyxPluginServiceRegistry<TService = unknown> = {
 
 export type NyxPluginRuntimeHost = {
   getEventBus(): NyxEventBus<NyxSystemEvents>;
+  getMemory(): NyxMemoryService;
   getRuntimeState?(): unknown;
 };
 
@@ -27,6 +29,7 @@ export type NyxPluginContext = {
   runtime: NyxPluginRuntimeHost;
   events: NyxEventBus<NyxSystemEvents>;
   logger: NyxLogger;
+  memory: NyxMemoryService;
   scheduler: NyxScheduler;
   services: NyxPluginServiceRegistry;
   state: NyxStateService | null;

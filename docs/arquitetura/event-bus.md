@@ -4,7 +4,7 @@
 
 O Event Bus oficial do Nyx OS permite que componentes do sistema comuniquem mudanças sem depender diretamente uns dos outros.
 
-Ele é infraestrutura de Runtime. Não implementa Skills, IA, Scheduler, Memory, Automation, Observability ou integrações externas.
+Ele é infraestrutura de Runtime. Não implementa Skills, IA, Automation, Observability ou integrações externas.
 
 ## Pacote
 
@@ -64,8 +64,14 @@ O Runtime emite automaticamente:
 - `scheduler.task.executed`;
 - `scheduler.task.failed`;
 - `scheduler.task.removed`.
+- `memory.created`;
+- `memory.updated`;
+- `memory.deleted`;
+- `memory.loaded`;
+- `memory.saved`;
+- `memory.search`.
 
-Esses eventos descrevem apenas lifecycle técnico. Eventos específicos de IA, Scheduler ou Memory ficam fora do escopo atual.
+Esses eventos descrevem lifecycle técnico e mudanças de infraestrutura. Eventos específicos de IA continuam fora do escopo atual.
 
 ## Ciclo
 

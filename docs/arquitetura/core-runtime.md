@@ -23,6 +23,7 @@ Ele inicializa, coordena e encerra serviços internos sem conhecer clientes espe
 - `@nyx-os/event-bus`: Event Bus oficial e tipado para comunicação desacoplada entre Runtime e serviços.
 - `@nyx-os/events`: stream em memória de eventos recentes usado por snapshots e dashboard.
 - `@nyx-os/logger`: contrato central de logging e implementação inicial em console.
+- `@nyx-os/memory`: contrato oficial de memoria textual, store em memoria e busca simples.
 - `@nyx-os/plugin`: contrato oficial de plugins e manager de lifecycle.
 - `@nyx-os/scheduler`: contrato oficial de tarefas recorrentes e manager de agendamento.
 - `@nyx-os/state`: contrato central de estado do Runtime e serviços.
@@ -164,6 +165,8 @@ Plugins são inicializados depois dos serviços base e descartados antes do ence
 
 O `RuntimeDiagnosticsPlugin` é um plugin interno mínimo para validar a arquitetura e tornar o framework visível no dashboard. Ele não implementa regra de produto.
 
+O `MemoryPlugin` é um plugin interno mínimo para validar `context.memory`. Ele cria uma memoria tecnica de diagnostico, consulta a memoria e lista o store durante a inicializacao. Ele nao implementa regra de produto.
+
 ## Scheduler
 
 O Scheduler vive em `@nyx-os/scheduler` e é exposto pelo Runtime por `runtime.getScheduler()`.
@@ -173,6 +176,16 @@ Ele permite registrar, remover, iniciar, parar, pausar, retomar e listar tarefas
 Plugins recebem `context.scheduler` durante a inicialização e podem registrar tarefas. O Runtime inicializa plugins antes de iniciar o Scheduler, para que tarefas registradas pelos plugins sejam agendadas no mesmo ciclo.
 
 O `HeartbeatPlugin` registra a tarefa `scheduler.heartbeat` como validação arquitetural mínima. Ela apenas escreve um log simples a cada intervalo.
+
+## Memory Engine
+
+O Memory Engine vive em `@nyx-os/memory` e é exposto pelo Runtime por `runtime.getMemory()`.
+
+Plugins recebem `context.memory` durante a inicializacao.
+
+Nesta fase, ele implementa apenas memoria textual em memoria, CRUD, busca simples por ID, texto, categoria e tags, alem de eventos `memory.created`, `memory.updated`, `memory.deleted`, `memory.loaded`, `memory.saved` e `memory.search`.
+
+IA, embeddings, vetores, banco de dados, RAG, LLM e automacoes ficam fora do escopo do Memory Engine atual.
 
 ## Dados Mockados
 
@@ -195,7 +208,7 @@ Esse painel não é o Cockpit do usuário final e não implementa IA, widgets pe
 - Descoberta automática de plugins.
 - Autenticação real.
 - Banco real.
-- Memória persistente.
+- Memória persistente em banco.
 - IA real.
 - Automações reais.
 - Integrações externas.

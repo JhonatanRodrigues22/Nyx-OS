@@ -1,5 +1,38 @@
 # Changelog
 
+## Sprint 13 - Memory Engine
+
+### Criado
+
+- `@nyx-os/memory` com contratos e implementacao inicial do Memory Engine.
+- `NyxMemoryService` como contrato oficial de memoria.
+- `MemoryManager` com CRUD, listagem, busca simples e snapshot de indice.
+- `MemoryStore` e `InMemoryMemoryStore`.
+- `MemorySearch` para busca por ID, texto, categoria e tags.
+- `MemoryIndex` para contagem por categoria e tags.
+- Eventos `memory.created`, `memory.updated`, `memory.deleted`, `memory.loaded`, `memory.saved` e `memory.search`.
+- `MemoryPlugin` interno para validar criacao, consulta e listagem por `context.memory`.
+- Documentacao em `docs/arquitetura/memory-engine.md`.
+
+### Alterado
+
+- `NyxRuntime` passou a expor `runtime.getMemory()`.
+- Contexto de plugins passou a expor `context.memory`.
+- Event Bus oficial passou a tipar eventos `memory.*`.
+- Snapshot do Runtime passou a incluir resumo de memoria.
+- Testes ampliados para CRUD, busca, eventos, Runtime e plugins.
+
+### Mantido Fora do Escopo
+
+- IA.
+- Embeddings.
+- Banco de dados.
+- Vetores.
+- LLM.
+- RAG.
+- Automacoes.
+- Dashboard de memorias.
+
 ## Sprint 11 - Dev Dashboard: Estado Visual do Sistema
 
 ### Criado

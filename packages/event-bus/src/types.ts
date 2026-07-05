@@ -58,11 +58,20 @@ export type NyxSchedulerEventName =
   | "scheduler.task.failed"
   | "scheduler.task.removed";
 
+export type NyxMemoryEventName =
+  | "memory.created"
+  | "memory.updated"
+  | "memory.deleted"
+  | "memory.loaded"
+  | "memory.saved"
+  | "memory.search";
+
 export type NyxSystemEventName =
   | NyxRuntimeEventName
   | NyxServiceEventName
   | NyxPluginEventName
-  | NyxSchedulerEventName;
+  | NyxSchedulerEventName
+  | NyxMemoryEventName;
 
 export type NyxSystemEvents = Record<NyxSystemEventName, NyxEventPayload>;
 

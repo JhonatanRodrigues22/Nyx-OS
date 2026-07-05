@@ -4,7 +4,7 @@
 
 O Plugin Framework oficial permite que o Nyx OS cresça por módulos desacoplados, registrados e controlados pelo Runtime.
 
-Esta Sprint cria apenas a infraestrutura. Memory, Scheduler, IA, Skills, Automation, Workflow Lens e integrações externas não são implementados aqui.
+Esta página descreve a infraestrutura do Plugin Framework. Capacidades como Scheduler e Memory usam esse contexto quando precisam se integrar ao Runtime.
 
 ## Pacote
 
@@ -38,6 +38,7 @@ Durante a inicialização, plugins recebem:
 - `context.runtime`;
 - `context.events`;
 - `context.logger`;
+- `context.memory`;
 - `context.scheduler`;
 - `context.services`;
 - `context.state`.
@@ -79,7 +80,9 @@ O `PluginManager` impede IDs duplicados, lista plugins, consulta estado e contro
 
 O `RuntimeDiagnosticsPlugin` existe apenas para validar a arquitetura e tornar o framework visível no dashboard.
 
-Ele não contém regra de produto e não implementa Memory, Scheduler, IA, Skills ou Automation.
+O `MemoryPlugin` existe apenas para validar a disponibilidade de `context.memory` durante o lifecycle de plugins.
+
+Esses plugins internos não contêm regra de produto.
 
 ## Dashboard
 
@@ -97,6 +100,7 @@ Essa visibilidade ajuda a mostrar a evolução da plataforma sem transformar o d
 - IDs de plugins devem ser estáveis.
 - Plugins não devem acessar outros plugins diretamente.
 - Tarefas recorrentes devem ser registradas por `context.scheduler`, não por timers próprios.
+- Memórias devem ser criadas e consultadas por `context.memory`, não por stores próprios acoplados ao plugin.
 - Falhas devem ser refletidas no estado do plugin e no Event Bus.
 - Novas capacidades devem entrar como plugins ou usar essa infraestrutura quando fizer sentido arquitetural.
 
@@ -107,8 +111,6 @@ Essa visibilidade ajuda a mostrar a evolução da plataforma sem transformar o d
 - Plugins externos.
 - Persistência de plugins.
 - Permissões e sandbox.
-- Scheduler.
-- Memory.
 - IA.
 - Skills.
 - Automation.
