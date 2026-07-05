@@ -33,6 +33,27 @@
 - Automacoes.
 - Dashboard de memorias.
 
+## Sprint 12 - Nyx Visual Overhaul
+
+### Alterado
+
+- Dev Dashboard recebeu uma nova identidade visual premium inspirada na linguagem Nyx.
+- Sidebar, topbar, hero, cards, paineis, listas, badges e indicadores foram redesenhados com glassmorphism, neon roxo, magenta e azul eletrico.
+- Painel de saude passou a exibir gauge circular, barras visuais reais e microindicadores.
+- Scheduler, plugins, modulos e eventos ganharam tratamentos visuais mais proximos de uma interface HUD tecnica.
+- Foram adicionadas animacoes discretas de heartbeat, brilho, orbitas e transicoes de hover.
+- `docs/arquitetura/dev-dashboard.md` passou a documentar a direcao visual oficial do Dev Dashboard.
+
+### Mantido Fora do Escopo
+
+- Cockpit do usuario final.
+- IA conversacional.
+- Widgets pessoais.
+- Calendario.
+- Tarefas pessoais.
+- Integracoes externas novas.
+- Mudancas na arquitetura do Runtime, Scheduler, Event Bus, Plugins ou Services.
+
 ## Sprint 11 - Dev Dashboard: Estado Visual do Sistema
 
 ### Criado

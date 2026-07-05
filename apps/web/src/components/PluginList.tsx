@@ -24,6 +24,7 @@ export function PluginList({ overview, plugins }: PluginListProps) {
         ) : (
           plugins.map((plugin) => (
             <li key={plugin.id}>
+              <span className="plugin-node" aria-hidden="true" />
               <div>
                 <strong>{plugin.name}</strong>
                 <p>{plugin.id}</p>

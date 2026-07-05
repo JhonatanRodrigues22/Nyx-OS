@@ -25,6 +25,27 @@ Ele nao e o Cockpit do usuario final, nao e uma interface Jarvis, nao possui ava
 
 Seu papel e expor de forma clara o estado da infraestrutura ja existente.
 
+## Direcao visual
+
+A partir da Sprint 12, o Dev Dashboard assume uma identidade visual propria do Nyx OS.
+
+A direcao visual deve transmitir:
+
+- tecnologia;
+- elegancia;
+- inteligencia;
+- sistema vivo;
+- software premium;
+- IA residente como presenca conceitual, sem implementar IA conversacional.
+
+A estetica de referencia combina interfaces HUD futuristas, glassmorphism, paineis sci-fi, neon roxo, magenta e azul eletrico.
+
+O objetivo nao e copiar produtos especificos nem reproduzir referencia pixel por pixel. O objetivo e consolidar uma linguagem visual propria para o painel tecnico do Nyx OS.
+
+Verdes devem ser usados apenas para estados positivos ou saudaveis.
+
+O dashboard deve evitar aparencia de template administrativo, painel empresarial ou terminal hacker tradicional.
+
 ## Fonte de dados
 
 O dashboard consome `DashboardSnapshot`, produzido em `@nyx-os/core`.
@@ -73,6 +94,8 @@ Exemplos:
 - quantidade de eventos recentes.
 
 Valores aleatorios ou puramente decorativos nao devem ser usados.
+
+Elementos visuais como gauges, trilhas, mini graficos, badges e animacoes discretas podem ser usados quando ajudarem a leitura rapida do estado do sistema.
 
 ## Idioma
 
