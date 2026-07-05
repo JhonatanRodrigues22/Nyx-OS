@@ -87,6 +87,23 @@ O procedimento oficial esta em `docs/workflow/dx-validation.md`.
 
 O objetivo e confirmar que um novo desenvolvedor consegue instalar, executar e validar o projeto seguindo apenas o README e a documentacao oficial.
 
+## Idioma da documentação
+
+A documentação oficial do Nyx OS deve ser escrita em Português do Brasil.
+
+Exceções permitidas:
+
+- comandos;
+- código;
+- nomes de arquivos e paths;
+- APIs;
+- nomes de pacotes;
+- Conventional Commits;
+- termos técnicos consolidados;
+- documentos futuros explicitamente marcados como tradução.
+
+Quando houver dúvida, o texto explicativo deve permanecer em Português do Brasil e apenas o termo técnico deve ser mantido no idioma original.
+
 ## Estrutura obrigatoria da Pull Request
 
 O titulo deve seguir Conventional Commits e representar a alteracao realizada no projeto.

@@ -13,19 +13,19 @@ Criar uma base de qualidade sem burocracia excessiva.
 
 ## Developer Experience Validation
 
-Toda Sprint, hotfix, refactor ou mudanca significativa deve confirmar que o onboarding documentado continua funcionando.
+Toda Sprint, hotfix, refactor ou mudança significativa deve confirmar que o onboarding documentado continua funcionando.
 
-O procedimento oficial esta em `docs/workflow/dx-validation.md` e deve ser usado principalmente quando houver mudancas em:
+O procedimento oficial está em `docs/workflow/dx-validation.md` e deve ser usado principalmente quando houver mudanças em:
 
 - README;
 - setup local;
 - scripts;
 - estrutura do monorepo;
 - workflow de Git;
-- configuracao de ambiente;
-- comandos de validacao.
+- configuração de ambiente;
+- comandos de validação.
 
-## Python futuro
+## Python Futuro
 
 Quando módulos Python forem implementados:
 
@@ -38,10 +38,10 @@ Quando módulos Python forem implementados:
 
 Coverage será exigido apenas quando houver massa crítica de código de domínio.
 
-## Static analysis
+## Static Analysis
 
 Análises estáticas devem ser adicionadas gradualmente, sem impedir o MVP por excesso de ferramenta.
 
 ## Regra
 
-Quality gates devem proteger manutenção e segurança, não virar obstáculo para documentação ou exploração controlada.
+Quality gates devem proteger manutenção e segurança, sem virar obstáculo para documentação ou exploração controlada.

@@ -4,6 +4,8 @@ Esta pasta e a fonte de verdade conceitual do Nyx OS.
 
 Ela existe para que qualquer pessoa consiga entender o projeto sem depender do historico de conversas.
 
+A documentação oficial do Nyx OS é escrita em Português do Brasil. Comandos, código, nomes de arquivos, APIs, pacotes, Conventional Commits e termos técnicos consolidados podem permanecer no idioma original quando isso preservar clareza técnica.
+
 ## Como ler
 
 1. Comece pelo `README.md` da raiz para instalar e executar o projeto.
@@ -61,3 +63,4 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - O dominio segue a ideia de grafo de contexto: entidades independentes, mas conectaveis.
 - Memoria e contexto persistente vivo, nao apenas historico de conversa ou embeddings.
 - Toda Sprint deve nascer diretamente de `main`, abrir Pull Request para `main`, passar por DX Validation e remover a branch depois do merge.
+- A documentação oficial deve permanecer em Português do Brasil, com exceções técnicas documentadas no workflow.
