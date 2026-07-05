@@ -10,7 +10,7 @@ const withPWA = withPWAInit({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  transpilePackages: ["@nyx-os/config", "@nyx-os/core", "@nyx-os/events", "@nyx-os/logger"]
+  transpilePackages: ["@nyx-os/config", "@nyx-os/core", "@nyx-os/events", "@nyx-os/logger", "@nyx-os/state"]
 };
 
 export default withPWA(nextConfig);

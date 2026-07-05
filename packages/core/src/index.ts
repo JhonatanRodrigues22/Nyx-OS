@@ -3,6 +3,11 @@ import { getNyxConfig } from "@nyx-os/config";
 import type { SystemEvent } from "@nyx-os/events";
 import { createEventBus, type EventBus } from "@nyx-os/events";
 import { createConsoleLogger, type NyxLogger } from "@nyx-os/logger";
+import {
+  InMemoryNyxStateService,
+  type NyxRuntimeState,
+  type NyxStateService
+} from "@nyx-os/state";
 
 type MaybePromise<T> = T | Promise<T>;
 
@@ -14,6 +19,7 @@ export type NyxRuntimeStatus = "created" | "starting" | "running" | "stopping" |
 export type NyxServiceContext = {
   eventBus: EventBus;
   logger: NyxLogger;
+  state: NyxStateService | null;
   emit: (input: Omit<Parameters<EventBus["emit"]>[0], "source"> & { source?: string }) => SystemEvent;
 };
 
@@ -36,6 +42,7 @@ export type NyxRuntimeSnapshot = {
   status: NyxRuntimeStatus;
   services: RuntimeServiceSnapshot[];
   events: SystemEvent[];
+  state: NyxRuntimeState | null;
 };
 
 export type ConfigServiceSnapshot = Pick<NyxConfig, "appName" | "version" | "environment" | "enabledModules" | "featureFlags">;
@@ -48,6 +55,17 @@ export type ConfigServiceOptions = {
 export type LoggerServiceOptions = {
   logger?: NyxLogger;
 };
+
+export type StateServiceOptions = {
+  state?: NyxStateService;
+};
+
+export type ServiceLifecycleEvent = {
+  service: NyxService;
+  status: ServiceStatus;
+};
+
+export type ServiceLifecycleHandler = (event: ServiceLifecycleEvent) => void;
 
 export type RuntimeState = {
   name: string;
@@ -133,6 +151,43 @@ export class LoggerService extends BaseNyxService {
   }
 }
 
+export class RuntimeStateService extends BaseNyxService {
+  private readonly state: NyxStateService;
+
+  constructor(options: StateServiceOptions = {}) {
+    super("state", ["logger"]);
+    this.state = options.state ?? new InMemoryNyxStateService();
+  }
+
+  getRuntimeState(): NyxRuntimeState {
+    return this.state.getRuntimeState();
+  }
+
+  getServices() {
+    return this.state.getServices();
+  }
+
+  getService(name: string) {
+    return this.state.getService(name);
+  }
+
+  getUptime(): number {
+    return this.state.getUptime();
+  }
+
+  getVersion(): string {
+    return this.state.getVersion();
+  }
+
+  getEnvironment(): string {
+    return this.state.getEnvironment();
+  }
+
+  getStateStore(): NyxStateService {
+    return this.state;
+  }
+}
+
 export class ConfigService extends BaseNyxService {
   private config: NyxConfig | null = null;
   private logger: NyxLogger | null = null;
@@ -187,6 +242,7 @@ export class ConfigService extends BaseNyxService {
 
 export class ServiceManager {
   private readonly services = new Map<string, NyxService>();
+  private readonly lifecycleHandlers = new Set<ServiceLifecycleHandler>();
   private startOrder: string[] = [];
 
   register(service: NyxService): void {
@@ -203,6 +259,14 @@ export class ServiceManager {
       status: service.status,
       dependencies: service.dependencies
     }));
+  }
+
+  onLifecycle(handler: ServiceLifecycleHandler): () => void {
+    this.lifecycleHandlers.add(handler);
+
+    return () => {
+      this.lifecycleHandlers.delete(handler);
+    };
   }
 
   async setupAll(context: NyxServiceContext): Promise<void> {
@@ -259,10 +323,13 @@ export class ServiceManager {
   private async startOne(service: NyxService): Promise<void> {
     try {
       service.status = "starting";
+      this.emitLifecycle(service);
       await service.start();
       service.status = "running";
+      this.emitLifecycle(service);
     } catch (error) {
       service.status = "failed";
+      this.emitLifecycle(service);
       throw error;
     }
   }
@@ -274,12 +341,24 @@ export class ServiceManager {
 
     try {
       service.status = "stopping";
+      this.emitLifecycle(service);
       await service.stop();
       service.status = "stopped";
+      this.emitLifecycle(service);
     } catch (error) {
       service.status = "failed";
+      this.emitLifecycle(service);
       throw error;
     }
+  }
+
+  private emitLifecycle(service: NyxService): void {
+    const event: ServiceLifecycleEvent = {
+      service,
+      status: service.status
+    };
+
+    this.lifecycleHandlers.forEach((handler) => handler(event));
   }
 }
 
@@ -287,16 +366,32 @@ export class NyxRuntime {
   private status: NyxRuntimeStatus = "created";
   readonly loggerService: LoggerService | null;
   readonly configService: ConfigService | null;
+  readonly stateService: RuntimeStateService | null;
 
   constructor(
     readonly eventBus: EventBus = createEventBus(),
     readonly serviceManager: ServiceManager = new ServiceManager(),
-    options: { registerBaseServices?: boolean; loggerService?: LoggerService; configService?: ConfigService } = {}
+    options: {
+      registerBaseServices?: boolean;
+      loggerService?: LoggerService;
+      configService?: ConfigService;
+      stateService?: RuntimeStateService;
+    } = {}
   ) {
     this.loggerService =
       options.registerBaseServices === false ? null : (options.loggerService ?? new LoggerService());
     this.configService =
       options.registerBaseServices === false ? null : (options.configService ?? new ConfigService());
+    this.stateService =
+      options.registerBaseServices === false ? null : (options.stateService ?? new RuntimeStateService());
+
+    this.serviceManager.onLifecycle((event) => {
+      this.stateService?.getStateStore().updateService({
+        name: event.service.name,
+        status: event.status,
+        dependencies: event.service.dependencies
+      });
+    });
 
     if (this.loggerService) {
       this.registerService(this.loggerService);
@@ -305,10 +400,19 @@ export class NyxRuntime {
     if (this.configService) {
       this.registerService(this.configService);
     }
+
+    if (this.stateService) {
+      this.registerService(this.stateService);
+    }
   }
 
   registerService(service: NyxService): void {
     this.serviceManager.register(service);
+    this.stateService?.getStateStore().registerService({
+      name: service.name,
+      status: service.status,
+      dependencies: service.dependencies
+    });
   }
 
   async start(): Promise<void> {
@@ -318,6 +422,8 @@ export class NyxRuntime {
 
     this.status = "starting";
     const logger = this.getLogger();
+    this.initializeRuntimeState();
+    this.stateService?.getStateStore().updateRuntimeStatus("starting");
     logger.info("Runtime starting", { status: this.status });
     this.eventBus.emit({
       type: "runtime.starting",
@@ -329,6 +435,7 @@ export class NyxRuntime {
       await this.serviceManager.setupAll(this.createServiceContext());
       await this.serviceManager.startAll();
       this.status = "running";
+      this.stateService?.getStateStore().updateRuntimeStatus("running");
       logger.info("Runtime started", { status: this.status });
       this.eventBus.emit({
         type: "runtime.started",
@@ -337,6 +444,7 @@ export class NyxRuntime {
       });
     } catch (error) {
       this.status = "failed";
+      this.stateService?.getStateStore().updateRuntimeStatus("failed");
       logger.error("Runtime failed", {
         error: error instanceof Error ? error.message : "Unknown runtime failure"
       });
@@ -357,6 +465,7 @@ export class NyxRuntime {
     }
 
     this.status = "stopping";
+    this.stateService?.getStateStore().updateRuntimeStatus("stopping");
     this.getLogger().info("Runtime stopping", { status: this.status });
     this.eventBus.emit({
       type: "runtime.stopping",
@@ -366,6 +475,7 @@ export class NyxRuntime {
 
     await this.serviceManager.stopAll();
     this.status = "stopped";
+    this.stateService?.getStateStore().updateRuntimeStatus("stopped");
     this.getLogger().info("Runtime stopped", { status: this.status });
     this.eventBus.emit({
       type: "runtime.stopped",
@@ -378,14 +488,20 @@ export class NyxRuntime {
     return {
       status: this.status,
       services: this.serviceManager.list(),
-      events: this.eventBus.listRecent()
+      events: this.eventBus.listRecent(),
+      state: this.stateService?.getRuntimeState() ?? null
     };
+  }
+
+  getRuntimeState(): NyxRuntimeState | null {
+    return this.stateService?.getRuntimeState() ?? null;
   }
 
   private createServiceContext(): NyxServiceContext {
     return {
       eventBus: this.eventBus,
       logger: this.getLogger(),
+      state: this.stateService?.getStateStore() ?? null,
       emit: (input) =>
         this.eventBus.emit({
           ...input,
@@ -396,6 +512,17 @@ export class NyxRuntime {
 
   private getLogger(): NyxLogger {
     return this.loggerService?.getLogger() ?? createConsoleLogger();
+  }
+
+  private initializeRuntimeState(): void {
+    const config = this.configService?.getConfig() ?? getNyxConfig();
+
+    this.stateService?.getStateStore().initializeRuntime({
+      status: "starting",
+      version: config.version,
+      environment: config.environment,
+      services: this.serviceManager.list()
+    });
   }
 }
 

@@ -1,5 +1,32 @@
 # Changelog
 
+## Sprint 07 - Runtime State Service
+
+### Criado
+
+- `@nyx-os/state` com contrato `NyxStateService`.
+- `InMemoryNyxStateService` para estado atual em memória.
+- `RuntimeStateService` registrado como serviço base do Runtime.
+- Testes para estado, uptime, serviços, lifecycle e falhas.
+
+### Alterado
+
+- `NyxRuntime` passou a expor `getRuntimeState()`.
+- `ServiceManager` passou a emitir eventos internos de lifecycle.
+- Estado de serviços passa a ser atualizado automaticamente em start, stop e falha.
+- Documentação do Core Runtime atualizada para incluir State Service.
+
+### Mantido Fora do Escopo
+
+- Dashboard.
+- API.
+- Memory.
+- Plugins.
+- Scheduler.
+- Persistência.
+- Histórico.
+- WebSocket.
+
 ## Sprint 06 - Logging Service
 
 ### Criado

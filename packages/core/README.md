@@ -9,6 +9,7 @@ Este package contém:
 - `BaseNyxService`;
 - `LoggerService`;
 - `ConfigService`;
+- `RuntimeStateService`;
 - contratos de serviços;
 - serviços de estado do runtime;
 - serviços de dashboard.

@@ -54,6 +54,7 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `arquitetura/fundacao-tecnica.md`: stack oficial, monorepo, packages, dependencias e qualidade.
 - `arquitetura/core-runtime.md`: runtime base, event bus, services e dashboard executavel.
 - `arquitetura/logging.md`: contrato central de logging e Logger Service.
+- `packages/state/README.md`: contrato central de estado do Runtime.
 - `workflow/desenvolvimento.md`: ciclo oficial de branches, commits e Pull Requests.
 - `workflow/dx-validation.md`: validacao oficial de experiencia de desenvolvimento.
 - `decisoes/ADR-0013-runtime-generico-servicos.md`: decisão de runtime genérico e serviços desacoplados.
@@ -70,3 +71,4 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - O Runtime deve ser genérico, conhecer apenas serviços registrados e manter integrações futuras desacopladas.
 - `ConfigService` é o primeiro serviço base oficial registrado pelo Runtime.
 - Serviços devem depender de contratos como `NyxLogger`, não de implementações concretas como `console`.
+- `RuntimeStateService` é a fonte de verdade interna sobre o estado atual do Runtime e dos serviços registrados.
