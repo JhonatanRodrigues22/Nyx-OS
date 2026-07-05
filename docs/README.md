@@ -40,6 +40,7 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas não substituem esta 
 - `seguranca/dados-e-privacidade.md` — princípios iniciais de segurança, privacidade e acesso da IA.
 - `sprints/plano-sprint-01.md` — ordem oficial para a próxima sprint.
 - `arquitetura/fundacao-tecnica.md` — stack oficial, monorepo, packages, dependências e qualidade.
+- `arquitetura/core-runtime.md` — runtime base, event bus, services e dashboard executável.
 - `workflow/desenvolvimento.md` — ciclo oficial de branches, commits e Pull Requests.
 
 ## Decisões recentes

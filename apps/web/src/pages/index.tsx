@@ -1,34 +1,55 @@
+import type { DashboardSnapshot } from "@nyx-os/core";
+import { createDashboardSnapshot } from "@nyx-os/core";
 import Head from "next/head";
-import { StatusCard } from "@/components/StatusCard";
+import { AppShell } from "@/components/AppShell";
+import { DashboardCardGrid } from "@/components/DashboardCardGrid";
+import { EventList } from "@/components/EventList";
+import { ModuleGrid } from "@/components/ModuleGrid";
+import { StatusPanel } from "@/components/StatusPanel";
 
-export default function Home() {
+type HomeProps = {
+  snapshot: DashboardSnapshot;
+};
+
+export default function Home({ snapshot }: HomeProps) {
   return (
     <>
       <Head>
         <title>Nyx OS</title>
         <meta
           name="description"
-          content="Sistema operacional pessoal para capturar, organizar e recuperar dados pessoais."
+          content="Runtime base e dashboard inicial do Nyx OS."
         />
-        <meta name="theme-color" content="#111827" />
+        <meta name="theme-color" content="#101418" />
         <link rel="manifest" href="/manifest.json" />
       </Head>
-      <main className="shell">
-        <section className="hero" aria-labelledby="page-title">
-          <p className="eyebrow">Sprint 0</p>
-          <h1 id="page-title">Nyx OS</h1>
-          <p className="lead">
-            Fundacao pronta para capturar tarefas, projetos, habitos, financas,
-            check-ins, notas, decisoes e memorias com o minimo de atrito.
-          </p>
+      <AppShell navigation={snapshot.navigation}>
+        <section className="dashboard-hero" aria-labelledby="dashboard-title">
+          <div>
+            <p className="eyebrow">Core Runtime</p>
+            <h1 id="dashboard-title">Nyx OS</h1>
+            <p className="lead">
+              Runtime executável, serviços internos e dashboard base para o cockpit do sistema.
+            </p>
+          </div>
+          <StatusPanel status={snapshot.systemStatus} runtime={snapshot.runtime} />
         </section>
 
-        <section className="grid" aria-label="Estado da fundacao">
-          <StatusCard title="Next.js" description="Aplicacao web tipada em TypeScript." />
-          <StatusCard title="Supabase" description="Cliente preparado para banco e autenticacao." />
-          <StatusCard title="PWA" description="Manifesto e service worker para instalacao mobile." />
+        <DashboardCardGrid cards={snapshot.cards} />
+
+        <section className="dashboard-grid" aria-label="Estado do sistema">
+          <ModuleGrid modules={snapshot.runtime.modules} />
+          <EventList events={snapshot.recentEvents} />
         </section>
-      </main>
+      </AppShell>
     </>
   );
+}
+
+export function getStaticProps() {
+  return {
+    props: {
+      snapshot: createDashboardSnapshot()
+    }
+  };
 }

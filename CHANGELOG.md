@@ -1,5 +1,29 @@
 # Changelog
 
+## Sprint 04 — Core Runtime e Dashboard Base
+
+### Criado
+
+- Runtime base em `packages/core`.
+- Configuracao central em `packages/config`.
+- Event Bus em memoria em `packages/events`.
+- Dashboard visual em `apps/web`.
+- Documentacao de runtime em `docs/arquitetura/core-runtime.md`.
+- Plano da sprint em `docs/sprints/plano-sprint-04-core-runtime-dashboard.md`.
+
+### Alterado
+
+- README atualizado para o caminho correto de `.env.local` no monorepo.
+- App web passou a consumir snapshots de services em vez de manter dados mockados nos componentes.
+
+### Mantido fora do escopo
+
+- Autenticacao real.
+- Banco real.
+- IA real.
+- Automacoes reais.
+- Integracoes externas.
+
 ## Sprint 03 — Fundação Técnica e Setup do Projeto
 
 ### Reorganizado

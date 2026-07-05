@@ -105,7 +105,7 @@ tests/             Testes transversais futuros.
 | `logging` | Logging, auditoria e rastreabilidade. |
 | `database` | Contratos de persistência. |
 
-Nenhum package de domínio é implementado nesta sprint.
+Os primeiros packages implementados são `config`, `events` e `core`, ainda com escopo de runtime base e dados mockados.
 
 ## Arquitetura de dependências
 
