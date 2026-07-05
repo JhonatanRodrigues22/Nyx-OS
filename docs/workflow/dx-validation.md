@@ -6,6 +6,8 @@ Garantir que qualquer pessoa consiga instalar, executar e validar o Nyx OS usand
 
 Toda Sprint, hotfix, refactor ou mudanca significativa so pode ser considerada concluida quando o caminho de onboarding documentado continuar funcionando.
 
+O nome do procedimento permanece em ingles por ser um termo tecnico consolidado no workflow do projeto. O conteudo normativo deve ser escrito em Portugues do Brasil.
+
 ## Escopo
 
 A DX Validation cobre:

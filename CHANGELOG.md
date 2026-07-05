@@ -1,5 +1,18 @@
 # Changelog
 
+## Padronização de Idioma da Documentação
+
+### Alterado
+
+- README traduzido para Português do Brasil.
+- Regra oficial de idioma adicionada ao workflow de desenvolvimento.
+- ADR-0011 atualizado para registrar Português do Brasil como idioma oficial da documentação principal.
+- Documentos de workflow revisados para consistência de idioma.
+
+### Mantido
+
+- Comandos, paths, nomes técnicos, Conventional Commits, APIs e nomes de pacotes podem permanecer em inglês quando fizer sentido técnico.
+
 ## Sprint 04.1 - Developer Experience & Workflow Validation
 
 ### Criado

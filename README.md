@@ -1,8 +1,8 @@
 # Nyx OS
 
-Nyx OS is a personal operating system in its early foundation stage. Its purpose is to centralize capture, organization and retrieval of personal information such as tasks, projects, habits, finances, check-ins, notes, decisions and memories with minimal friction.
+Nyx OS é um sistema operacional pessoal em fase inicial. Sua proposta é centralizar captura, organização e recuperação de informações pessoais como tarefas, projetos, hábitos, finanças, check-ins, notas, decisões e memórias, com o mínimo de atrito.
 
-This repository is not a finished product yet. It exists to keep the architecture, workflow and technical base understandable, versioned and safe before the product grows.
+Este repositório ainda não representa um produto finalizado. Ele existe para manter a arquitetura, o workflow e a base técnica compreensíveis, versionados e seguros antes da evolução do produto.
 
 ## Quick Start
 
@@ -14,77 +14,77 @@ cp apps/web/.env.local.example apps/web/.env.local
 npm run dev
 ```
 
-On Windows PowerShell, use this command to create the local environment file:
+No Windows PowerShell, use este comando para criar o arquivo de ambiente local:
 
 ```powershell
 Copy-Item apps/web/.env.local.example apps/web/.env.local
 ```
 
-Then open `http://localhost:3000`.
+Depois acesse `http://localhost:3000`.
 
-## Requirements
+## Requisitos
 
 - Git
-- Node.js 20 or newer
+- Node.js 20 ou superior
 - npm
-- A Supabase project for real database and authentication usage
+- Um projeto Supabase para uso real de banco de dados e autenticação
 
-The app can start locally with placeholder Supabase values, but real persistence requires a Supabase free tier project.
+O app pode iniciar localmente com valores vazios ou placeholders do Supabase, mas persistência real exige um projeto Supabase no free tier.
 
-## Setup From Scratch
+## Setup Do Zero
 
-1. Clone the repository:
+1. Clone o repositório:
 
 ```bash
 git clone https://github.com/JhonatanRodrigues22/Nyx-OS.git
 ```
 
-2. Enter the project folder:
+2. Entre na pasta do projeto:
 
 ```bash
 cd Nyx-OS
 ```
 
-3. Install dependencies from the repository root:
+3. Instale as dependências a partir da raiz do repositório:
 
 ```bash
 npm install
 ```
 
-4. Create the local environment file:
+4. Crie o arquivo de ambiente local:
 
 ```bash
 cp apps/web/.env.local.example apps/web/.env.local
 ```
 
-On Windows PowerShell:
+No Windows PowerShell:
 
 ```powershell
 Copy-Item apps/web/.env.local.example apps/web/.env.local
 ```
 
-5. Fill `apps/web/.env.local`:
+5. Preencha `apps/web/.env.local`:
 
 ```bash
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_KEY=your-anon-key
 ```
 
-6. Start the development server:
+6. Inicie o servidor de desenvolvimento:
 
 ```bash
 npm run dev
 ```
 
-7. Open the app:
+7. Abra o app:
 
 ```text
 http://localhost:3000
 ```
 
-The web app lives in `apps/web`, but the main commands should be executed from the repository root.
+O app web vive em `apps/web`, mas os comandos principais devem ser executados pela raiz do repositório.
 
-## Available Commands
+## Comandos Disponíveis
 
 ```bash
 npm run dev
@@ -94,51 +94,51 @@ npm run build
 npm run start
 ```
 
-`npm run start` should be used after `npm run build`.
+Use `npm run start` depois de executar `npm run build`.
 
 ## Status
 
-- 00: Project Constitution.
-- 01: Architecture and Roadmap.
-- 02: Product Vision and MVP.
-- 03: Technical Foundation and Project Setup.
-- 04: Core Runtime and Dashboard Base.
-- 04.1: Developer Experience and Workflow Validation.
+- 00: Constituição do Projeto.
+- 01: Arquitetura e Roadmap.
+- 02: Visão do Produto e MVP.
+- 03: Fundação Técnica e Setup do Projeto.
+- 04: Core Runtime e Dashboard Base.
+- 04.1: Developer Experience e Validação de Workflow.
 
-Sprint 04 introduced the first executable base of Nyx OS: core runtime, internal services, in-memory event bus and a visual dashboard with isolated mock data.
+A Sprint 04 introduziu a primeira base executável do Nyx OS: core runtime, serviços internos, event bus em memória e dashboard visual com dados mockados isolados.
 
-Sprint 04.1 consolidates onboarding documentation and the official Git workflow.
+A Sprint 04.1 consolidou a documentação de onboarding e o workflow oficial de Git.
 
 ## Stack
 
-- Next.js with React and TypeScript
-- Supabase for database and authentication
-- PWA manifest and generated service worker
-- Jest and React Testing Library for tests
-- ESLint for static checks
-- npm workspaces for the monorepo
+- Next.js com React e TypeScript
+- Supabase para banco de dados e autenticação
+- Manifesto PWA e service worker gerado no build
+- Jest e React Testing Library para testes
+- ESLint para verificação estática
+- npm workspaces para o monorepo
 
-## Project Structure
+## Estrutura Do Projeto
 
 ```text
-.ai/             Local operational context and prompts.
-apps/            Executable applications.
-packages/        Shared packages and planned modules.
-configs/         Shared configuration.
-docs/            Conceptual source of truth for the project.
-scripts/         Auxiliary project scripts.
-tests/           Future cross-project tests.
+.ai/             Contexto operacional local e prompts.
+apps/            Aplicações executáveis.
+packages/        Pacotes compartilhados e módulos planejados.
+configs/         Configurações compartilhadas.
+docs/            Fonte de verdade conceitual do projeto.
+scripts/         Scripts auxiliares do projeto.
+tests/           Testes transversais futuros.
 ```
 
-Generated files, caches, installed dependencies, secrets and build outputs must not be committed.
+Arquivos gerados, caches, dependências instaladas, credenciais e saídas de build não devem ser versionados.
 
-## Documentation
+## Documentação
 
-`docs/` is the conceptual source of truth for Nyx OS. Use it for architecture, fundamentals, decisions, roadmap and sprint records.
+`docs/` é a fonte de verdade conceitual do Nyx OS. Use essa pasta para arquitetura, fundamentos, decisões, roadmap e registros de Sprint.
 
-`.ai/` is operational support. Prompts and session protocols may live there, but permanent architectural decisions belong in `docs/`.
+`.ai/` é apoio operacional. Prompts e protocolos de sessão podem viver ali, mas decisões arquiteturais permanentes pertencem a `docs/`.
 
-Recommended reading:
+Leitura recomendada:
 
 1. `docs/README.md`
 2. `docs/fundamentos/constituicao.md`
@@ -152,26 +152,26 @@ Recommended reading:
 
 ## Contributing
 
-Before opening a Pull Request, make sure you can follow this README from a clean environment. If the documented setup no longer works, update the documentation as part of your contribution.
+Antes de abrir uma Pull Request, garanta que você consegue seguir este README a partir de um ambiente limpo. Se o setup documentado deixou de funcionar, atualize a documentação como parte da sua contribuição.
 
-Every Sprint, hotfix, refactor or significant change must use the official workflow:
+Toda Sprint, hotfix, refactor ou mudança significativa deve usar o workflow oficial:
 
 ```text
 main
-  -> new branch
-  -> implementation
+  -> nova branch
+  -> implementacao
   -> commit
   -> push
-  -> Pull Request to main
+  -> Pull Request para main
   -> review
   -> merge
-  -> delete branch
+  -> exclusao da branch
 ```
 
-Each Sprint branch must be created directly from `main`. Each Pull Request must target `main`. Stacked branches are allowed only when there is an explicit technical need and prior authorization.
+Cada branch de Sprint deve ser criada diretamente a partir de `main`. Cada Pull Request deve apontar para `main`. Branches empilhadas só são permitidas quando houver necessidade técnica explícita e autorização prévia.
 
-Before considering a Sprint complete, run the Developer Experience Validation documented in `docs/workflow/dx-validation.md`.
+Antes de considerar uma Sprint concluída, execute a Developer Experience Validation documentada em `docs/workflow/dx-validation.md`.
 
-## Notice
+## Aviso
 
-This repository is in an early stage. The current priority is to keep a clean, understandable and safe base for gradual evolution.
+Este repositório está em fase inicial. A prioridade atual é manter uma base limpa, compreensível e segura para evolução gradual.

@@ -1,4 +1,4 @@
-# ADR-0011: Workflow e qualidade
+# ADR-0011: Workflow e Qualidade
 
 ## Status
 
@@ -6,34 +6,39 @@ Aceita.
 
 ## Contexto
 
-O projeto sera mantido por pessoas e agentes de desenvolvimento ao longo de varias Sprints. Sem um fluxo explicito, decisoes, revisoes e alteracoes podem ficar dificeis de auditar.
+O projeto será mantido por pessoas e agentes de desenvolvimento ao longo de várias Sprints. Sem um fluxo explícito, decisões, revisões e alterações podem ficar difíceis de auditar.
 
-Apos as primeiras Sprints, o projeto tambem identificou que branches empilhadas entre Sprints deixam o historico mais dificil de navegar quando nao existe uma dependencia tecnica real.
+Após as primeiras Sprints, o projeto também identificou que branches empilhadas entre Sprints deixam o histórico mais difícil de navegar quando não existe uma dependência técnica real.
 
-## Decisao
+Também ficou decidido que a documentação principal do Nyx OS deve permanecer em Português do Brasil para manter consistência, clareza e continuidade com a fonte de verdade já existente.
+
+## Decisão
 
 - Usar branches por tipo de trabalho.
-- Criar toda branch de Sprint, hotfix, refactor ou mudanca significativa diretamente a partir de `main`.
+- Criar toda branch de Sprint, hotfix, refactor ou mudança significativa diretamente a partir de `main`.
 - Abrir toda Pull Request significativa com base em `main`.
-- Permitir branches empilhadas somente quando houver dependencia tecnica real e autorizacao explicita.
-- Excluir branches temporarias depois do merge.
+- Permitir branches empilhadas somente quando houver dependência técnica real e autorização explícita.
+- Excluir branches temporárias depois do merge.
 - Usar Conventional Commits.
-- Usar Pull Requests para mudancas relevantes.
-- Rodar lint, testes, build e audit quando aplicavel.
-- Exigir Developer Experience Validation antes de considerar uma Sprint concluida.
+- Usar Pull Requests para mudanças relevantes.
+- Rodar lint, testes, build e audit quando aplicável.
+- Exigir Developer Experience Validation antes de considerar uma Sprint concluída.
+- Escrever a documentação oficial em Português do Brasil, mantendo exceções para comandos, código, paths, APIs, pacotes, Conventional Commits, termos técnicos consolidados e documentos explicitamente marcados como tradução.
 - Usar GitHub Actions como CI inicial.
 - Usar pre-commit como camada local opcional.
 
-## Alternativas consideradas
+## Alternativas Consideradas
 
-- Fluxo livre sem convencao.
+- Fluxo livre sem convenção.
 - GitFlow completo.
-- Branches empilhadas como fluxo padrao entre Sprints.
+- Branches empilhadas como fluxo padrão entre Sprints.
+- Documentação bilíngue sem regra clara de idioma.
 
-## Consequencias
+## Consequências
 
-- O historico fica mais legivel.
-- PRs ficam menores, independentes e mais faceis de revisar.
+- O histórico fica mais legível.
+- PRs ficam menores, independentes e mais fáceis de revisar.
 - O onboarding passa a ser parte formal da qualidade do projeto.
-- A documentacao precisa ser atualizada sempre que o caminho de instalacao, validacao ou contribuicao mudar.
-- O processo permanece simples o suficiente para o estagio atual.
+- A documentação precisa ser atualizada sempre que o caminho de instalação, validação ou contribuição mudar.
+- A documentação principal mantém uma voz única e previsível.
+- O processo permanece simples o suficiente para o estágio atual.
