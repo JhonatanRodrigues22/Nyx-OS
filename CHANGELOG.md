@@ -1,5 +1,33 @@
 # Changelog
 
+## Sprint 06 - Logging Service
+
+### Criado
+
+- `@nyx-os/logger` com contrato `NyxLogger`.
+- `ConsoleLogger` como primeira implementação.
+- `LoggerService` registrado como serviço base do Runtime.
+- Documentação de arquitetura em `docs/arquitetura/logging.md`.
+- ADR-0014 sobre logging por contrato.
+
+### Alterado
+
+- `NyxRuntime` passou a expor logger pelo contexto de serviços.
+- `ConfigService` passou a depender de `logger` e usar `NyxLogger` quando registra informações.
+- Testes ampliados para níveis de log, lifecycle e integração com Runtime.
+- Configuração de workspace, Jest, TypeScript e Next.js atualizada para `@nyx-os/logger`.
+
+### Mantido Fora do Escopo
+
+- Arquivo de log.
+- SQLite.
+- Dashboard de logs.
+- Memory.
+- API.
+- Plugins.
+- Rotação de logs.
+- Logs remotos.
+
 ## Sprint 05 - Config Service e Limpeza de Ambiente
 
 ### Criado

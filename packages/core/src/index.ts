@@ -2,6 +2,7 @@ import type { NyxConfig, NyxConfigEnvironment, NyxModuleId } from "@nyx-os/confi
 import { getNyxConfig } from "@nyx-os/config";
 import type { SystemEvent } from "@nyx-os/events";
 import { createEventBus, type EventBus } from "@nyx-os/events";
+import { createConsoleLogger, type NyxLogger } from "@nyx-os/logger";
 
 type MaybePromise<T> = T | Promise<T>;
 
@@ -12,6 +13,7 @@ export type NyxRuntimeStatus = "created" | "starting" | "running" | "stopping" |
 
 export type NyxServiceContext = {
   eventBus: EventBus;
+  logger: NyxLogger;
   emit: (input: Omit<Parameters<EventBus["emit"]>[0], "source"> & { source?: string }) => SystemEvent;
 };
 
@@ -41,6 +43,10 @@ export type ConfigServiceSnapshot = Pick<NyxConfig, "appName" | "version" | "env
 export type ConfigServiceOptions = {
   env?: NyxConfigEnvironment;
   loadConfig?: (env?: NyxConfigEnvironment) => NyxConfig;
+};
+
+export type LoggerServiceOptions = {
+  logger?: NyxLogger;
 };
 
 export type RuntimeState = {
@@ -104,19 +110,53 @@ export class BaseNyxService implements NyxService {
   }
 }
 
+export class LoggerService extends BaseNyxService {
+  private readonly logger: NyxLogger;
+
+  constructor(options: LoggerServiceOptions = {}) {
+    super("logger");
+    this.logger = options.logger ?? createConsoleLogger();
+  }
+
+  start(): MaybePromise<void> {
+    this.logger.debug("Logger service started", { service: this.name });
+    return super.start();
+  }
+
+  stop(): MaybePromise<void> {
+    this.logger.debug("Logger service stopped", { service: this.name });
+    return super.stop();
+  }
+
+  getLogger(): NyxLogger {
+    return this.logger;
+  }
+}
+
 export class ConfigService extends BaseNyxService {
   private config: NyxConfig | null = null;
+  private logger: NyxLogger | null = null;
   private readonly loadConfig: (env?: NyxConfigEnvironment) => NyxConfig;
   private readonly env: NyxConfigEnvironment | undefined;
 
   constructor(options: ConfigServiceOptions = {}) {
-    super("config");
+    super("config", ["logger"]);
     this.env = options.env;
     this.loadConfig = options.loadConfig ?? getNyxConfig;
   }
 
+  setup(context: NyxServiceContext): MaybePromise<void> {
+    this.logger = context.logger;
+  }
+
   start(): MaybePromise<void> {
     this.config = this.loadConfig(this.env);
+    this.logger?.debug("Config service loaded configuration", {
+      service: this.name,
+      environment: this.config.environment,
+      enabledModules: this.config.enabledModules
+    });
+
     return super.start();
   }
 
@@ -245,15 +285,22 @@ export class ServiceManager {
 
 export class NyxRuntime {
   private status: NyxRuntimeStatus = "created";
+  readonly loggerService: LoggerService | null;
   readonly configService: ConfigService | null;
 
   constructor(
     readonly eventBus: EventBus = createEventBus(),
     readonly serviceManager: ServiceManager = new ServiceManager(),
-    options: { registerBaseServices?: boolean; configService?: ConfigService } = {}
+    options: { registerBaseServices?: boolean; loggerService?: LoggerService; configService?: ConfigService } = {}
   ) {
+    this.loggerService =
+      options.registerBaseServices === false ? null : (options.loggerService ?? new LoggerService());
     this.configService =
       options.registerBaseServices === false ? null : (options.configService ?? new ConfigService());
+
+    if (this.loggerService) {
+      this.registerService(this.loggerService);
+    }
 
     if (this.configService) {
       this.registerService(this.configService);
@@ -270,6 +317,8 @@ export class NyxRuntime {
     }
 
     this.status = "starting";
+    const logger = this.getLogger();
+    logger.info("Runtime starting", { status: this.status });
     this.eventBus.emit({
       type: "runtime.starting",
       message: "Nyx runtime is starting.",
@@ -280,6 +329,7 @@ export class NyxRuntime {
       await this.serviceManager.setupAll(this.createServiceContext());
       await this.serviceManager.startAll();
       this.status = "running";
+      logger.info("Runtime started", { status: this.status });
       this.eventBus.emit({
         type: "runtime.started",
         message: "Nyx runtime started.",
@@ -287,6 +337,9 @@ export class NyxRuntime {
       });
     } catch (error) {
       this.status = "failed";
+      logger.error("Runtime failed", {
+        error: error instanceof Error ? error.message : "Unknown runtime failure"
+      });
       this.eventBus.emit({
         type: "runtime.failed",
         message: error instanceof Error ? error.message : "Nyx runtime failed.",
@@ -304,6 +357,7 @@ export class NyxRuntime {
     }
 
     this.status = "stopping";
+    this.getLogger().info("Runtime stopping", { status: this.status });
     this.eventBus.emit({
       type: "runtime.stopping",
       message: "Nyx runtime is stopping.",
@@ -312,6 +366,7 @@ export class NyxRuntime {
 
     await this.serviceManager.stopAll();
     this.status = "stopped";
+    this.getLogger().info("Runtime stopped", { status: this.status });
     this.eventBus.emit({
       type: "runtime.stopped",
       message: "Nyx runtime stopped.",
@@ -330,12 +385,17 @@ export class NyxRuntime {
   private createServiceContext(): NyxServiceContext {
     return {
       eventBus: this.eventBus,
+      logger: this.getLogger(),
       emit: (input) =>
         this.eventBus.emit({
           ...input,
           source: input.source ?? "service"
         })
     };
+  }
+
+  private getLogger(): NyxLogger {
+    return this.loggerService?.getLogger() ?? createConsoleLogger();
   }
 }
 

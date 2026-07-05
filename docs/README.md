@@ -53,9 +53,11 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `sprints/plano-sprint-01.md`: ordem oficial para a proxima sprint.
 - `arquitetura/fundacao-tecnica.md`: stack oficial, monorepo, packages, dependencias e qualidade.
 - `arquitetura/core-runtime.md`: runtime base, event bus, services e dashboard executavel.
+- `arquitetura/logging.md`: contrato central de logging e Logger Service.
 - `workflow/desenvolvimento.md`: ciclo oficial de branches, commits e Pull Requests.
 - `workflow/dx-validation.md`: validacao oficial de experiencia de desenvolvimento.
 - `decisoes/ADR-0013-runtime-generico-servicos.md`: decisão de runtime genérico e serviços desacoplados.
+- `decisoes/ADR-0014-logging-por-contrato.md`: decisão de logging por contrato.
 
 ## Decisoes recentes
 
@@ -67,3 +69,4 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - A documentação oficial deve permanecer em Português do Brasil, com exceções técnicas documentadas no workflow.
 - O Runtime deve ser genérico, conhecer apenas serviços registrados e manter integrações futuras desacopladas.
 - `ConfigService` é o primeiro serviço base oficial registrado pelo Runtime.
+- Serviços devem depender de contratos como `NyxLogger`, não de implementações concretas como `console`.
