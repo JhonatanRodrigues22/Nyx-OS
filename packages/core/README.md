@@ -10,6 +10,7 @@ Este package contém:
 - `LoggerService`;
 - `ConfigService`;
 - `RuntimeStateService`;
+- integração com `NyxEventBus`;
 - contratos de serviços;
 - serviços de estado do runtime;
 - serviços de dashboard.

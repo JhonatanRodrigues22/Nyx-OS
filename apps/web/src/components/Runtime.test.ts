@@ -8,6 +8,7 @@ import {
   RuntimeService,
   SystemStatusService
 } from "@nyx-os/core";
+import { createInMemoryEventBus, type NyxSystemEventName, type NyxSystemEvents } from "@nyx-os/event-bus";
 import { createEventBus } from "@nyx-os/events";
 import { ConsoleLogger, type ConsoleLoggerSink, type NyxLogEntry } from "@nyx-os/logger";
 
@@ -29,10 +30,12 @@ function createMemoryLoggerService() {
 
 function createRuntimeWithMemoryLogger() {
   const { entries, loggerService } = createMemoryLoggerService();
+  const runtimeEvents = createInMemoryEventBus<NyxSystemEvents>();
 
   return {
     entries,
-    runtime: new NyxRuntime(createEventBus(), undefined, { loggerService })
+    runtime: new NyxRuntime(createEventBus(), undefined, { events: runtimeEvents, loggerService }),
+    runtimeEvents
   };
 }
 
@@ -160,6 +163,114 @@ describe("Nyx runtime foundation", () => {
     expect(stopped).toEqual(["memory", "storage"]);
     expect(runtime.getSnapshot().status).toBe("stopped");
     expect(runtime.getSnapshot().events.map((event) => event.type)).toContain("runtime.stopped");
+  });
+
+  it("emits official runtime and service lifecycle events", async () => {
+    const { runtime, runtimeEvents } = createRuntimeWithMemoryLogger();
+    const received: Array<{ name: NyxSystemEventName; service?: string; status?: string }> = [];
+
+    runtimeEvents.on("service.registered", (event) => {
+      received.push({
+        name: event.name,
+        service: event.payload?.service,
+        status: event.payload?.status
+      });
+    });
+    runtimeEvents.on("service.started", (event) => {
+      received.push({
+        name: event.name,
+        service: event.payload?.service,
+        status: event.payload?.status
+      });
+    });
+    runtimeEvents.on("service.stopped", (event) => {
+      received.push({
+        name: event.name,
+        service: event.payload?.service,
+        status: event.payload?.status
+      });
+    });
+    runtimeEvents.on("runtime.started", (event) => {
+      received.push({
+        name: event.name,
+        status: event.payload?.status
+      });
+    });
+    runtimeEvents.on("runtime.stopped", (event) => {
+      received.push({
+        name: event.name,
+        status: event.payload?.status
+      });
+    });
+
+    runtime.registerService(new BaseNyxService("memory", ["config"]));
+
+    await runtime.start();
+    await runtime.stop();
+
+    expect(runtime.getEventBus()).toBe(runtimeEvents);
+    expect(received).toContainEqual({
+      name: "service.registered",
+      service: "memory",
+      status: "created"
+    });
+    expect(received).toContainEqual({
+      name: "service.started",
+      service: "memory",
+      status: "running"
+    });
+    expect(received).toContainEqual({
+      name: "service.stopped",
+      service: "memory",
+      status: "stopped"
+    });
+    expect(received).toContainEqual({
+      name: "runtime.started",
+      status: "running"
+    });
+    expect(received).toContainEqual({
+      name: "runtime.stopped",
+      status: "stopped"
+    });
+  });
+
+  it("emits service and runtime failure events", async () => {
+    class FailingService extends BaseNyxService {
+      start() {
+        throw new Error("service failed");
+      }
+    }
+
+    const { runtime, runtimeEvents } = createRuntimeWithMemoryLogger();
+    const received: Array<{ name: NyxSystemEventName; service?: string; status?: string }> = [];
+
+    runtimeEvents.on("service.failed", (event) => {
+      received.push({
+        name: event.name,
+        service: event.payload?.service,
+        status: event.payload?.status
+      });
+    });
+    runtimeEvents.on("runtime.failed", (event) => {
+      received.push({
+        name: event.name,
+        status: event.payload?.status
+      });
+    });
+
+    runtime.registerService(new FailingService("memory", ["config"]));
+
+    await expect(runtime.start()).rejects.toThrow("service failed");
+
+    expect(received).toContainEqual({
+      name: "service.failed",
+      service: "memory",
+      status: "failed"
+    });
+    expect(received).toContainEqual({
+      name: "runtime.failed",
+      status: "failed"
+    });
   });
 
   it("starts and stops base services through the runtime service manager", async () => {
