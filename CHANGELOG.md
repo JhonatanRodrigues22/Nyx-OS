@@ -1,5 +1,27 @@
 # Changelog
 
+## Sprint 04.1 - Developer Experience & Workflow Validation
+
+### Criado
+
+- Procedimento oficial de Developer Experience Validation em `docs/workflow/dx-validation.md`.
+- Plano da Sprint 04.1 em `docs/sprints/plano-sprint-04-1-dx-workflow.md`.
+
+### Alterado
+
+- README reorganizado com Quick Start, setup do zero, comandos disponiveis e contribuicao.
+- Workflow oficial consolidado em `docs/workflow/desenvolvimento.md`.
+- Qualidade atualizada para incluir `npm audit` e DX Validation.
+- ADR-0011 atualizado com a decisao de branches sempre partirem de `main`, PRs sempre mirarem `main` e branches temporarias serem removidas apos merge.
+- Indice de documentacao atualizado para apontar o fluxo de onboarding e contribuicao.
+
+### Mantido fora do escopo
+
+- Funcionalidades de produto.
+- Mudancas no runtime.
+- Mudancas no dashboard.
+- Mudancas no modelo de dados.
+
 ## Sprint 04 — Core Runtime e Dashboard Base
 
 ### Criado

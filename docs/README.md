@@ -1,51 +1,63 @@
-# Documentação do Nyx OS
+# Documentacao do Nyx OS
 
-Esta pasta é a fonte de verdade conceitual do Nyx OS.
+Esta pasta e a fonte de verdade conceitual do Nyx OS.
 
-Ela existe para que qualquer pessoa ou agente de IA consiga entender o projeto sem depender do histórico de conversas.
+Ela existe para que qualquer pessoa consiga entender o projeto sem depender do historico de conversas.
 
 ## Como ler
 
-1. Comece por `fundamentos/constituicao.md`.
-2. Leia `fundamentos/visao-produto.md` para entender o produto.
-3. Leia `fundamentos/mvp.md` para entender o primeiro recorte funcional.
-4. Leia `arquitetura/visao-geral.md` para entender como o sistema deve crescer.
-5. Leia `arquitetura/fundacao-tecnica.md` para entender a stack e o monorepo.
-6. Consulte `decisoes/` para decisões permanentes.
-7. Use `prompts/nyx-program-context.md` quando for orientar agentes de desenvolvimento.
+1. Comece pelo `README.md` da raiz para instalar e executar o projeto.
+2. Leia `fundamentos/constituicao.md`.
+3. Leia `fundamentos/visao-produto.md` para entender o produto.
+4. Leia `fundamentos/mvp.md` para entender o primeiro recorte funcional.
+5. Leia `arquitetura/visao-geral.md` para entender como o sistema deve crescer.
+6. Leia `arquitetura/fundacao-tecnica.md` para entender a stack e o monorepo.
+7. Leia `workflow/desenvolvimento.md` para entender o fluxo oficial de contribuicao.
+8. Leia `workflow/dx-validation.md` para entender a validacao obrigatoria de onboarding.
+9. Consulte `decisoes/` para decisoes permanentes.
+10. Use `prompts/nyx-program-context.md` quando for orientar agentes de desenvolvimento.
 
 ## Papel de cada pasta
 
-- `fundamentos/`: identidade, visão, princípios, MVP e direção do produto.
-- `arquitetura/`: visão técnica e organização modular.
-- `decisoes/`: ADRs e decisões que não devem ser perdidas.
-- `roadmap/`: fases de evolução.
-- `sprints/`: histórico de execução.
-- `workflow/`: processo de engenharia, qualidade e configuração.
-- `prompts/`: orientações canônicas para agentes quando fizerem parte da documentação do projeto.
+- `fundamentos/`: identidade, visao, principios, MVP e direcao do produto.
+- `arquitetura/`: visao tecnica e organizacao modular.
+- `decisoes/`: ADRs e decisoes que nao devem ser perdidas.
+- `roadmap/`: fases de evolucao.
+- `sprints/`: historico de execucao.
+- `workflow/`: processo de engenharia, qualidade, DX Validation e configuracao.
+- `prompts/`: orientacoes canonicas para agentes quando fizerem parte da documentacao do projeto.
 
 ## Regra principal
 
-Prompts, conversas e arquivos auxiliares podem ajudar, mas não substituem esta documentação.
+Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta documentacao.
 
-`.ai/` pode guardar histórico local de prompts, protocolo operacional e contexto de sessão, mas decisões permanentes devem viver em `docs/`.
+`.ai/` pode guardar historico local de prompts, protocolo operacional e contexto de sessao, mas decisoes permanentes devem viver em `docs/`.
 
+## Documentos de workflow
 
-## Documentos adicionados na Sprint de Documentação 2
+- `workflow/desenvolvimento.md`: ciclo oficial de branches, commits e Pull Requests.
+- `workflow/qualidade.md`: checks de qualidade e criterios gerais.
+- `workflow/dx-validation.md`: procedimento obrigatorio para validar onboarding.
+- `workflow/configuracao.md`: configuracao inicial do ambiente.
+- `workflow/engineering-manifesto.md`: principios de engenharia.
 
-- `fundamentos/glossario.md` — vocabulário oficial do ecossistema Nyx.
-- `arquitetura/modelo-de-dados.md` — modelo conceitual baseado em grafo de contexto.
-- `arquitetura/apis.md` — filosofia das APIs e fronteiras de acesso aos dados.
-- `arquitetura/nyx-local.md` — papel futuro da Nyx Local e decisão de não implementar agora.
-- `seguranca/dados-e-privacidade.md` — princípios iniciais de segurança, privacidade e acesso da IA.
-- `sprints/plano-sprint-01.md` — ordem oficial para a próxima sprint.
-- `arquitetura/fundacao-tecnica.md` — stack oficial, monorepo, packages, dependências e qualidade.
-- `arquitetura/core-runtime.md` — runtime base, event bus, services e dashboard executável.
-- `workflow/desenvolvimento.md` — ciclo oficial de branches, commits e Pull Requests.
+## Documentos adicionados nas Sprints recentes
 
-## Decisões recentes
+- `fundamentos/glossario.md`: vocabulario oficial do ecossistema Nyx.
+- `arquitetura/modelo-de-dados.md`: modelo conceitual baseado em grafo de contexto.
+- `arquitetura/apis.md`: filosofia das APIs e fronteiras de acesso aos dados.
+- `arquitetura/nyx-local.md`: papel futuro da Nyx Local e decisao de nao implementar agora.
+- `seguranca/dados-e-privacidade.md`: principios iniciais de seguranca, privacidade e acesso da IA.
+- `sprints/plano-sprint-01.md`: ordem oficial para a proxima sprint.
+- `arquitetura/fundacao-tecnica.md`: stack oficial, monorepo, packages, dependencias e qualidade.
+- `arquitetura/core-runtime.md`: runtime base, event bus, services e dashboard executavel.
+- `workflow/desenvolvimento.md`: ciclo oficial de branches, commits e Pull Requests.
+- `workflow/dx-validation.md`: validacao oficial de experiencia de desenvolvimento.
 
-- O Nyx OS começa em nuvem por viabilidade, mas deve preservar caminho para migração futura a ambiente local próprio.
-- A experiência deve fazer o usuário sentir que o Nyx OS é sua casa, não apenas um banco de dados.
-- O domínio seguirá a ideia de grafo de contexto: entidades independentes, mas conectáveis.
-- Memória é contexto persistente vivo, não apenas histórico de conversa ou embeddings.
+## Decisoes recentes
+
+- O Nyx OS comeca em nuvem por viabilidade, mas deve preservar caminho para migracao futura a ambiente local proprio.
+- A experiencia deve fazer o usuario sentir que o Nyx OS e sua casa, nao apenas um banco de dados.
+- O dominio segue a ideia de grafo de contexto: entidades independentes, mas conectaveis.
+- Memoria e contexto persistente vivo, nao apenas historico de conversa ou embeddings.
+- Toda Sprint deve nascer diretamente de `main`, abrir Pull Request para `main`, passar por DX Validation e remover a branch depois do merge.

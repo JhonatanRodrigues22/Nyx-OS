@@ -2,39 +2,41 @@
 
 ## Objetivo
 
-Definir um ciclo de trabalho consistente para humanos e agentes de IA.
+Definir um ciclo de trabalho consistente, simples e auditavel para todas as mudancas do Nyx OS.
 
 ## Branches
 
-- `main`: linha estável.
-- `docs/*`: documentação.
-- `chore/*`: manutenção, organização e setup.
+- `main`: linha estavel.
+- `docs/*`: documentacao.
+- `chore/*`: manutencao, organizacao e setup.
 - `feature/*`: funcionalidades de produto.
-- `fix/*`: correções.
-- `experiment/*`: investigação descartável ou protótipo controlado.
+- `fix/*`: correcoes.
+- `hotfix/*`: correcoes urgentes sobre `main`.
+- `refactor/*`: reorganizacao interna sem mudanca de comportamento.
+- `experiment/*`: investigacao descartavel ou prototipo controlado.
 
-Toda branch de sprint, hotfix, refactor ou mudança significativa deve nascer diretamente de `main`.
+Toda branch de sprint, hotfix, refactor ou mudanca significativa deve nascer diretamente de `main`.
 
 Fluxo oficial:
 
 ```text
 main
   -> nova branch
-  -> implementação
+  -> implementacao
   -> commit
   -> push
   -> Pull Request com base em main
   -> review
   -> merge
-  -> exclusão da branch
+  -> exclusao da branch
 ```
 
-Branches empilhadas só podem ser usadas quando houver dependência técnica real, a sprint anterior ainda não puder ser mergeada e isso tiver sido solicitado explicitamente.
+Branches empilhadas so podem ser usadas quando houver dependencia tecnica real, a sprint anterior ainda nao puder ser mergeada e isso tiver sido solicitado explicitamente.
 
-Na ausência dessa autorização, a Pull Request deve sempre ter:
+Na ausencia dessa autorizacao, a Pull Request deve sempre ter:
 
 - base: `main`;
-- head: branch da sprint ou alteração atual.
+- head: branch da sprint ou alteracao atual.
 
 ## Commits
 
@@ -51,52 +53,64 @@ Usar Conventional Commits:
 Exemplo:
 
 ```text
-chore: establish monorepo technical foundation
+docs(workflow): improve onboarding and developer experience
 ```
 
 ## Pull Requests
 
-Ao concluir qualquer sprint, hotfix, refactor ou conjunto significativo de alterações, o fluxo só termina após:
+Ao concluir qualquer Sprint, hotfix, refactor ou conjunto significativo de alteracoes, o fluxo so termina apos:
 
 - commit;
 - push;
-- abertura da Pull Request;
+- abertura da Pull Request com base em `main`;
+- review;
+- merge;
+- exclusao da branch temporaria;
 - entrega do resumo final.
 
 Todo PR deve explicar:
 
 - contexto;
 - escopo;
-- arquivos ou áreas alteradas;
+- arquivos ou areas alteradas;
 - como validar;
 - riscos;
-- pendências.
+- pendencias.
 
-Após o merge, a branch remota deve ser removida. A próxima sprint deve nascer novamente de `main`.
+Apos o merge, a branch remota deve ser removida. A proxima Sprint deve nascer novamente de `main`.
 
-## Estrutura obrigatória da Pull Request
+## Developer Experience Validation
 
-O título deve seguir Conventional Commits e representar a alteração realizada no projeto.
+Toda Sprint, hotfix, refactor ou mudanca significativa deve passar pela Developer Experience Validation antes de ser considerada concluida.
+
+O procedimento oficial esta em `docs/workflow/dx-validation.md`.
+
+O objetivo e confirmar que um novo desenvolvedor consegue instalar, executar e validar o projeto seguindo apenas o README e a documentacao oficial.
+
+## Estrutura obrigatoria da Pull Request
+
+O titulo deve seguir Conventional Commits e representar a alteracao realizada no projeto.
 
 Exemplos:
 
 ```text
 docs(architecture): establish technical foundation
 refactor(core): simplify event routing
+docs(workflow): improve onboarding and developer experience
 ```
 
-A descrição deve focar apenas a evolução técnica do Nyx OS. Não deve mencionar ferramentas, autoria auxiliar ou processo interno.
+A descricao deve focar apenas a evolucao tecnica do Nyx OS. Nao deve mencionar ferramentas, autoria auxiliar ou processo interno.
 
 Estrutura recomendada:
 
 ```markdown
 # Summary
 
-Resumo da alteração.
+Resumo da alteracao.
 
 ## Highlights
 
-Principais mudanças.
+Principais mudancas.
 
 ## Validation
 
@@ -104,10 +118,11 @@ Principais mudanças.
 - tests
 - build
 - audit
+- DX Validation
 
 ## Notes
 
-Observações importantes.
+Observacoes importantes.
 
 ## Breaking Changes
 
@@ -115,42 +130,45 @@ Caso existam.
 
 ## Checklist
 
-- [x] Documentação atualizada
+- [x] Documentacao atualizada
 - [x] Testes executados
 - [x] Build realizado
-- [x] ADRs atualizadas (quando aplicável)
+- [x] DX Validation executada
+- [x] ADRs atualizadas (quando aplicavel)
 ```
 
-## Resumo final obrigatório
+## Resumo final obrigatorio
 
-Depois de abrir a Pull Request, o responsável deve entregar:
+Depois de abrir e concluir a Pull Request, o responsavel deve entregar:
 
 - branch;
 - commit;
-- título, descrição e link da Pull Request;
+- titulo, descricao e link da Pull Request;
 - arquivos criados, modificados, removidos e movidos;
-- validação de lint, testes, build, audit e CI quando existir;
-- pendências;
-- próximo passo sugerido.
+- validacao de lint, testes, build, audit, DX Validation e CI quando existir;
+- pendencias;
+- proximo passo sugerido.
 
 ## Ciclo recomendado
 
-1. Ler `docs/README.md`.
-2. Confirmar se a mudança é documentação, setup, correção ou feature.
-3. Atualizar `main` localmente.
-4. Criar branch com prefixo adequado a partir de `main`.
-5. Fazer mudanças pequenas e auditáveis.
-6. Atualizar documentação/ADRs quando houver decisão permanente.
-7. Rodar checks relevantes.
-8. Abrir PR com base em `main`.
-9. Fazer merge apenas após revisão.
-10. Excluir a branch após merge.
+1. Ler `README.md`.
+2. Ler `docs/README.md` quando precisar de contexto de produto, arquitetura ou decisoes.
+3. Confirmar se a mudanca e documentacao, setup, correcao ou feature.
+4. Atualizar `main` localmente.
+5. Criar branch com prefixo adequado a partir de `main`.
+6. Fazer mudancas pequenas e auditaveis.
+7. Atualizar documentacao/ADRs quando houver decisao permanente.
+8. Rodar checks relevantes.
+9. Executar a Developer Experience Validation quando a mudanca afetar onboarding, setup, comandos, workflow ou estrutura.
+10. Abrir PR com base em `main`.
+11. Fazer merge apenas apos review.
+12. Excluir a branch apos merge.
 
 ## Regras para agentes de IA
 
-- Não misturar sprint de documentação/setup com feature de produto.
-- Não criar funcionalidades sem pedido explícito.
-- Não substituir `docs/` por prompts.
-- Não versionar builds, caches, secrets ou dependências instaladas.
-- Registrar decisões importantes em ADRs.
-- Não mencionar ferramentas, IA ou autoria auxiliar em títulos, descrições, commits ou notas de Pull Request.
+- Nao misturar sprint de documentacao/setup com feature de produto.
+- Nao criar funcionalidades sem pedido explicito.
+- Nao substituir `docs/` por prompts.
+- Nao versionar builds, caches, secrets ou dependencias instaladas.
+- Registrar decisoes importantes em ADRs.
+- Nao mencionar ferramentas, IA ou autoria auxiliar em titulos, descricoes, commits ou notas de Pull Request.

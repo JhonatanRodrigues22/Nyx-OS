@@ -9,6 +9,21 @@ Criar uma base de qualidade sem burocracia excessiva.
 - `npm run lint`
 - `npm test`
 - `npm run build`
+- `npm audit`
+
+## Developer Experience Validation
+
+Toda Sprint, hotfix, refactor ou mudanca significativa deve confirmar que o onboarding documentado continua funcionando.
+
+O procedimento oficial esta em `docs/workflow/dx-validation.md` e deve ser usado principalmente quando houver mudancas em:
+
+- README;
+- setup local;
+- scripts;
+- estrutura do monorepo;
+- workflow de Git;
+- configuracao de ambiente;
+- comandos de validacao.
 
 ## Python futuro
 
