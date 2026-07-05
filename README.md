@@ -7,8 +7,9 @@ O projeto ainda nao e um produto pronto. Esta base existe para tornar a arquitet
 ## Status atual
 
 - Sprint 0 concluida: fundacao tecnica com Next.js, TypeScript, Supabase, PWA, tipos iniciais e testes basicos.
-- Sprint 0.5 em andamento: limpeza estrutural, organizacao de documentacao e controle do repositorio.
-- Captura rapida e demais fluxos de produto devem ser tratados em sprints futuras, em branches e PRs separados.
+- Sprint 0.5: limpeza estrutural, organizacao de documentacao e controle do repositorio.
+- Sprint 1 planejada: fundacao operacional do Nyx OS, conforme `docs/sprints/plano-sprint-01.md`.
+- Captura rapida faz parte do MVP, mas deve nascer em camadas e sem atropelar dashboard, dominio e contratos.
 
 ## Stack
 
@@ -45,6 +46,8 @@ npm run dev
 
 Acesse `http://localhost:3000`.
 
+O app web vive em `apps/web`, mas os comandos principais devem ser executados pela raiz do monorepo.
+
 ## Como testar
 
 ```bash
@@ -57,10 +60,12 @@ npm run build
 
 ```text
 .ai/             Contexto, prompts e protocolo para agentes de IA.
+apps/            Aplicações executáveis.
+packages/        Packages compartilhados e módulos planejados.
+configs/         Configurações compartilhadas.
 docs/            Fonte de verdade conceitual do projeto.
-public/          Assets publicos da aplicacao.
 scripts/         Automacoes auxiliares versionaveis.
-src/             Codigo real da aplicacao Next.js.
+tests/           Testes transversais futuros.
 ```
 
 Arquivos gerados, caches, dependencias instaladas, credenciais e builds nao devem ser versionados.
@@ -70,6 +75,16 @@ Arquivos gerados, caches, dependencias instaladas, credenciais e builds nao deve
 `docs/` e a fonte de verdade conceitual do Nyx OS. Use essa pasta para arquitetura, fundamentos, decisoes, roadmap e relatorios de sprint.
 
 `.ai/` e apenas apoio operacional para agentes de IA. Prompts e protocolos podem ficar ali, mas decisoes arquiteturais permanentes devem ser registradas em `docs/`.
+
+Leitura recomendada:
+
+1. `docs/README.md`
+2. `docs/fundamentos/constituicao.md`
+3. `docs/fundamentos/visao-produto.md`
+4. `docs/fundamentos/mvp.md`
+5. `docs/arquitetura/visao-geral.md`
+6. `docs/fundamentos/glossario.md`
+7. `docs/arquitetura/fundacao-tecnica.md`
 
 ## Fluxo de contribuicao
 

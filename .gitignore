@@ -9,12 +9,17 @@ coverage/
 .env
 .env.local
 .env.*
+!.env.example
 !.env.local.example
 
 public/sw.js
 public/workbox-*.js
 public/worker-*.js
 public/fallback-*.js
+apps/*/public/sw.js
+apps/*/public/workbox-*.js
+apps/*/public/worker-*.js
+apps/*/public/fallback-*.js
 
 .venv/
 .pytest_cache/

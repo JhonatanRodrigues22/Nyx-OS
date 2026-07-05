@@ -1,5 +1,60 @@
 # Changelog
 
+## Sprint 03 — Fundação Técnica e Setup do Projeto
+
+### Reorganizado
+
+- Aplicação web movida para `apps/web`.
+- Raiz do projeto preparada como monorepo com npm workspaces.
+- Estrutura planejada criada para `packages/`, `configs/`, `infrastructure/`, `docker/`, `assets/` e `tests/`.
+
+### Criado
+
+- `docs/arquitetura/fundacao-tecnica.md`
+- `docs/workflow/desenvolvimento.md`
+- `docs/workflow/qualidade.md`
+- `docs/workflow/configuracao.md`
+- `docs/sprints/plano-sprint-03-fundacao-tecnica.md`
+- `docs/decisoes/ADR-0009-stack-tecnica-oficial.md`
+- `docs/decisoes/ADR-0010-monorepo-modular.md`
+- `docs/decisoes/ADR-0011-workflow-e-qualidade.md`
+- `docs/decisoes/ADR-0012-observabilidade-erros.md`
+- CI inicial em `.github/workflows/ci.yml`
+- Workflow obrigatório de Pull Requests documentado em `docs/workflow/desenvolvimento.md`
+
+### Mantido
+
+- Nenhuma funcionalidade nova do Nyx OS foi implementada.
+- O app web existente foi apenas reposicionado dentro da estrutura do monorepo.
+
+## Sprint de Documentacao 2 — Consolidacao da Fonte de Verdade
+
+### Reorganizado
+
+- Documentacao de produto, MVP, experiencia, arquitetura e roadmap consolidada em `docs/`.
+- Roadmap detalhado centralizado em `docs/roadmap/README.md`, com `ROADMAP.md` mantido apenas como atalho de raiz.
+- `TODO.md` reduzido a pendencias e guardrails para evitar duplicacao de roadmap.
+- Relacao entre `.ai/` e `docs/prompts/` esclarecida: `.ai/` e apoio operacional/local; `docs/prompts/` guarda orientacoes canonicas quando fizerem parte da documentacao do projeto.
+
+### Criado
+
+- `docs/fundamentos/glossario.md`
+- `docs/arquitetura/apis.md`
+- `docs/arquitetura/modelo-de-dados.md`
+- `docs/arquitetura/nyx-local.md`
+- `docs/seguranca/dados-e-privacidade.md`
+- `docs/sprints/plano-sprint-01.md`
+- `docs/decisoes/ADR-0006-memoria.md`
+- `docs/decisoes/ADR-0007-cloud-agora-local-depois.md`
+- `docs/decisoes/ADR-0008-grafo-de-contexto.md`
+
+### Decisoes consolidadas
+
+- Memoria e contexto persistente vivo, nao apenas historico de conversa ou embeddings.
+- O Nyx OS comeca cloud-first por viabilidade, preservando caminho para execucao local futura.
+- O dominio deve evoluir como grafo de contexto.
+- Captura rapida faz parte do MVP, mas sera implementada em camadas.
+
 ## Sprint 0.5 — Limpeza, Arquitetura e Controle
 
 ### Estado herdado

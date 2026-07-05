@@ -1,16 +1,19 @@
 # TODO
 
-## Sprint 0.5: Limpeza, Arquitetura e Controle
+A fonte de verdade para planejamento fica em:
 
-- Manter `docs/` como fonte de verdade conceitual.
-- Manter `.ai/` apenas como apoio de agentes.
-- Garantir que scripts uteis sejam versionados.
-- Revisar PRs para impedir entrada de builds, caches ou credenciais.
+- [`ROADMAP.md`](ROADMAP.md)
+- [`docs/roadmap/README.md`](docs/roadmap/README.md)
+- [`docs/sprints/plano-sprint-01.md`](docs/sprints/plano-sprint-01.md)
 
-## Proximas sprints
+## Pendências documentais
 
-- Sprint 1: Base funcional da interface.
-- Sprint 2: Dashboard inicial.
-- Sprint 3: Captura e organizacao de informacoes.
-- Sprint 4: Integracao com Nyx Local.
-- Sprint 5: Automacao e assistente pessoal.
+- Manter ADRs atualizados quando novas decisões permanentes forem tomadas.
+- Atualizar documentos de arquitetura quando o modelo de dados ou contratos de API saírem do nível conceitual.
+- Registrar futuras sprints em `docs/sprints/`.
+
+## Guardrails
+
+- Não usar `TODO.md` como substituto de roadmap.
+- Não colocar decisões permanentes apenas em prompts ou conversas.
+- Não misturar feature nova com sprint de saneamento documental.

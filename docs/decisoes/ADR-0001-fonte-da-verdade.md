@@ -6,19 +6,21 @@ Aceita.
 
 ## Contexto
 
-O projeto ficou com documentos conceituais, prompts de IA e arquivos locais misturados. Isso dificultava manutencao, auditoria e entendimento do que era decisao permanente.
+O projeto ficou com documentos conceituais, prompts de IA e arquivos locais misturados. Isso dificultava manutenção, auditoria e entendimento do que era decisão permanente.
 
-## Decisao
+## Decisão
 
-- `docs/` e a fonte de verdade conceitual do Nyx OS.
-- `.ai/` e apenas apoio para agentes de IA, prompts, contexto operacional e protocolos.
-- `src/` contem codigo real da aplicacao.
-- `scripts/` contem automacoes auxiliares versionaveis.
-- Arquivos gerados, builds, caches, dependencias instaladas e credenciais nao devem subir para o Git.
+- `docs/` é a fonte de verdade conceitual do Nyx OS.
+- `.ai/` é apoio operacional para agentes de IA, histórico de prompts, contexto local e protocolos de sessão.
+- `docs/prompts/` pode conter orientações canônicas para agentes quando essas orientações fizerem parte da documentação do projeto.
+- `src/` contém código real da aplicação.
+- `scripts/` contém automações auxiliares versionáveis.
+- Arquivos gerados, builds, caches, dependências instaladas e credenciais não devem subir para o Git.
 
-## Consequencias
+## Consequências
 
 - Documentos permanentes devem ser criados ou atualizados em `docs/`.
-- Prompts podem referenciar `docs/`, mas nao substituem decisoes registradas.
-- A pasta solta `Fundamentos/` nao deve ser usada como fonte de verdade.
-- PRs devem preservar essa separacao.
+- Prompts podem referenciar `docs/`, mas não substituem decisões registradas.
+- Se uma orientação de agente for permanente, ela deve estar em `docs/prompts/` ou em outro documento dentro de `docs/`.
+- A pasta solta `Fundamentos/` não deve ser usada como fonte de verdade.
+- PRs devem preservar essa separação.
