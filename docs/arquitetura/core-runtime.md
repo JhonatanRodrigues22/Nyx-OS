@@ -22,7 +22,8 @@ Ele inicializa, coordena e encerra serviços internos sem conhecer clientes espe
 - `@nyx-os/config`: configuração central do sistema.
 - `@nyx-os/events`: Event Bus em memória, com emissão, listagem recente e assinatura de eventos.
 - `@nyx-os/logger`: contrato central de logging e implementação inicial em console.
-- `@nyx-os/core`: runtime genérico, service manager, contratos de serviço, Logger Service, Config Service, status do sistema e serviços do dashboard.
+- `@nyx-os/state`: contrato central de estado do Runtime e serviços.
+- `@nyx-os/core`: runtime genérico, service manager, contratos de serviço, Logger Service, Config Service, State Service, status do sistema e serviços do dashboard.
 - `apps/web`: interface visual que consome snapshots produzidos pelos serviços.
 
 ## Runtime Genérico
@@ -39,7 +40,7 @@ Ele inicializa, coordena e encerra serviços internos sem conhecer clientes espe
 
 O runtime não descobre serviços automaticamente e não conhece módulos futuros por nome.
 
-Por padrão, `NyxRuntime` registra `LoggerService` e `ConfigService` como serviços base. Usos avançados podem desativar esse registro quando precisarem testar o runtime sem serviços iniciais.
+Por padrão, `NyxRuntime` registra `LoggerService`, `ConfigService` e `RuntimeStateService` como serviços base. Usos avançados podem desativar esse registro quando precisarem testar o runtime sem serviços iniciais.
 
 ## Serviços
 
@@ -55,6 +56,8 @@ Cada serviço possui:
 - `stop`.
 
 O `ServiceManager` valida dependências ausentes, detecta dependências circulares e preserva a ordem de inicialização para desligamento reverso.
+
+O `ServiceManager` também emite eventos internos de lifecycle para que o State Service acompanhe mudanças de status sem exigir que cada serviço atualize o estado manualmente.
 
 ## Logger Service
 
@@ -85,6 +88,24 @@ O Config Service não conhece Dashboard, Nyx Assistente, integrações externas 
 
 Quando precisa registrar informações, ele usa `NyxLogger` recebido pelo contexto do Runtime.
 
+## State Service
+
+`RuntimeStateService` é o serviço base responsável por expor o estado atual do Runtime e dos serviços registrados.
+
+Ele é responsável por:
+
+- registrar versão e ambiente do Runtime;
+- registrar horário de inicialização;
+- expor uptime;
+- listar serviços carregados;
+- consultar um serviço por nome;
+- acompanhar status e saúde de cada serviço;
+- refletir mudanças de lifecycle como `starting`, `running`, `stopping`, `stopped` e `failed`.
+
+O estado atual é mantido em memória por `@nyx-os/state`.
+
+O State Service não implementa Dashboard, API, histórico, persistência ou WebSocket. Ele apenas oferece uma fonte de verdade interna para clientes futuros.
+
 ## Fluxo
 
 ```text
@@ -98,6 +119,7 @@ Serviços internos
   -> ServiceManager
   -> LoggerService
   -> ConfigService
+  -> RuntimeStateService
   -> EventBus
 ```
 
@@ -132,6 +154,9 @@ Componentes React recebem um snapshot pronto para renderização.
 - Automações reais.
 - Integrações externas.
 - Notificações reais.
+- Persistência de estado.
+- Histórico de estado.
+- WebSocket.
 - Captura de dados do computador.
 
 Scheduler e plugin loader continuam ideias válidas, mas exigem contratos próprios e um ambiente de execução adequado. Eles não devem ser adicionados ao núcleo apenas por expectativa futura.

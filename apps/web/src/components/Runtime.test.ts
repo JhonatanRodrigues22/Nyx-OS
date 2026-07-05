@@ -143,10 +143,12 @@ describe("Nyx runtime foundation", () => {
     expect(runtime.getSnapshot().services.map((service) => service.name)).toEqual([
       "logger",
       "config",
+      "state",
       "storage",
       "memory"
     ]);
     expect(runtime.getSnapshot().services.map((service) => service.status)).toEqual([
+      "running",
       "running",
       "running",
       "running",
@@ -160,13 +162,14 @@ describe("Nyx runtime foundation", () => {
     expect(runtime.getSnapshot().events.map((event) => event.type)).toContain("runtime.stopped");
   });
 
-  it("starts and stops LoggerService and ConfigService through the runtime service manager", async () => {
+  it("starts and stops base services through the runtime service manager", async () => {
     const { entries, runtime } = createRuntimeWithMemoryLogger();
 
     await runtime.start();
 
     expect(runtime.loggerService?.getLogger()).toBeDefined();
     expect(runtime.configService?.getSnapshot().appName).toBe("Nyx OS");
+    expect(runtime.stateService?.getRuntimeState().status).toBe("running");
     expect(runtime.getSnapshot().services).toEqual([
       {
         name: "logger",
@@ -177,6 +180,11 @@ describe("Nyx runtime foundation", () => {
         name: "config",
         status: "running",
         dependencies: ["logger"]
+      },
+      {
+        name: "state",
+        status: "running",
+        dependencies: ["logger"]
       }
     ]);
     expect(entries.map((entry) => entry.message)).toContain("Runtime started");
@@ -184,17 +192,56 @@ describe("Nyx runtime foundation", () => {
 
     await runtime.stop();
 
-    expect(runtime.getSnapshot().services.map((service) => service.status)).toEqual(["stopped", "stopped"]);
+    expect(runtime.getSnapshot().services.map((service) => service.status)).toEqual(["stopped", "stopped", "stopped"]);
+    expect(runtime.getRuntimeState()?.status).toBe("stopped");
     expect(entries.map((entry) => entry.message)).toContain("Runtime stopped");
   });
 
-  it("rejects services with missing dependencies and records the failure through logger", async () => {
+  it("exposes runtime state with service health and metadata", async () => {
+    const { runtime } = createRuntimeWithMemoryLogger();
+
+    runtime.registerService(new BaseNyxService("memory", ["config"]));
+
+    await runtime.start();
+
+    expect(runtime.getRuntimeState()).toMatchObject({
+      status: "running",
+      version: "0.1.0",
+      environment: "test"
+    });
+    expect(runtime.stateService?.getService("memory")).toMatchObject({
+      name: "memory",
+      status: "running",
+      health: "healthy",
+      dependencies: ["config"]
+    });
+    expect(runtime.stateService?.getServices().map((service) => service.name)).toEqual([
+      "logger",
+      "config",
+      "state",
+      "memory"
+    ]);
+
+    await runtime.stop();
+
+    expect(runtime.stateService?.getService("memory")).toMatchObject({
+      status: "stopped",
+      health: "unknown"
+    });
+  });
+
+  it("rejects services with missing dependencies and records the failure through logger and state", async () => {
     const { entries, runtime } = createRuntimeWithMemoryLogger();
 
     runtime.registerService(new BaseNyxService("memory", ["storage"]));
 
     await expect(runtime.start()).rejects.toThrow("missing dependencies");
     expect(runtime.getSnapshot().status).toBe("failed");
+    expect(runtime.getRuntimeState()?.status).toBe("failed");
+    expect(runtime.stateService?.getService("memory")).toMatchObject({
+      status: "created",
+      health: "unknown"
+    });
     expect(runtime.getSnapshot().events[0].type).toBe("runtime.failed");
     expect(entries.map((entry) => entry.level)).toContain("error");
     expect(entries.map((entry) => entry.message)).toContain("Runtime failed");
