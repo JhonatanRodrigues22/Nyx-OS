@@ -21,7 +21,8 @@ Ele inicializa, coordena e encerra serviços internos sem conhecer clientes espe
 
 - `@nyx-os/config`: configuração central do sistema.
 - `@nyx-os/events`: Event Bus em memória, com emissão, listagem recente e assinatura de eventos.
-- `@nyx-os/core`: runtime genérico, service manager, contratos de serviço, Config Service, status do sistema e serviços do dashboard.
+- `@nyx-os/logger`: contrato central de logging e implementação inicial em console.
+- `@nyx-os/core`: runtime genérico, service manager, contratos de serviço, Logger Service, Config Service, status do sistema e serviços do dashboard.
 - `apps/web`: interface visual que consome snapshots produzidos pelos serviços.
 
 ## Runtime Genérico
@@ -38,7 +39,7 @@ Ele inicializa, coordena e encerra serviços internos sem conhecer clientes espe
 
 O runtime não descobre serviços automaticamente e não conhece módulos futuros por nome.
 
-Por padrão, `NyxRuntime` registra o `ConfigService` como serviço base. Usos avançados podem desativar esse registro quando precisarem testar o runtime sem serviços iniciais.
+Por padrão, `NyxRuntime` registra `LoggerService` e `ConfigService` como serviços base. Usos avançados podem desativar esse registro quando precisarem testar o runtime sem serviços iniciais.
 
 ## Serviços
 
@@ -55,6 +56,19 @@ Cada serviço possui:
 
 O `ServiceManager` valida dependências ausentes, detecta dependências circulares e preserva a ordem de inicialização para desligamento reverso.
 
+## Logger Service
+
+`LoggerService` é o serviço base responsável por expor `NyxLogger` ao Runtime e aos demais serviços.
+
+Ele é responsável por:
+
+- registrar uma interface única de logging;
+- evitar acoplamento direto entre serviços e `console`;
+- permitir que serviços recebam logger pelo contexto;
+- iniciar antes de serviços que precisam registrar informações.
+
+`ConsoleLogger` é a implementação inicial. Arquivos, telemetria, logs remotos, rotação e persistência ficam fora do escopo atual.
+
 ## Config Service
 
 `ConfigService` é o primeiro serviço base oficial do Runtime.
@@ -69,6 +83,8 @@ Ele é responsável por:
 
 O Config Service não conhece Dashboard, Nyx Assistente, integrações externas ou projetos futuros.
 
+Quando precisa registrar informações, ele usa `NyxLogger` recebido pelo contexto do Runtime.
+
 ## Fluxo
 
 ```text
@@ -80,6 +96,7 @@ Dashboard UI
 Serviços internos
   -> NyxRuntime
   -> ServiceManager
+  -> LoggerService
   -> ConfigService
   -> EventBus
 ```

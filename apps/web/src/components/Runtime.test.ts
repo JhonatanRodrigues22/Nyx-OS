@@ -3,11 +3,38 @@ import {
   BaseNyxService,
   ConfigService,
   createDashboardSnapshot,
+  LoggerService,
   NyxRuntime,
   RuntimeService,
   SystemStatusService
 } from "@nyx-os/core";
 import { createEventBus } from "@nyx-os/events";
+import { ConsoleLogger, type ConsoleLoggerSink, type NyxLogEntry } from "@nyx-os/logger";
+
+function createMemoryLoggerService() {
+  const entries: NyxLogEntry[] = [];
+  const sink: ConsoleLoggerSink = {
+    trace: (entry) => entries.push(entry),
+    debug: (entry) => entries.push(entry),
+    info: (entry) => entries.push(entry),
+    warn: (entry) => entries.push(entry),
+    error: (entry) => entries.push(entry)
+  };
+
+  return {
+    entries,
+    loggerService: new LoggerService({ logger: new ConsoleLogger(sink) })
+  };
+}
+
+function createRuntimeWithMemoryLogger() {
+  const { entries, loggerService } = createMemoryLoggerService();
+
+  return {
+    entries,
+    runtime: new NyxRuntime(createEventBus(), undefined, { loggerService })
+  };
+}
 
 describe("Nyx runtime foundation", () => {
   it("exposes central configuration for the enabled runtime modules", () => {
@@ -104,7 +131,7 @@ describe("Nyx runtime foundation", () => {
       }
     }
 
-    const runtime = new NyxRuntime();
+    const { runtime } = createRuntimeWithMemoryLogger();
 
     runtime.registerService(new TestService("storage"));
     runtime.registerService(new TestService("memory", ["storage"]));
@@ -113,8 +140,14 @@ describe("Nyx runtime foundation", () => {
 
     expect(started).toEqual(["storage", "memory"]);
     expect(runtime.getSnapshot().status).toBe("running");
-    expect(runtime.getSnapshot().services.map((service) => service.name)).toEqual(["config", "storage", "memory"]);
+    expect(runtime.getSnapshot().services.map((service) => service.name)).toEqual([
+      "logger",
+      "config",
+      "storage",
+      "memory"
+    ]);
     expect(runtime.getSnapshot().services.map((service) => service.status)).toEqual([
+      "running",
       "running",
       "running",
       "running"
@@ -127,36 +160,43 @@ describe("Nyx runtime foundation", () => {
     expect(runtime.getSnapshot().events.map((event) => event.type)).toContain("runtime.stopped");
   });
 
-  it("starts and stops ConfigService through the runtime service manager", async () => {
-    const runtime = new NyxRuntime();
+  it("starts and stops LoggerService and ConfigService through the runtime service manager", async () => {
+    const { entries, runtime } = createRuntimeWithMemoryLogger();
 
     await runtime.start();
 
+    expect(runtime.loggerService?.getLogger()).toBeDefined();
     expect(runtime.configService?.getSnapshot().appName).toBe("Nyx OS");
     expect(runtime.getSnapshot().services).toEqual([
       {
-        name: "config",
+        name: "logger",
         status: "running",
         dependencies: []
+      },
+      {
+        name: "config",
+        status: "running",
+        dependencies: ["logger"]
       }
     ]);
+    expect(entries.map((entry) => entry.message)).toContain("Runtime started");
+    expect(entries.map((entry) => entry.message)).toContain("Config service loaded configuration");
 
     await runtime.stop();
 
-    expect(runtime.getSnapshot().services[0]).toEqual({
-      name: "config",
-      status: "stopped",
-      dependencies: []
-    });
+    expect(runtime.getSnapshot().services.map((service) => service.status)).toEqual(["stopped", "stopped"]);
+    expect(entries.map((entry) => entry.message)).toContain("Runtime stopped");
   });
 
-  it("rejects services with missing dependencies", async () => {
-    const runtime = new NyxRuntime();
+  it("rejects services with missing dependencies and records the failure through logger", async () => {
+    const { entries, runtime } = createRuntimeWithMemoryLogger();
 
     runtime.registerService(new BaseNyxService("memory", ["storage"]));
 
     await expect(runtime.start()).rejects.toThrow("missing dependencies");
     expect(runtime.getSnapshot().status).toBe("failed");
     expect(runtime.getSnapshot().events[0].type).toBe("runtime.failed");
+    expect(entries.map((entry) => entry.level)).toContain("error");
+    expect(entries.map((entry) => entry.message)).toContain("Runtime failed");
   });
 });
