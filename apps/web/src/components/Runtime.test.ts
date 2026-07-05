@@ -114,8 +114,9 @@ describe("Nyx runtime foundation", () => {
     const snapshot = createDashboardSnapshot();
 
     expect(snapshot.runtime.name).toBe("Nyx OS");
-    expect(snapshot.cards).toHaveLength(4);
+    expect(snapshot.cards).toHaveLength(5);
     expect(snapshot.plugins.map((plugin) => plugin.id)).toContain("runtime-diagnostics");
+    expect(snapshot.scheduler.status).toBe("idle");
     expect(snapshot.navigation.map((item) => item.label)).toContain("Memória");
     expect(snapshot.recentEvents.map((event) => event.type)).toContain("dashboard.loaded");
   });
@@ -325,6 +326,45 @@ describe("Nyx runtime foundation", () => {
         "plugin.unregistered"
       ])
     );
+  });
+
+  it("starts the scheduler and lets plugins register tasks", async () => {
+    jest.useFakeTimers();
+    const { runtime, runtimeEvents } = createRuntimeWithMemoryLogger();
+    const received: string[] = [];
+
+    runtimeEvents.on("scheduler.started", (event) => received.push(event.name));
+    runtimeEvents.on("scheduler.task.registered", (event) => received.push(event.name));
+    runtimeEvents.on("scheduler.task.executed", (event) => received.push(event.name));
+    runtimeEvents.on("scheduler.task.removed", (event) => received.push(event.name));
+
+    await runtime.start();
+
+    expect(runtime.getScheduler().getStatus()).toBe("running");
+    expect(runtime.getScheduler().getTasks()).toContainEqual(
+      expect.objectContaining({
+        id: "scheduler.heartbeat",
+        status: "scheduled"
+      })
+    );
+
+    jest.advanceTimersByTime(30000);
+    await Promise.resolve();
+
+    expect(received).toEqual(
+      expect.arrayContaining([
+        "scheduler.task.registered",
+        "scheduler.started",
+        "scheduler.task.executed"
+      ])
+    );
+
+    await runtime.stop();
+
+    expect(runtime.getScheduler().getStatus()).toBe("stopped");
+    expect(runtime.getScheduler().getTasks()).toEqual([]);
+    expect(received).toContain("scheduler.task.removed");
+    jest.useRealTimers();
   });
 
   it("starts and stops base services through the runtime service manager", async () => {

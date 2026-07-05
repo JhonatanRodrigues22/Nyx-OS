@@ -12,7 +12,9 @@ Este package contém:
 - `RuntimeStateService`;
 - integração com `NyxEventBus`;
 - integração com `PluginManager`;
+- integração com `SchedulerManager`;
 - `RuntimeDiagnosticsPlugin`;
+- `HeartbeatPlugin`;
 - contratos de serviços;
 - serviços de estado do runtime;
 - serviços de dashboard.

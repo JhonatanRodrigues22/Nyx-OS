@@ -1,5 +1,7 @@
 import { createInMemoryEventBus, type NyxSystemEvents } from "@nyx-os/event-bus";
+import { createConsoleLogger } from "@nyx-os/logger";
 import { PluginManager, type NyxPlugin, type NyxPluginContext } from "@nyx-os/plugin";
+import { SchedulerManager } from "@nyx-os/scheduler";
 
 function createPlugin(id = "test-plugin"): NyxPlugin & { initialized: boolean; disposed: boolean } {
   return {
@@ -18,11 +20,15 @@ function createPlugin(id = "test-plugin"): NyxPlugin & { initialized: boolean; d
 }
 
 function createContext(events = createInMemoryEventBus<NyxSystemEvents>()): NyxPluginContext {
+  const logger = createConsoleLogger();
+
   return {
     runtime: {
       getEventBus: () => events
     },
     events,
+    logger,
+    scheduler: new SchedulerManager({ events, logger }),
     services: {
       list: () => []
     },

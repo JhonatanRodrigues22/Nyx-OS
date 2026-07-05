@@ -58,6 +58,12 @@ O Runtime emite automaticamente:
 - `plugin.disposed`;
 - `plugin.unregistered`;
 - `plugin.failed`.
+- `scheduler.started`;
+- `scheduler.stopped`;
+- `scheduler.task.registered`;
+- `scheduler.task.executed`;
+- `scheduler.task.failed`;
+- `scheduler.task.removed`.
 
 Esses eventos descrevem apenas lifecycle técnico. Eventos específicos de IA, Scheduler ou Memory ficam fora do escopo atual.
 

@@ -1,5 +1,38 @@
 # Changelog
 
+## Sprint 10 - Scheduler Engine
+
+### Criado
+
+- `@nyx-os/scheduler` com contratos `NyxScheduler` e `ScheduledTask`.
+- `SchedulerManager` em memória para registro, remoção, execução, pausa, retomada e listagem de tarefas.
+- Integração do Scheduler ao `NyxRuntime` por `runtime.getScheduler()`.
+- Integração do Scheduler ao contexto de plugins por `context.scheduler`.
+- Eventos `scheduler.started`, `scheduler.stopped`, `scheduler.task.registered`, `scheduler.task.executed`, `scheduler.task.failed` e `scheduler.task.removed`.
+- `HeartbeatPlugin` como plugin interno mínimo de validação.
+- Painel de Scheduler no dashboard.
+- Documentação de arquitetura em `docs/arquitetura/scheduler.md`.
+- ADR-0017 sobre Scheduler Engine oficial.
+
+### Alterado
+
+- `NyxRuntime` passou a iniciar o Scheduler após inicializar plugins.
+- `NyxRuntime` passou a parar o Scheduler antes de descartar plugins.
+- Snapshot do Runtime e Dashboard passou a incluir estado do Scheduler e tarefas registradas.
+- Plugin Context passou a expor `logger` e `scheduler`.
+- Testes ampliados para Scheduler, Runtime, Plugin Context, Event Bus e Dashboard.
+
+### Mantido Fora do Escopo
+
+- Automation.
+- Memory.
+- IA.
+- Skills.
+- Persistência de tarefas.
+- Cron avançado.
+- Fila distribuída.
+- Execução em múltiplos processos.
+
 ## Sprint 09 - Plugin Framework
 
 ### Criado

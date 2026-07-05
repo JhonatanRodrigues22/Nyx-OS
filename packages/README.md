@@ -13,6 +13,7 @@ Estes diretórios documentam a arquitetura alvo. Eles não implementam funcional
 - `events/`: stream em memória de eventos recentes para snapshots e dashboard.
 - `automation/`: automações auditáveis.
 - `plugin/`: contrato oficial e manager de plugins.
+- `scheduler/`: contrato oficial e manager de tarefas recorrentes.
 - `plugins/`: espaço reservado para integrações extensíveis futuras.
 - `shared/`: utilitários compartilhados de baixo acoplamento.
 - `config/`: configuração tipada e carregamento de ambientes.

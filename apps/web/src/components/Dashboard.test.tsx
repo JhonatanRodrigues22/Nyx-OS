@@ -13,7 +13,9 @@ describe("Dashboard", () => {
     expect(within(healthCheck).getByText("All core systems online")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Projetos/ })).toBeInTheDocument();
     const plugins = screen.getByLabelText("Plugins registrados");
+    const scheduler = screen.getByLabelText("Tarefas agendadas");
 
+    expect(within(scheduler).getByRole("heading", { name: "Scheduler" })).toBeInTheDocument();
     expect(within(plugins).getByRole("heading", { name: "Plugins" })).toBeInTheDocument();
     expect(within(plugins).getByText("Runtime Diagnostics")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Eventos recentes" })).toBeInTheDocument();
