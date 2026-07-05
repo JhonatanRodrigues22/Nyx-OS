@@ -66,3 +66,4 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - Toda Sprint deve nascer diretamente de `main`, abrir Pull Request para `main`, passar por DX Validation e remover a branch depois do merge.
 - A documentação oficial deve permanecer em Português do Brasil, com exceções técnicas documentadas no workflow.
 - O Runtime deve ser genérico, conhecer apenas serviços registrados e manter integrações futuras desacopladas.
+- `ConfigService` é o primeiro serviço base oficial registrado pelo Runtime.

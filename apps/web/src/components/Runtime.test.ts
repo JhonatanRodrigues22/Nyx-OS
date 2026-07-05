@@ -1,6 +1,7 @@
 import { getNyxConfig } from "@nyx-os/config";
 import {
   BaseNyxService,
+  ConfigService,
   createDashboardSnapshot,
   NyxRuntime,
   RuntimeService,
@@ -16,6 +17,28 @@ describe("Nyx runtime foundation", () => {
     expect(config.version).toBe("0.1.0");
     expect(config.enabledModules).toEqual(["core", "events", "dashboard"]);
     expect(config.featureFlags.useMockData).toBe(true);
+  });
+
+  it("loads runtime configuration from a safe injected environment", () => {
+    const configService = new ConfigService({
+      env: {
+        NODE_ENV: "production",
+        NYX_APP_NAME: "Nyx Test",
+        NYX_VERSION: "5.0.0",
+        NYX_ENABLED_MODULES: "core,events,unknown",
+        NYX_USE_MOCK_DATA: "false",
+        NYX_ENABLE_AUTOMATION: "yes"
+      }
+    });
+
+    const config = configService.getConfig();
+
+    expect(config.appName).toBe("Nyx Test");
+    expect(config.version).toBe("5.0.0");
+    expect(config.environment).toBe("production");
+    expect(config.enabledModules).toEqual(["core", "events"]);
+    expect(config.featureFlags.useMockData).toBe(false);
+    expect(config.featureFlags.enableAutomation).toBe(true);
   });
 
   it("stores recent events in memory", () => {
@@ -90,13 +113,41 @@ describe("Nyx runtime foundation", () => {
 
     expect(started).toEqual(["storage", "memory"]);
     expect(runtime.getSnapshot().status).toBe("running");
-    expect(runtime.getSnapshot().services.map((service) => service.status)).toEqual(["running", "running"]);
+    expect(runtime.getSnapshot().services.map((service) => service.name)).toEqual(["config", "storage", "memory"]);
+    expect(runtime.getSnapshot().services.map((service) => service.status)).toEqual([
+      "running",
+      "running",
+      "running"
+    ]);
 
     await runtime.stop();
 
     expect(stopped).toEqual(["memory", "storage"]);
     expect(runtime.getSnapshot().status).toBe("stopped");
     expect(runtime.getSnapshot().events.map((event) => event.type)).toContain("runtime.stopped");
+  });
+
+  it("starts and stops ConfigService through the runtime service manager", async () => {
+    const runtime = new NyxRuntime();
+
+    await runtime.start();
+
+    expect(runtime.configService?.getSnapshot().appName).toBe("Nyx OS");
+    expect(runtime.getSnapshot().services).toEqual([
+      {
+        name: "config",
+        status: "running",
+        dependencies: []
+      }
+    ]);
+
+    await runtime.stop();
+
+    expect(runtime.getSnapshot().services[0]).toEqual({
+      name: "config",
+      status: "stopped",
+      dependencies: []
+    });
   });
 
   it("rejects services with missing dependencies", async () => {

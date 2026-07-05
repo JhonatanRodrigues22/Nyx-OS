@@ -16,6 +16,8 @@ Uma referência arquitetural externa apresentou ideias úteis para runtime, serv
 - O Runtime conhece apenas serviços registrados, seus estados, suas dependências e o Event Bus.
 - Serviços devem declarar dependências explicitamente.
 - Serviços sobem respeitando dependências e descem na ordem inversa de inicialização.
+- Serviços base do núcleo podem ser registrados automaticamente quando forem genéricos e não acoplarem o runtime a clientes específicos.
+- `ConfigService` é o primeiro serviço base oficial do Runtime.
 - Comunicação entre serviços deve priorizar eventos antes de acoplamento direto.
 - A Nyx Assistente é um cliente previsto do Nyx OS, mas não faz parte do Runtime.
 - Projetos futuros, integrações e automações devem entrar por serviços ou plugins desacoplados quando existirem.

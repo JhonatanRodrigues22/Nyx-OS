@@ -21,7 +21,7 @@ Ele inicializa, coordena e encerra serviços internos sem conhecer clientes espe
 
 - `@nyx-os/config`: configuração central do sistema.
 - `@nyx-os/events`: Event Bus em memória, com emissão, listagem recente e assinatura de eventos.
-- `@nyx-os/core`: runtime genérico, service manager, contratos de serviço, status do sistema e serviços do dashboard.
+- `@nyx-os/core`: runtime genérico, service manager, contratos de serviço, Config Service, status do sistema e serviços do dashboard.
 - `apps/web`: interface visual que consome snapshots produzidos pelos serviços.
 
 ## Runtime Genérico
@@ -34,8 +34,11 @@ Ele inicializa, coordena e encerra serviços internos sem conhecer clientes espe
 - snapshot do runtime;
 - integração com `ServiceManager`;
 - acesso compartilhado ao `EventBus`.
+- registro automático dos serviços base do núcleo.
 
 O runtime não descobre serviços automaticamente e não conhece módulos futuros por nome.
+
+Por padrão, `NyxRuntime` registra o `ConfigService` como serviço base. Usos avançados podem desativar esse registro quando precisarem testar o runtime sem serviços iniciais.
 
 ## Serviços
 
@@ -52,6 +55,20 @@ Cada serviço possui:
 
 O `ServiceManager` valida dependências ausentes, detecta dependências circulares e preserva a ordem de inicialização para desligamento reverso.
 
+## Config Service
+
+`ConfigService` é o primeiro serviço base oficial do Runtime.
+
+Ele é responsável por:
+
+- carregar a configuração mínima do Nyx OS;
+- expor `appName`, `version`, `environment`, `enabledModules` e `featureFlags`;
+- aceitar ambiente injetado para testes e execução controlada;
+- aplicar defaults seguros quando variáveis não existem ou possuem valores inválidos;
+- iniciar e encerrar pelo mesmo lifecycle dos demais serviços.
+
+O Config Service não conhece Dashboard, Nyx Assistente, integrações externas ou projetos futuros.
+
 ## Fluxo
 
 ```text
@@ -63,6 +80,7 @@ Dashboard UI
 Serviços internos
   -> NyxRuntime
   -> ServiceManager
+  -> ConfigService
   -> EventBus
 ```
 

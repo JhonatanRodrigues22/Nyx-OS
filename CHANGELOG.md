@@ -1,5 +1,24 @@
 # Changelog
 
+## Sprint 05 - Config Service e Limpeza de Ambiente
+
+### Criado
+
+- `ConfigService` em `packages/core`.
+- Parsing seguro de configuração em `@nyx-os/config`.
+- Testes para leitura de configuração e lifecycle do Config Service via Runtime.
+
+### Alterado
+
+- `NyxRuntime` passou a registrar o Config Service como serviço base.
+- Documentação do Core Runtime atualizada para incluir Config Service.
+- ADR-0013 atualizado para registrar serviços base genéricos.
+- READMEs de `packages/core` e `packages/config` atualizados.
+
+### Ambiente
+
+- Removido `C:\Users\Usuario\package-lock.json`, lockfile externo vazio que fazia o Next.js inferir a raiz errada do workspace.
+
 ## Runtime Genérico e Serviços de Base
 
 ### Criado
