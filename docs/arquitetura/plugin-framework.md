@@ -37,6 +37,8 @@ Durante a inicialização, plugins recebem:
 
 - `context.runtime`;
 - `context.events`;
+- `context.logger`;
+- `context.scheduler`;
 - `context.services`;
 - `context.state`.
 
@@ -94,6 +96,7 @@ Essa visibilidade ajuda a mostrar a evolução da plataforma sem transformar o d
 - Plugins devem depender de contratos.
 - IDs de plugins devem ser estáveis.
 - Plugins não devem acessar outros plugins diretamente.
+- Tarefas recorrentes devem ser registradas por `context.scheduler`, não por timers próprios.
 - Falhas devem ser refletidas no estado do plugin e no Event Bus.
 - Novas capacidades devem entrar como plugins ou usar essa infraestrutura quando fizer sentido arquitetural.
 

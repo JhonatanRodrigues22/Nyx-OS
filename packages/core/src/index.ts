@@ -15,6 +15,7 @@ import {
   type NyxPluginContext,
   type NyxPluginSnapshot
 } from "@nyx-os/plugin";
+import { SchedulerManager, type NyxScheduler, type ScheduledTaskSnapshot } from "@nyx-os/scheduler";
 import {
   InMemoryNyxStateService,
   type NyxRuntimeState,
@@ -55,6 +56,10 @@ export type NyxRuntimeSnapshot = {
   status: NyxRuntimeStatus;
   services: RuntimeServiceSnapshot[];
   plugins: NyxPluginSnapshot[];
+  scheduler: {
+    status: ReturnType<NyxScheduler["getStatus"]>;
+    tasks: ScheduledTaskSnapshot[];
+  };
   events: SystemEvent[];
   state: NyxRuntimeState | null;
 };
@@ -119,6 +124,10 @@ export type DashboardSnapshot = {
   navigation: NavigationItem[];
   cards: DashboardCard[];
   plugins: NyxPluginSnapshot[];
+  scheduler: {
+    status: ReturnType<NyxScheduler["getStatus"]>;
+    tasks: ScheduledTaskSnapshot[];
+  };
   recentEvents: SystemEvent[];
 };
 
@@ -387,6 +396,7 @@ export class NyxRuntime {
   readonly configService: ConfigService | null;
   readonly stateService: RuntimeStateService | null;
   readonly pluginManager: PluginManager;
+  readonly scheduler: NyxScheduler;
 
   constructor(
     readonly eventBus: EventBus = createEventBus(),
@@ -399,10 +409,17 @@ export class NyxRuntime {
       configService?: ConfigService;
       stateService?: RuntimeStateService;
       pluginManager?: PluginManager;
+      scheduler?: NyxScheduler;
     } = {}
   ) {
     this.events = options.events ?? createInMemoryEventBus<NyxSystemEvents>();
     this.pluginManager = options.pluginManager ?? new PluginManager(this.events);
+    this.scheduler =
+      options.scheduler ??
+      new SchedulerManager({
+        events: this.events,
+        logger: options.loggerService?.getLogger()
+      });
     this.loggerService =
       options.registerBaseServices === false ? null : (options.loggerService ?? new LoggerService());
     this.configService =
@@ -433,6 +450,7 @@ export class NyxRuntime {
 
     if (options.registerBasePlugins !== false) {
       this.registerPlugin(new RuntimeDiagnosticsPlugin());
+      this.registerPlugin(new HeartbeatPlugin());
     }
   }
 
@@ -473,6 +491,10 @@ export class NyxRuntime {
     return this.pluginManager.list();
   }
 
+  getScheduler(): NyxScheduler {
+    return this.scheduler;
+  }
+
   async start(): Promise<void> {
     if (this.status === "running" || this.status === "starting") {
       return;
@@ -493,6 +515,7 @@ export class NyxRuntime {
       await this.serviceManager.setupAll(this.createServiceContext());
       await this.serviceManager.startAll();
       await this.pluginManager.initializeAll(this.createPluginContext());
+      this.scheduler.start();
       this.status = "running";
       this.stateService?.getStateStore().updateRuntimeStatus("running");
       logger.info("Runtime started", { status: this.status });
@@ -537,6 +560,7 @@ export class NyxRuntime {
     });
 
     try {
+      this.scheduler.stop();
       await this.pluginManager.disposeAll(this.createPluginContext());
       await this.serviceManager.stopAll();
       this.status = "stopped";
@@ -572,6 +596,10 @@ export class NyxRuntime {
       status: this.status,
       services: this.serviceManager.list(),
       plugins: this.pluginManager.list(),
+      scheduler: {
+        status: this.scheduler.getStatus(),
+        tasks: this.scheduler.getTasks()
+      },
       events: this.eventBus.listRecent(),
       state: this.stateService?.getRuntimeState() ?? null
     };
@@ -603,6 +631,8 @@ export class NyxRuntime {
     return {
       runtime: this,
       events: this.events,
+      logger: this.getLogger(),
+      scheduler: this.scheduler,
       services: {
         list: () => this.serviceManager.list(),
         get: (name) => this.serviceManager.get(name)
@@ -689,6 +719,34 @@ export class RuntimeDiagnosticsPlugin implements NyxPlugin {
 
   dispose(): MaybePromise<void> {
     return undefined;
+  }
+}
+
+export class HeartbeatPlugin implements NyxPlugin {
+  readonly id = "heartbeat";
+  readonly name = "Heartbeat";
+  readonly version = "0.1.0";
+
+  initialize(context: NyxPluginContext): MaybePromise<void> {
+    context.scheduler.register({
+      id: "scheduler.heartbeat",
+      name: "Scheduler Heartbeat",
+      interval: 30000,
+      enabled: true,
+      execute: (taskContext) => {
+        taskContext.logger.info("Heartbeat task executed", {
+          task: "scheduler.heartbeat"
+        });
+      }
+    });
+  }
+
+  dispose(context: NyxPluginContext): MaybePromise<void> {
+    const taskExists = context.scheduler.getTasks().some((task) => task.id === "scheduler.heartbeat");
+
+    if (taskExists) {
+      context.scheduler.unregister("scheduler.heartbeat");
+    }
   }
 }
 
@@ -791,7 +849,11 @@ export class DashboardService {
     private readonly runtimeService: RuntimeService,
     private readonly systemStatusService: SystemStatusService,
     private readonly eventService: EventService,
-    private readonly plugins: NyxPluginSnapshot[] = []
+    private readonly plugins: NyxPluginSnapshot[] = [],
+    private readonly scheduler: DashboardSnapshot["scheduler"] = {
+      status: "idle",
+      tasks: []
+    }
   ) {}
 
   getSnapshot(): DashboardSnapshot {
@@ -836,9 +898,16 @@ export class DashboardService {
           value: `Loaded: ${this.plugins.length}`,
           description: "Plugin framework is available for modular runtime extensions.",
           status: "ready"
+        },
+        {
+          title: "Scheduler",
+          value: this.scheduler.status === "running" ? "Running" : "Ready",
+          description: `Tasks: ${this.scheduler.tasks.length}`,
+          status: "ready"
         }
       ],
       plugins: this.plugins,
+      scheduler: this.scheduler,
       recentEvents: this.eventService.listRecent()
     };
   }
@@ -855,7 +924,11 @@ export function createDashboardSnapshot(): DashboardSnapshot {
     runtimeService,
     systemStatusService,
     eventService,
-    runtime.getPlugins()
+    runtime.getPlugins(),
+    {
+      status: runtime.getScheduler().getStatus(),
+      tasks: runtime.getScheduler().getTasks()
+    }
   );
 
   eventService.startRuntime();

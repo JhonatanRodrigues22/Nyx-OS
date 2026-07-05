@@ -55,6 +55,7 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `arquitetura/core-runtime.md`: runtime base, event bus, services e dashboard executavel.
 - `arquitetura/event-bus.md`: contrato oficial de eventos, lifecycle e boas praticas.
 - `arquitetura/plugin-framework.md`: contrato de plugins, lifecycle e integração com Runtime.
+- `arquitetura/scheduler.md`: contrato do Scheduler, ciclo de tarefas e integração com plugins.
 - `arquitetura/logging.md`: contrato central de logging e Logger Service.
 - `packages/state/README.md`: contrato central de estado do Runtime.
 - `workflow/desenvolvimento.md`: ciclo oficial de branches, commits e Pull Requests.
@@ -63,6 +64,7 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `decisoes/ADR-0014-logging-por-contrato.md`: decisão de logging por contrato.
 - `decisoes/ADR-0015-event-bus-oficial.md`: decisão de Event Bus oficial tipado.
 - `decisoes/ADR-0016-plugin-framework.md`: decisão de Plugin Framework como mecanismo de expansão.
+- `decisoes/ADR-0017-scheduler-engine.md`: decisão do Scheduler Engine oficial.
 
 ## Decisoes recentes
 
@@ -78,3 +80,4 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `RuntimeStateService` é a fonte de verdade interna sobre o estado atual do Runtime e dos serviços registrados.
 - `@nyx-os/event-bus` é o contrato oficial de comunicação por eventos do Runtime.
 - `@nyx-os/plugin` é o mecanismo oficial de expansão modular do Runtime.
+- `@nyx-os/scheduler` é o mecanismo oficial de execução de tarefas recorrentes.

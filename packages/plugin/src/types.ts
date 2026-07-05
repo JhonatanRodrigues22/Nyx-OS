@@ -1,4 +1,6 @@
 import type { NyxEventBus, NyxSystemEvents } from "@nyx-os/event-bus";
+import type { NyxLogger } from "@nyx-os/logger";
+import type { NyxScheduler } from "@nyx-os/scheduler";
 import type { NyxStateService } from "@nyx-os/state";
 
 export type MaybePromise<T> = T | Promise<T>;
@@ -24,6 +26,8 @@ export type NyxPluginRuntimeHost = {
 export type NyxPluginContext = {
   runtime: NyxPluginRuntimeHost;
   events: NyxEventBus<NyxSystemEvents>;
+  logger: NyxLogger;
+  scheduler: NyxScheduler;
   services: NyxPluginServiceRegistry;
   state: NyxStateService | null;
 };

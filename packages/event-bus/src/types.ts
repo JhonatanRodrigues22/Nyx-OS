@@ -6,6 +6,7 @@ export type NyxEventPayload = {
   timestamp: string;
   service?: string;
   plugin?: string;
+  task?: string;
   status?: string;
   metadata?: Record<string, unknown>;
 };
@@ -49,7 +50,19 @@ export type NyxPluginEventName =
   | "plugin.unregistered"
   | "plugin.failed";
 
-export type NyxSystemEventName = NyxRuntimeEventName | NyxServiceEventName | NyxPluginEventName;
+export type NyxSchedulerEventName =
+  | "scheduler.started"
+  | "scheduler.stopped"
+  | "scheduler.task.registered"
+  | "scheduler.task.executed"
+  | "scheduler.task.failed"
+  | "scheduler.task.removed";
+
+export type NyxSystemEventName =
+  | NyxRuntimeEventName
+  | NyxServiceEventName
+  | NyxPluginEventName
+  | NyxSchedulerEventName;
 
 export type NyxSystemEvents = Record<NyxSystemEventName, NyxEventPayload>;
 

@@ -24,6 +24,7 @@ Ele inicializa, coordena e encerra serviços internos sem conhecer clientes espe
 - `@nyx-os/events`: stream em memória de eventos recentes usado por snapshots e dashboard.
 - `@nyx-os/logger`: contrato central de logging e implementação inicial em console.
 - `@nyx-os/plugin`: contrato oficial de plugins e manager de lifecycle.
+- `@nyx-os/scheduler`: contrato oficial de tarefas recorrentes e manager de agendamento.
 - `@nyx-os/state`: contrato central de estado do Runtime e serviços.
 - `@nyx-os/core`: runtime genérico, service manager, contratos de serviço, Logger Service, Config Service, State Service, status do sistema e serviços do dashboard.
 - `apps/web`: interface visual que consome snapshots produzidos pelos serviços.
@@ -163,6 +164,16 @@ Plugins são inicializados depois dos serviços base e descartados antes do ence
 
 O `RuntimeDiagnosticsPlugin` é um plugin interno mínimo para validar a arquitetura e tornar o framework visível no dashboard. Ele não implementa regra de produto.
 
+## Scheduler
+
+O Scheduler vive em `@nyx-os/scheduler` e é exposto pelo Runtime por `runtime.getScheduler()`.
+
+Ele permite registrar, remover, iniciar, parar, pausar, retomar e listar tarefas recorrentes.
+
+Plugins recebem `context.scheduler` durante a inicialização e podem registrar tarefas. O Runtime inicializa plugins antes de iniciar o Scheduler, para que tarefas registradas pelos plugins sejam agendadas no mesmo ciclo.
+
+O `HeartbeatPlugin` registra a tarefa `scheduler.heartbeat` como validação arquitetural mínima. Ela apenas escreve um log simples a cada intervalo.
+
 ## Dados Mockados
 
 Dados mockados vivem nos services/providers de runtime e dashboard dentro de `packages/core`.
@@ -171,7 +182,6 @@ Componentes React recebem um snapshot pronto para renderização.
 
 ## Fora do Núcleo Agora
 
-- Scheduler recorrente.
 - Descoberta automática de plugins.
 - Autenticação real.
 - Banco real.
@@ -185,4 +195,4 @@ Componentes React recebem um snapshot pronto para renderização.
 - WebSocket.
 - Captura de dados do computador.
 
-Scheduler, descoberta automática de plugins e plugins externos continuam ideias válidas, mas exigem contratos próprios e um ambiente de execução adequado. Eles não devem ser adicionados ao núcleo apenas por expectativa futura.
+Descoberta automática de plugins, plugins externos e automações reais continuam ideias válidas, mas exigem contratos próprios e um ambiente de execução adequado. Eles não devem ser adicionados ao núcleo apenas por expectativa futura.

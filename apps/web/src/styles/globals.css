@@ -250,7 +250,8 @@ h1 {
 .metric-card p,
 .module-card p,
 .event-list p,
-.plugin-list p {
+.plugin-list p,
+.scheduler-list p {
   color: var(--muted);
   line-height: 1.5;
 }
@@ -326,7 +327,8 @@ h1 {
   gap: var(--space-4);
 }
 
-.plugin-list {
+.plugin-list,
+.scheduler-list {
   display: grid;
   gap: var(--space-3);
   margin: var(--space-4) 0 0;
@@ -334,7 +336,8 @@ h1 {
   list-style: none;
 }
 
-.plugin-list li {
+.plugin-list li,
+.scheduler-list li {
   display: flex;
   min-width: 0;
   align-items: center;
@@ -347,11 +350,14 @@ h1 {
 }
 
 .plugin-list strong,
-.plugin-list p {
+.plugin-list p,
+.scheduler-list strong,
+.scheduler-list p {
   display: block;
 }
 
-.plugin-list p {
+.plugin-list p,
+.scheduler-list p {
   margin: var(--space-1) 0 0;
 }
 
