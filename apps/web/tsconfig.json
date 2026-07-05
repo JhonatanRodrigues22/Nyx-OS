@@ -22,6 +22,7 @@
       "@/*": ["src/*"],
       "@nyx-os/config": ["../../packages/config/src/index.ts"],
       "@nyx-os/core": ["../../packages/core/src/index.ts"],
+      "@nyx-os/event-bus": ["../../packages/event-bus/src/index.ts"],
       "@nyx-os/events": ["../../packages/events/src/index.ts"],
       "@nyx-os/logger": ["../../packages/logger/src/index.ts"],
       "@nyx-os/state": ["../../packages/state/src/index.ts"]

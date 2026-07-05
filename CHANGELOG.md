@@ -1,5 +1,35 @@
 # Changelog
 
+## Sprint 08 - Event Bus e Sistema de Eventos
+
+### Criado
+
+- `@nyx-os/event-bus` com contrato `NyxEventBus`.
+- `InMemoryEventBus` como implementação inicial.
+- Eventos internos de lifecycle para Runtime e serviços.
+- Testes para subscribe, unsubscribe, once, múltiplos listeners, ordem de execução e integração com Runtime.
+- Documentação de arquitetura em `docs/arquitetura/event-bus.md`.
+- ADR-0015 sobre Event Bus oficial tipado.
+
+### Alterado
+
+- `NyxRuntime` passou a expor `getEventBus()`.
+- Contexto de serviços passou a incluir `context.events`.
+- `ServiceManager` continua emitindo lifecycle interno, agora refletido no Event Bus oficial.
+- `@nyx-os/events` foi mantido como stream legado de eventos recentes para snapshots e dashboard.
+
+### Mantido Fora do Escopo
+
+- Skills.
+- IA.
+- Scheduler.
+- Plugins.
+- Memory.
+- Automation.
+- Observability.
+- Persistência de eventos.
+- WebSocket.
+
 ## Sprint 07 - Runtime State Service
 
 ### Criado

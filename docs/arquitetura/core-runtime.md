@@ -20,7 +20,8 @@ Ele inicializa, coordena e encerra serviços internos sem conhecer clientes espe
 ## Componentes
 
 - `@nyx-os/config`: configuração central do sistema.
-- `@nyx-os/events`: Event Bus em memória, com emissão, listagem recente e assinatura de eventos.
+- `@nyx-os/event-bus`: Event Bus oficial e tipado para comunicação desacoplada entre Runtime e serviços.
+- `@nyx-os/events`: stream em memória de eventos recentes usado por snapshots e dashboard.
 - `@nyx-os/logger`: contrato central de logging e implementação inicial em console.
 - `@nyx-os/state`: contrato central de estado do Runtime e serviços.
 - `@nyx-os/core`: runtime genérico, service manager, contratos de serviço, Logger Service, Config Service, State Service, status do sistema e serviços do dashboard.
@@ -35,7 +36,7 @@ Ele inicializa, coordena e encerra serviços internos sem conhecer clientes espe
 - emissão de eventos de lifecycle;
 - snapshot do runtime;
 - integração com `ServiceManager`;
-- acesso compartilhado ao `EventBus`.
+- acesso compartilhado ao `NyxEventBus`.
 - registro automático dos serviços base do núcleo.
 
 O runtime não descobre serviços automaticamente e não conhece módulos futuros por nome.
@@ -58,6 +59,8 @@ Cada serviço possui:
 O `ServiceManager` valida dependências ausentes, detecta dependências circulares e preserva a ordem de inicialização para desligamento reverso.
 
 O `ServiceManager` também emite eventos internos de lifecycle para que o State Service acompanhe mudanças de status sem exigir que cada serviço atualize o estado manualmente.
+
+O Runtime traduz esses eventos de lifecycle para o Event Bus oficial quando um serviço é registrado, iniciado, parado ou falha.
 
 ## Logger Service
 
@@ -127,13 +130,20 @@ A UI renderiza dados e dispara interações visuais. Ela não deve concentrar re
 
 ## Event Bus
 
-O Event Bus inicial fica em memória e permite:
+O Event Bus oficial vive em `@nyx-os/event-bus` e fica disponível por `runtime.getEventBus()` e por `context.events` dentro dos serviços.
+
+Ele permite:
 
 - emitir eventos internos;
-- listar eventos recentes;
-- assinar eventos por tipo;
-- assinar todos os eventos com `*`;
-- representar eventos como `runtime.started`, `module.ready`, `dashboard.loaded` e eventos de lifecycle do runtime.
+- assinar eventos com `on`;
+- assinar eventos uma única vez com `once`;
+- remover listeners com `off`;
+- remover listeners em lote com `removeAllListeners`;
+- representar eventos de lifecycle como `runtime.started`, `runtime.stopped`, `runtime.failed`, `service.registered`, `service.started`, `service.stopped` e `service.failed`.
+
+Os payloads são pequenos e tipados, com `timestamp`, `service`, `status` e `metadata`.
+
+O stream em `@nyx-os/events` continua existindo para eventos recentes do dashboard e snapshots legados, mas não é o contrato oficial de comunicação entre serviços.
 
 Ele ainda não é persistente, distribuído ou conectado a integrações externas.
 

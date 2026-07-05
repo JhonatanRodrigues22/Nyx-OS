@@ -1,6 +1,8 @@
 # @nyx-os/events
 
-Responsável por eventos de domínio e comunicação interna desacoplada.
+Responsável pelo stream em memória de eventos recentes usado por snapshots e dashboard.
+
+O Event Bus oficial de comunicação tipada do Runtime vive em `@nyx-os/event-bus`.
 
 O Event Bus inicial é em memória e permite:
 
@@ -10,4 +12,4 @@ O Event Bus inicial é em memória e permite:
 - assinar todos os eventos com `*`;
 - cancelar assinaturas.
 
-Eventos devem favorecer rastreabilidade e automações futuras sem acoplar serviços diretamente.
+Este pacote permanece por compatibilidade com a camada visual atual. Novas responsabilidades de lifecycle técnico devem usar `@nyx-os/event-bus`.

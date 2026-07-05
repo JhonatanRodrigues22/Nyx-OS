@@ -1,5 +1,11 @@
 import type { NyxConfig, NyxConfigEnvironment, NyxModuleId } from "@nyx-os/config";
 import { getNyxConfig } from "@nyx-os/config";
+import {
+  createInMemoryEventBus,
+  createNyxEventPayload,
+  type NyxEventBus,
+  type NyxSystemEvents
+} from "@nyx-os/event-bus";
 import type { SystemEvent } from "@nyx-os/events";
 import { createEventBus, type EventBus } from "@nyx-os/events";
 import { createConsoleLogger, type NyxLogger } from "@nyx-os/logger";
@@ -18,6 +24,7 @@ export type NyxRuntimeStatus = "created" | "starting" | "running" | "stopping" |
 
 export type NyxServiceContext = {
   eventBus: EventBus;
+  events: NyxEventBus<NyxSystemEvents>;
   logger: NyxLogger;
   state: NyxStateService | null;
   emit: (input: Omit<Parameters<EventBus["emit"]>[0], "source"> & { source?: string }) => SystemEvent;
@@ -373,11 +380,13 @@ export class NyxRuntime {
     readonly serviceManager: ServiceManager = new ServiceManager(),
     options: {
       registerBaseServices?: boolean;
+      events?: NyxEventBus<NyxSystemEvents>;
       loggerService?: LoggerService;
       configService?: ConfigService;
       stateService?: RuntimeStateService;
     } = {}
   ) {
+    this.events = options.events ?? createInMemoryEventBus<NyxSystemEvents>();
     this.loggerService =
       options.registerBaseServices === false ? null : (options.loggerService ?? new LoggerService());
     this.configService =
@@ -391,6 +400,7 @@ export class NyxRuntime {
         status: event.status,
         dependencies: event.service.dependencies
       });
+      this.emitServiceLifecycleEvent(event);
     });
 
     if (this.loggerService) {
@@ -406,6 +416,8 @@ export class NyxRuntime {
     }
   }
 
+  readonly events: NyxEventBus<NyxSystemEvents>;
+
   registerService(service: NyxService): void {
     this.serviceManager.register(service);
     this.stateService?.getStateStore().registerService({
@@ -413,6 +425,16 @@ export class NyxRuntime {
       status: service.status,
       dependencies: service.dependencies
     });
+    this.events.emit(
+      "service.registered",
+      createNyxEventPayload({
+        service: service.name,
+        status: service.status,
+        metadata: {
+          dependencies: service.dependencies
+        }
+      })
+    );
   }
 
   async start(): Promise<void> {
@@ -437,6 +459,7 @@ export class NyxRuntime {
       this.status = "running";
       this.stateService?.getStateStore().updateRuntimeStatus("running");
       logger.info("Runtime started", { status: this.status });
+      this.emitRuntimeEvent("runtime.started", "running");
       this.eventBus.emit({
         type: "runtime.started",
         message: "Nyx runtime started.",
@@ -446,6 +469,9 @@ export class NyxRuntime {
       this.status = "failed";
       this.stateService?.getStateStore().updateRuntimeStatus("failed");
       logger.error("Runtime failed", {
+        error: error instanceof Error ? error.message : "Unknown runtime failure"
+      });
+      this.emitRuntimeEvent("runtime.failed", "failed", {
         error: error instanceof Error ? error.message : "Unknown runtime failure"
       });
       this.eventBus.emit({
@@ -473,15 +499,34 @@ export class NyxRuntime {
       source: "runtime"
     });
 
-    await this.serviceManager.stopAll();
-    this.status = "stopped";
-    this.stateService?.getStateStore().updateRuntimeStatus("stopped");
-    this.getLogger().info("Runtime stopped", { status: this.status });
-    this.eventBus.emit({
-      type: "runtime.stopped",
-      message: "Nyx runtime stopped.",
-      source: "runtime"
-    });
+    try {
+      await this.serviceManager.stopAll();
+      this.status = "stopped";
+      this.stateService?.getStateStore().updateRuntimeStatus("stopped");
+      this.getLogger().info("Runtime stopped", { status: this.status });
+      this.emitRuntimeEvent("runtime.stopped", "stopped");
+      this.eventBus.emit({
+        type: "runtime.stopped",
+        message: "Nyx runtime stopped.",
+        source: "runtime"
+      });
+    } catch (error) {
+      this.status = "failed";
+      this.stateService?.getStateStore().updateRuntimeStatus("failed");
+      this.getLogger().error("Runtime failed", {
+        error: error instanceof Error ? error.message : "Unknown runtime failure"
+      });
+      this.emitRuntimeEvent("runtime.failed", "failed", {
+        error: error instanceof Error ? error.message : "Unknown runtime failure"
+      });
+      this.eventBus.emit({
+        type: "runtime.failed",
+        message: error instanceof Error ? error.message : "Nyx runtime failed.",
+        level: "error",
+        source: "runtime"
+      });
+      throw error;
+    }
   }
 
   getSnapshot(): NyxRuntimeSnapshot {
@@ -497,9 +542,14 @@ export class NyxRuntime {
     return this.stateService?.getRuntimeState() ?? null;
   }
 
+  getEventBus(): NyxEventBus<NyxSystemEvents> {
+    return this.events;
+  }
+
   private createServiceContext(): NyxServiceContext {
     return {
       eventBus: this.eventBus,
+      events: this.events,
       logger: this.getLogger(),
       state: this.stateService?.getStateStore() ?? null,
       emit: (input) =>
@@ -523,6 +573,57 @@ export class NyxRuntime {
       environment: config.environment,
       services: this.serviceManager.list()
     });
+  }
+
+  private emitRuntimeEvent(event: "runtime.started" | "runtime.stopped" | "runtime.failed", status: string, metadata = {}) {
+    this.events.emit(
+      event,
+      createNyxEventPayload({
+        status,
+        metadata
+      })
+    );
+  }
+
+  private emitServiceLifecycleEvent(event: ServiceLifecycleEvent): void {
+    if (event.status === "running") {
+      this.events.emit(
+        "service.started",
+        createNyxEventPayload({
+          service: event.service.name,
+          status: event.status,
+          metadata: {
+            dependencies: event.service.dependencies
+          }
+        })
+      );
+    }
+
+    if (event.status === "stopped") {
+      this.events.emit(
+        "service.stopped",
+        createNyxEventPayload({
+          service: event.service.name,
+          status: event.status,
+          metadata: {
+            dependencies: event.service.dependencies
+          }
+        })
+      );
+    }
+
+    if (event.status === "failed") {
+      this.events.emit(
+        "service.failed",
+        createNyxEventPayload({
+          service: event.service.name,
+          status: event.status,
+          metadata: {
+            dependencies: event.service.dependencies
+          }
+        })
+      );
+    }
   }
 }
 
