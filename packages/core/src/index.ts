@@ -1,4 +1,4 @@
-import type { NyxConfig, NyxModuleId } from "@nyx-os/config";
+import type { NyxConfig, NyxConfigEnvironment, NyxModuleId } from "@nyx-os/config";
 import { getNyxConfig } from "@nyx-os/config";
 import type { SystemEvent } from "@nyx-os/events";
 import { createEventBus, type EventBus } from "@nyx-os/events";
@@ -34,6 +34,13 @@ export type NyxRuntimeSnapshot = {
   status: NyxRuntimeStatus;
   services: RuntimeServiceSnapshot[];
   events: SystemEvent[];
+};
+
+export type ConfigServiceSnapshot = Pick<NyxConfig, "appName" | "version" | "environment" | "enabledModules" | "featureFlags">;
+
+export type ConfigServiceOptions = {
+  env?: NyxConfigEnvironment;
+  loadConfig?: (env?: NyxConfigEnvironment) => NyxConfig;
 };
 
 export type RuntimeState = {
@@ -94,6 +101,47 @@ export class BaseNyxService implements NyxService {
 
   stop(): MaybePromise<void> {
     this.status = "stopped";
+  }
+}
+
+export class ConfigService extends BaseNyxService {
+  private config: NyxConfig | null = null;
+  private readonly loadConfig: (env?: NyxConfigEnvironment) => NyxConfig;
+  private readonly env: NyxConfigEnvironment | undefined;
+
+  constructor(options: ConfigServiceOptions = {}) {
+    super("config");
+    this.env = options.env;
+    this.loadConfig = options.loadConfig ?? getNyxConfig;
+  }
+
+  start(): MaybePromise<void> {
+    this.config = this.loadConfig(this.env);
+    return super.start();
+  }
+
+  stop(): MaybePromise<void> {
+    return super.stop();
+  }
+
+  getConfig(): NyxConfig {
+    if (!this.config) {
+      this.config = this.loadConfig(this.env);
+    }
+
+    return this.config;
+  }
+
+  getSnapshot(): ConfigServiceSnapshot {
+    const config = this.getConfig();
+
+    return {
+      appName: config.appName,
+      version: config.version,
+      environment: config.environment,
+      enabledModules: config.enabledModules,
+      featureFlags: config.featureFlags
+    };
   }
 }
 
@@ -197,11 +245,20 @@ export class ServiceManager {
 
 export class NyxRuntime {
   private status: NyxRuntimeStatus = "created";
+  readonly configService: ConfigService | null;
 
   constructor(
     readonly eventBus: EventBus = createEventBus(),
-    readonly serviceManager: ServiceManager = new ServiceManager()
-  ) {}
+    readonly serviceManager: ServiceManager = new ServiceManager(),
+    options: { registerBaseServices?: boolean; configService?: ConfigService } = {}
+  ) {
+    this.configService =
+      options.registerBaseServices === false ? null : (options.configService ?? new ConfigService());
+
+    if (this.configService) {
+      this.registerService(this.configService);
+    }
+  }
 
   registerService(service: NyxService): void {
     this.serviceManager.register(service);

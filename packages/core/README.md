@@ -7,6 +7,7 @@ Este package contém:
 - `NyxRuntime`;
 - `ServiceManager`;
 - `BaseNyxService`;
+- `ConfigService`;
 - contratos de serviços;
 - serviços de estado do runtime;
 - serviços de dashboard.
