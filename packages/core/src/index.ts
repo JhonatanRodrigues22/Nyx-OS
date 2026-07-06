@@ -9,6 +9,7 @@ import {
 import type { SystemEvent } from "@nyx-os/events";
 import { createEventBus, type EventBus } from "@nyx-os/events";
 import { createConsoleLogger, type NyxLogger } from "@nyx-os/logger";
+import { MemoryManager, type MemorySnapshot, type NyxMemoryService } from "@nyx-os/memory";
 import {
   PluginManager,
   type NyxPlugin,
@@ -60,6 +61,7 @@ export type NyxRuntimeSnapshot = {
     status: ReturnType<NyxScheduler["getStatus"]>;
     tasks: ScheduledTaskSnapshot[];
   };
+  memory: MemorySnapshot;
   events: SystemEvent[];
   state: NyxRuntimeState | null;
 };
@@ -429,6 +431,7 @@ export class NyxRuntime {
   readonly stateService: RuntimeStateService | null;
   readonly pluginManager: PluginManager;
   readonly scheduler: NyxScheduler;
+  readonly memory: NyxMemoryService;
 
   constructor(
     readonly eventBus: EventBus = createEventBus(),
@@ -442,10 +445,16 @@ export class NyxRuntime {
       stateService?: RuntimeStateService;
       pluginManager?: PluginManager;
       scheduler?: NyxScheduler;
+      memory?: NyxMemoryService;
     } = {}
   ) {
     this.events = options.events ?? createInMemoryEventBus<NyxSystemEvents>();
     this.pluginManager = options.pluginManager ?? new PluginManager(this.events);
+    this.memory =
+      options.memory ??
+      new MemoryManager({
+        events: this.events
+      });
     this.scheduler =
       options.scheduler ??
       new SchedulerManager({
@@ -482,6 +491,7 @@ export class NyxRuntime {
 
     if (options.registerBasePlugins !== false) {
       this.registerPlugin(new RuntimeDiagnosticsPlugin());
+      this.registerPlugin(new MemoryPlugin());
       this.registerPlugin(new HeartbeatPlugin());
     }
   }
@@ -525,6 +535,10 @@ export class NyxRuntime {
 
   getScheduler(): NyxScheduler {
     return this.scheduler;
+  }
+
+  getMemory(): NyxMemoryService {
+    return this.memory;
   }
 
   async start(): Promise<void> {
@@ -632,6 +646,7 @@ export class NyxRuntime {
         status: this.scheduler.getStatus(),
         tasks: this.scheduler.getTasks()
       },
+      memory: this.memory.snapshot(),
       events: this.eventBus.listRecent(),
       state: this.stateService?.getRuntimeState() ?? null
     };
@@ -664,6 +679,7 @@ export class NyxRuntime {
       runtime: this,
       events: this.events,
       logger: this.getLogger(),
+      memory: this.memory,
       scheduler: this.scheduler,
       services: {
         list: () => this.serviceManager.list(),
@@ -747,6 +763,42 @@ export class RuntimeDiagnosticsPlugin implements NyxPlugin {
 
   initialize(context: NyxPluginContext): MaybePromise<void> {
     void context;
+  }
+
+  dispose(): MaybePromise<void> {
+    return undefined;
+  }
+}
+
+export class MemoryPlugin implements NyxPlugin {
+  readonly id = "memory-plugin";
+  readonly name = "Memory Plugin";
+  readonly version = "0.1.0";
+
+  initialize(context: NyxPluginContext): MaybePromise<void> {
+    const existingMemory = context.memory.get("memory.runtime.diagnostics");
+
+    if (!existingMemory) {
+      context.memory.create({
+        id: "memory.runtime.diagnostics",
+        title: "Runtime memory diagnostics",
+        content: "Memory service initialized and available through the Nyx Runtime plugin context.",
+        category: "system",
+        tags: ["runtime", "memory", "diagnostics"],
+        source: {
+          type: "plugin",
+          id: this.id,
+          label: this.name
+        },
+        metadata: {
+          plugin: this.id
+        },
+        importance: 4
+      });
+    }
+
+    context.memory.search({ tags: ["memory"] });
+    context.memory.list();
   }
 
   dispose(): MaybePromise<void> {
@@ -1038,6 +1090,20 @@ export class DashboardService {
         services: [],
         plugins: this.plugins,
         scheduler: this.scheduler,
+        memory: {
+          total: 0,
+          categories: {
+            project: 0,
+            knowledge: 0,
+            conversation: 0,
+            system: 0,
+            user: 0,
+            automation: 0,
+            temporary: 0,
+            custom: 0
+          },
+          tags: {}
+        },
         events: this.eventService.listRecent(),
         state: null
       } satisfies NyxRuntimeSnapshot);

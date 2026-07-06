@@ -1,5 +1,6 @@
 import { createInMemoryEventBus, type NyxSystemEvents } from "@nyx-os/event-bus";
 import { createConsoleLogger } from "@nyx-os/logger";
+import { MemoryManager } from "@nyx-os/memory";
 import { PluginManager, type NyxPlugin, type NyxPluginContext } from "@nyx-os/plugin";
 import { SchedulerManager } from "@nyx-os/scheduler";
 
@@ -24,10 +25,12 @@ function createContext(events = createInMemoryEventBus<NyxSystemEvents>()): NyxP
 
   return {
     runtime: {
-      getEventBus: () => events
+      getEventBus: () => events,
+      getMemory: () => new MemoryManager({ events })
     },
     events,
     logger,
+    memory: new MemoryManager({ events }),
     scheduler: new SchedulerManager({ events, logger }),
     services: {
       list: () => []

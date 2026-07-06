@@ -1,5 +1,15 @@
 # @nyx-os/memory
 
-Responsável por memória como contexto persistente vivo.
+Memory Engine oficial do Nyx OS.
 
-Deve seguir `docs/decisoes/ADR-0006-memoria.md`.
+Este package fornece memoria textual em memoria, busca simples e eventos `memory.*`.
+
+Fora do escopo atual:
+
+- IA;
+- embeddings;
+- banco de dados;
+- vetores;
+- RAG;
+- LLM;
+- automacoes.
