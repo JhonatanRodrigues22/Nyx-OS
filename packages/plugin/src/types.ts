@@ -4,6 +4,7 @@ import type { NyxLogger } from "@nyx-os/logger";
 import type { NyxMemoryService } from "@nyx-os/memory";
 import type { NyxScheduler } from "@nyx-os/scheduler";
 import type { NyxStateService } from "@nyx-os/state";
+import type { NyxToolManager } from "@nyx-os/tools";
 
 export type MaybePromise<T> = T | Promise<T>;
 
@@ -24,6 +25,7 @@ export type NyxPluginRuntimeHost = {
   getCapabilities(): NyxCapabilityManager;
   getEventBus(): NyxEventBus<NyxSystemEvents>;
   getMemory(): NyxMemoryService;
+  getTools(): NyxToolManager;
   getRuntimeState?(): unknown;
 };
 
@@ -34,6 +36,7 @@ export type NyxPluginContext = {
   logger: NyxLogger;
   memory: NyxMemoryService;
   scheduler: NyxScheduler;
+  tools: NyxToolManager;
   services: NyxPluginServiceRegistry;
   state: NyxStateService | null;
 };

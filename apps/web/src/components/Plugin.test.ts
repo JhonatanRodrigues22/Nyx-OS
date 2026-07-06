@@ -4,6 +4,7 @@ import { createConsoleLogger } from "@nyx-os/logger";
 import { MemoryManager } from "@nyx-os/memory";
 import { PluginManager, type NyxPlugin, type NyxPluginContext } from "@nyx-os/plugin";
 import { SchedulerManager } from "@nyx-os/scheduler";
+import { ToolManager } from "@nyx-os/tools";
 
 function createPlugin(id = "test-plugin"): NyxPlugin & { initialized: boolean; disposed: boolean } {
   return {
@@ -53,18 +54,51 @@ function createContext(events = createInMemoryEventBus<NyxSystemEvents>()): NyxP
       scheduler
     })
   });
+  const tools = new ToolManager({
+    events,
+    capabilities,
+    createContext: () => ({
+      runtime: {
+        getCapabilities: () => capabilities,
+        getEventBus: () => events,
+        getMemory: () => memory
+      },
+      logger,
+      config: {
+        appName: "Nyx OS",
+        version: "0.1.0",
+        environment: "test",
+        enabledModules: ["core", "events", "dashboard"],
+        featureFlags: {
+          useMockData: true,
+          enablePersistentMemory: false,
+          enableAutomation: false,
+          enableAiRuntime: false
+        }
+      },
+      memory,
+      scheduler,
+      eventBus: events,
+      services: {
+        list: () => []
+      },
+      capabilities
+    })
+  });
 
   return {
     runtime: {
       getCapabilities: () => capabilities,
       getEventBus: () => events,
-      getMemory: () => memory
+      getMemory: () => memory,
+      getTools: () => tools
     },
     capabilities,
     events,
     logger,
     memory,
     scheduler,
+    tools,
     services: {
       list: () => []
     },

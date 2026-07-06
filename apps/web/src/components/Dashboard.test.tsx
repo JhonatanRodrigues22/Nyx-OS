@@ -17,10 +17,12 @@ describe("Dashboard", () => {
     const plugins = screen.getByLabelText("Plugins registrados");
     const scheduler = screen.getByLabelText("Scheduler");
     const capabilities = screen.getByLabelText("Capabilities registradas");
+    const tools = screen.getByLabelText("Tools registradas");
 
     expect(within(scheduler).getByRole("heading", { name: "Scheduler" })).toBeInTheDocument();
     expect(within(scheduler).getByText("Tasks Registradas")).toBeInTheDocument();
     expect(within(capabilities).getByRole("heading", { name: "Capabilities" })).toBeInTheDocument();
+    expect(within(tools).getByRole("heading", { name: "Tools" })).toBeInTheDocument();
     expect(within(plugins).getByRole("heading", { name: "Plugins" })).toBeInTheDocument();
     expect(within(plugins).getByText("Runtime Diagnostics")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Eventos Recentes" })).toBeInTheDocument();
