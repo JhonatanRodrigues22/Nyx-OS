@@ -1,5 +1,37 @@
 # Changelog
 
+## Sprint 15 - Tool Calling Engine
+
+### Adicionado
+
+- `@nyx-os/tools` com contratos e implementacao inicial do Tool Calling Engine.
+- `ToolManager`, `ToolRegistry` e `ToolExecutor`.
+- Categorias iniciais de Tool: `memory`, `system`, `diagnostics`, `filesystem`, `network`, `automation` e `custom`.
+- Validacao simples de parametros por contrato.
+- Eventos `tool.registered`, `tool.removed`, `tool.executed` e `tool.failed`.
+- Tools internas `memory.search` e `diagnostics.runtime` como validacao arquitetural minima.
+- Bloco simples de Tools no Dev Dashboard.
+- Documentacao em `docs/arquitetura/tool-calling-engine.md`.
+- ADR-0020 sobre Tool Calling Engine oficial.
+
+### Alterado
+
+- `NyxRuntime` passou a expor `runtime.getTools()`.
+- Contexto de plugins passou a expor `context.tools`.
+- Snapshot do Runtime e Dashboard passou a incluir Tools registradas.
+- Event Bus oficial passou a tipar eventos `tool.*`.
+- Testes ampliados para registro, execucao, validacao, eventos, Runtime, plugins e integracao com Capability Engine.
+
+### Fora do escopo
+
+- IA.
+- LLM.
+- Prompts.
+- Planejamento.
+- Raciocinio.
+- Agentes.
+- Automacoes inteligentes.
+
 ## Sprint 14 - Capability Engine
 
 ### Adicionado

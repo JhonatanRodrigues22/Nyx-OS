@@ -10,7 +10,8 @@ const cardKinds: Record<string, string> = {
   Infraestrutura: "infra",
   Plugins: "plugins",
   Scheduler: "scheduler",
-  Capabilities: "capabilities"
+  Capabilities: "capabilities",
+  Tools: "tools"
 };
 
 export function DashboardCardGrid({ cards }: DashboardCardGridProps) {

@@ -30,6 +30,14 @@ import {
   type NyxRuntimeState,
   type NyxStateService
 } from "@nyx-os/state";
+import {
+  MemorySearchTool,
+  RuntimeDiagnosticsTool,
+  ToolManager,
+  type NyxToolManager,
+  type ToolContext,
+  type ToolSnapshot
+} from "@nyx-os/tools";
 
 type MaybePromise<T> = T | Promise<T>;
 
@@ -70,6 +78,7 @@ export type NyxRuntimeSnapshot = {
     tasks: ScheduledTaskSnapshot[];
   };
   capabilities: CapabilitySnapshot[];
+  tools: ToolSnapshot[];
   memory: MemorySnapshot;
   events: SystemEvent[];
   state: NyxRuntimeState | null;
@@ -158,6 +167,11 @@ export type DashboardOverview = {
     total: number;
     enabled: number;
   };
+  tools: {
+    total: number;
+    enabled: number;
+    lastExecutedAt: string | null;
+  };
   events: {
     total: number;
     recent: number;
@@ -176,6 +190,7 @@ export type DashboardSnapshot = {
     tasks: ScheduledTaskSnapshot[];
   };
   capabilities: CapabilitySnapshot[];
+  tools: ToolSnapshot[];
   recentEvents: SystemEvent[];
 };
 
@@ -445,6 +460,7 @@ export class NyxRuntime {
   readonly stateService: RuntimeStateService | null;
   readonly pluginManager: PluginManager;
   readonly capabilities: NyxCapabilityManager;
+  readonly tools: NyxToolManager;
   readonly scheduler: NyxScheduler;
   readonly memory: NyxMemoryService;
 
@@ -454,6 +470,7 @@ export class NyxRuntime {
     options: {
       registerBaseServices?: boolean;
       registerBaseCapabilities?: boolean;
+      registerBaseTools?: boolean;
       registerBasePlugins?: boolean;
       events?: NyxEventBus<NyxSystemEvents>;
       loggerService?: LoggerService;
@@ -461,6 +478,7 @@ export class NyxRuntime {
       stateService?: RuntimeStateService;
       pluginManager?: PluginManager;
       capabilities?: NyxCapabilityManager;
+      tools?: NyxToolManager;
       scheduler?: NyxScheduler;
       memory?: NyxMemoryService;
     } = {}
@@ -477,6 +495,13 @@ export class NyxRuntime {
       new CapabilityManager({
         events: this.events,
         createContext: () => this.createCapabilityContext()
+      });
+    this.tools =
+      options.tools ??
+      new ToolManager({
+        events: this.events,
+        capabilities: this.capabilities,
+        createContext: () => this.createToolContext()
       });
     this.scheduler =
       options.scheduler ??
@@ -515,6 +540,11 @@ export class NyxRuntime {
     if (options.registerBaseCapabilities !== false) {
       this.capabilities.register(new DiagnosticsCapability());
       this.capabilities.register(new MemoryCapability());
+    }
+
+    if (options.registerBaseTools !== false) {
+      this.tools.register(new RuntimeDiagnosticsTool());
+      this.tools.register(new MemorySearchTool());
     }
 
     if (options.registerBasePlugins !== false) {
@@ -571,6 +601,10 @@ export class NyxRuntime {
 
   getCapabilities(): NyxCapabilityManager {
     return this.capabilities;
+  }
+
+  getTools(): NyxToolManager {
+    return this.tools;
   }
 
   async start(): Promise<void> {
@@ -679,6 +713,7 @@ export class NyxRuntime {
         tasks: this.scheduler.getTasks()
       },
       capabilities: this.capabilities.list(),
+      tools: this.tools.list(),
       memory: this.memory.snapshot(),
       events: this.eventBus.listRecent(),
       state: this.stateService?.getRuntimeState() ?? null
@@ -715,6 +750,7 @@ export class NyxRuntime {
       logger: this.getLogger(),
       memory: this.memory,
       scheduler: this.scheduler,
+      tools: this.tools,
       services: {
         list: () => this.serviceManager.list(),
         get: (name) => this.serviceManager.get(name)
@@ -735,6 +771,22 @@ export class NyxRuntime {
         get: (name) => this.serviceManager.get(name)
       },
       scheduler: this.scheduler
+    };
+  }
+
+  private createToolContext(): ToolContext {
+    return {
+      runtime: this,
+      logger: this.getLogger(),
+      config: this.configService?.getConfig() ?? getNyxConfig(),
+      memory: this.memory,
+      scheduler: this.scheduler,
+      eventBus: this.events,
+      services: {
+        list: () => this.serviceManager.list(),
+        get: (name) => this.serviceManager.get(name)
+      },
+      capabilities: this.capabilities
     };
   }
 
@@ -1068,6 +1120,13 @@ function createDashboardOverview(
   const plugins = runtimeSnapshot.plugins;
   const initializedPlugins = plugins.filter((plugin) => plugin.status === "initialized").length;
   const enabledCapabilities = runtimeSnapshot.capabilities.filter((capability) => capability.enabled).length;
+  const enabledTools = runtimeSnapshot.tools.filter((tool) => tool.enabled).length;
+  const lastToolExecution =
+    runtimeSnapshot.tools
+      .map((tool) => tool.lastExecutedAt)
+      .filter((value): value is string => Boolean(value))
+      .sort()
+      .at(-1) ?? null;
   const schedulerTasks = runtimeSnapshot.scheduler.tasks;
   const activeTasks = schedulerTasks.filter((task) => task.status === "scheduled" || task.status === "executing").length;
   const readyModules = runtime.modules.filter((module) => module.status === "ready").length;
@@ -1113,6 +1172,11 @@ function createDashboardOverview(
       total: runtimeSnapshot.capabilities.length,
       enabled: enabledCapabilities
     },
+    tools: {
+      total: runtimeSnapshot.tools.length,
+      enabled: enabledTools,
+      lastExecutedAt: lastToolExecution
+    },
     events: {
       total: recentEvents.length,
       recent: recentEvents.length
@@ -1145,6 +1209,7 @@ export class DashboardService {
         plugins: this.plugins,
         scheduler: this.scheduler,
         capabilities: [],
+        tools: [],
         memory: {
           total: 0,
           categories: {
@@ -1230,11 +1295,18 @@ export class DashboardService {
           value: `${overview.capabilities.enabled}/${overview.capabilities.total}`,
           description: "Capacidades registradas no Runtime.",
           status: "ready"
+        },
+        {
+          title: "Tools",
+          value: `${overview.tools.enabled}/${overview.tools.total}`,
+          description: "Tools executaveis registradas por Capability.",
+          status: "ready"
         }
       ],
       plugins: runtimeSnapshot.plugins,
       scheduler: runtimeSnapshot.scheduler,
       capabilities: runtimeSnapshot.capabilities,
+      tools: runtimeSnapshot.tools,
       recentEvents
     };
   }

@@ -72,13 +72,16 @@ export type NyxCapabilityEventName =
   | "capability.executed"
   | "capability.failed";
 
+export type NyxToolEventName = "tool.registered" | "tool.removed" | "tool.executed" | "tool.failed";
+
 export type NyxSystemEventName =
   | NyxRuntimeEventName
   | NyxServiceEventName
   | NyxPluginEventName
   | NyxSchedulerEventName
   | NyxMemoryEventName
-  | NyxCapabilityEventName;
+  | NyxCapabilityEventName
+  | NyxToolEventName;
 
 export type NyxSystemEvents = Record<NyxSystemEventName, NyxEventPayload>;
 

@@ -59,6 +59,7 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `arquitetura/dev-dashboard.md`: painel visual de estado do sistema para desenvolvimento.
 - `arquitetura/memory-engine.md`: contrato oficial de memoria textual, busca simples e store em memoria.
 - `arquitetura/capability-engine.md`: contrato oficial de capacidades, execucao e descoberta por Runtime e plugins.
+- `arquitetura/tool-calling-engine.md`: contrato oficial de Tools, validacao e execucao desacoplada.
 - `arquitetura/logging.md`: contrato central de logging e Logger Service.
 - `packages/state/README.md`: contrato central de estado do Runtime.
 - `workflow/desenvolvimento.md`: ciclo oficial de branches, commits e Pull Requests.
@@ -70,6 +71,7 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `decisoes/ADR-0017-scheduler-engine.md`: decisão do Scheduler Engine oficial.
 - `decisoes/ADR-0018-memory-engine.md`: decisão do Memory Engine oficial.
 - `decisoes/ADR-0019-capability-engine.md`: decisao do Capability Engine oficial.
+- `decisoes/ADR-0020-tool-calling-engine.md`: decisao do Tool Calling Engine oficial.
 
 ## Decisoes recentes
 
@@ -89,3 +91,4 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - O Dev Dashboard é um painel técnico de estado do sistema e não representa o Cockpit do usuário final.
 - `@nyx-os/memory` é o mecanismo oficial de memoria textual do Runtime.
 - `@nyx-os/capabilities` e o mecanismo oficial de registro, descoberta e execucao de capacidades.
+- `@nyx-os/tools` e a API publica executavel do Nyx OS para clientes futuros, incluindo o AI Runtime.
