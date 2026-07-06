@@ -4,6 +4,7 @@ import type { NyxSystemEventName } from "@nyx-os/event-bus";
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { CapabilityList } from "@/components/CapabilityList";
 import { DashboardCardGrid } from "@/components/DashboardCardGrid";
 import { EventList } from "@/components/EventList";
 import { InfrastructurePanel } from "@/components/InfrastructurePanel";
@@ -35,7 +36,11 @@ const observedEvents: NyxSystemEventName[] = [
   "scheduler.task.registered",
   "scheduler.task.executed",
   "scheduler.task.failed",
-  "scheduler.task.removed"
+  "scheduler.task.removed",
+  "capability.registered",
+  "capability.removed",
+  "capability.executed",
+  "capability.failed"
 ];
 
 export default function Home({ snapshot, enableLiveRuntime = true }: HomeProps) {
@@ -109,6 +114,10 @@ export default function Home({ snapshot, enableLiveRuntime = true }: HomeProps) 
           </div>
           <div className="side-stack">
             <SchedulerList overview={dashboardSnapshot.overview} tasks={dashboardSnapshot.scheduler.tasks} />
+            <CapabilityList
+              overview={dashboardSnapshot.overview}
+              capabilities={dashboardSnapshot.capabilities}
+            />
             <PluginList overview={dashboardSnapshot.overview} plugins={dashboardSnapshot.plugins} />
             <EventList overview={dashboardSnapshot.overview} events={dashboardSnapshot.recentEvents} />
           </div>

@@ -24,6 +24,7 @@ Ele inicializa, coordena e encerra serviços internos sem conhecer clientes espe
 - `@nyx-os/events`: stream em memória de eventos recentes usado por snapshots e dashboard.
 - `@nyx-os/logger`: contrato central de logging e implementação inicial em console.
 - `@nyx-os/memory`: contrato oficial de memoria textual, store em memoria e busca simples.
+- `@nyx-os/capabilities`: contrato oficial de capacidades executaveis e descobertas pelo Runtime.
 - `@nyx-os/plugin`: contrato oficial de plugins e manager de lifecycle.
 - `@nyx-os/scheduler`: contrato oficial de tarefas recorrentes e manager de agendamento.
 - `@nyx-os/state`: contrato central de estado do Runtime e serviços.
@@ -186,6 +187,16 @@ Plugins recebem `context.memory` durante a inicializacao.
 Nesta fase, ele implementa apenas memoria textual em memoria, CRUD, busca simples por ID, texto, categoria e tags, alem de eventos `memory.created`, `memory.updated`, `memory.deleted`, `memory.loaded`, `memory.saved` e `memory.search`.
 
 IA, embeddings, vetores, banco de dados, RAG, LLM e automacoes ficam fora do escopo do Memory Engine atual.
+
+## Capability Engine
+
+O Capability Engine vive em `@nyx-os/capabilities` e e exposto pelo Runtime por `runtime.getCapabilities()`.
+
+Plugins recebem `context.capabilities` durante a inicializacao.
+
+Nesta fase, ele implementa registro, remocao, descoberta, execucao, consulta por categoria e eventos `capability.registered`, `capability.removed`, `capability.executed` e `capability.failed`.
+
+As capacidades internas `DiagnosticsCapability` e `MemoryCapability` existem apenas para validar a arquitetura. Elas nao implementam IA, planejamento, tool calling ou automacao.
 
 ## Dados Mockados
 

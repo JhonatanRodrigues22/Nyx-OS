@@ -40,6 +40,7 @@ Durante a inicialização, plugins recebem:
 - `context.logger`;
 - `context.memory`;
 - `context.scheduler`;
+- `context.capabilities`;
 - `context.services`;
 - `context.state`.
 
@@ -101,6 +102,7 @@ Essa visibilidade ajuda a mostrar a evolução da plataforma sem transformar o d
 - Plugins não devem acessar outros plugins diretamente.
 - Tarefas recorrentes devem ser registradas por `context.scheduler`, não por timers próprios.
 - Memórias devem ser criadas e consultadas por `context.memory`, não por stores próprios acoplados ao plugin.
+- Capacidades devem ser registradas e executadas por `context.capabilities`, nao por acesso direto a implementacoes concretas.
 - Falhas devem ser refletidas no estado do plugin e no Event Bus.
 - Novas capacidades devem entrar como plugins ou usar essa infraestrutura quando fizer sentido arquitetural.
 

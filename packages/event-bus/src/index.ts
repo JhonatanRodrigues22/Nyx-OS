@@ -8,6 +8,7 @@ export type {
   NyxEventName,
   NyxEventPayload,
   NyxEventUnsubscribe,
+  NyxCapabilityEventName,
   NyxMemoryEventName,
   NyxPluginEventName,
   NyxRuntimeEventName,

@@ -1,3 +1,11 @@
+import {
+  CapabilityManager,
+  DiagnosticsCapability,
+  MemoryCapability,
+  type CapabilityContext,
+  type CapabilitySnapshot,
+  type NyxCapabilityManager
+} from "@nyx-os/capabilities";
 import type { NyxConfig, NyxConfigEnvironment, NyxEnvironment, NyxModuleId } from "@nyx-os/config";
 import { getNyxConfig } from "@nyx-os/config";
 import {
@@ -61,6 +69,7 @@ export type NyxRuntimeSnapshot = {
     status: ReturnType<NyxScheduler["getStatus"]>;
     tasks: ScheduledTaskSnapshot[];
   };
+  capabilities: CapabilitySnapshot[];
   memory: MemorySnapshot;
   events: SystemEvent[];
   state: NyxRuntimeState | null;
@@ -145,6 +154,10 @@ export type DashboardOverview = {
     activeTasks: number;
     lastHeartbeatLabel: string;
   };
+  capabilities: {
+    total: number;
+    enabled: number;
+  };
   events: {
     total: number;
     recent: number;
@@ -162,6 +175,7 @@ export type DashboardSnapshot = {
     status: ReturnType<NyxScheduler["getStatus"]>;
     tasks: ScheduledTaskSnapshot[];
   };
+  capabilities: CapabilitySnapshot[];
   recentEvents: SystemEvent[];
 };
 
@@ -430,6 +444,7 @@ export class NyxRuntime {
   readonly configService: ConfigService | null;
   readonly stateService: RuntimeStateService | null;
   readonly pluginManager: PluginManager;
+  readonly capabilities: NyxCapabilityManager;
   readonly scheduler: NyxScheduler;
   readonly memory: NyxMemoryService;
 
@@ -438,12 +453,14 @@ export class NyxRuntime {
     readonly serviceManager: ServiceManager = new ServiceManager(),
     options: {
       registerBaseServices?: boolean;
+      registerBaseCapabilities?: boolean;
       registerBasePlugins?: boolean;
       events?: NyxEventBus<NyxSystemEvents>;
       loggerService?: LoggerService;
       configService?: ConfigService;
       stateService?: RuntimeStateService;
       pluginManager?: PluginManager;
+      capabilities?: NyxCapabilityManager;
       scheduler?: NyxScheduler;
       memory?: NyxMemoryService;
     } = {}
@@ -454,6 +471,12 @@ export class NyxRuntime {
       options.memory ??
       new MemoryManager({
         events: this.events
+      });
+    this.capabilities =
+      options.capabilities ??
+      new CapabilityManager({
+        events: this.events,
+        createContext: () => this.createCapabilityContext()
       });
     this.scheduler =
       options.scheduler ??
@@ -487,6 +510,11 @@ export class NyxRuntime {
 
     if (this.stateService) {
       this.registerService(this.stateService);
+    }
+
+    if (options.registerBaseCapabilities !== false) {
+      this.capabilities.register(new DiagnosticsCapability());
+      this.capabilities.register(new MemoryCapability());
     }
 
     if (options.registerBasePlugins !== false) {
@@ -539,6 +567,10 @@ export class NyxRuntime {
 
   getMemory(): NyxMemoryService {
     return this.memory;
+  }
+
+  getCapabilities(): NyxCapabilityManager {
+    return this.capabilities;
   }
 
   async start(): Promise<void> {
@@ -646,6 +678,7 @@ export class NyxRuntime {
         status: this.scheduler.getStatus(),
         tasks: this.scheduler.getTasks()
       },
+      capabilities: this.capabilities.list(),
       memory: this.memory.snapshot(),
       events: this.eventBus.listRecent(),
       state: this.stateService?.getRuntimeState() ?? null
@@ -677,6 +710,7 @@ export class NyxRuntime {
   private createPluginContext(): NyxPluginContext {
     return {
       runtime: this,
+      capabilities: this.capabilities,
       events: this.events,
       logger: this.getLogger(),
       memory: this.memory,
@@ -686,6 +720,21 @@ export class NyxRuntime {
         get: (name) => this.serviceManager.get(name)
       },
       state: this.stateService?.getStateStore() ?? null
+    };
+  }
+
+  private createCapabilityContext(): CapabilityContext {
+    return {
+      runtime: this,
+      logger: this.getLogger(),
+      config: this.configService?.getConfig() ?? getNyxConfig(),
+      memory: this.memory,
+      eventBus: this.events,
+      services: {
+        list: () => this.serviceManager.list(),
+        get: (name) => this.serviceManager.get(name)
+      },
+      scheduler: this.scheduler
     };
   }
 
@@ -1018,6 +1067,7 @@ function createDashboardOverview(
   const runningServices = services.filter((service) => service.status === "running").length;
   const plugins = runtimeSnapshot.plugins;
   const initializedPlugins = plugins.filter((plugin) => plugin.status === "initialized").length;
+  const enabledCapabilities = runtimeSnapshot.capabilities.filter((capability) => capability.enabled).length;
   const schedulerTasks = runtimeSnapshot.scheduler.tasks;
   const activeTasks = schedulerTasks.filter((task) => task.status === "scheduled" || task.status === "executing").length;
   const readyModules = runtime.modules.filter((module) => module.status === "ready").length;
@@ -1059,6 +1109,10 @@ function createDashboardOverview(
       activeTasks,
       lastHeartbeatLabel: heartbeatTask ? "aguardando ciclo" : "indisponível"
     },
+    capabilities: {
+      total: runtimeSnapshot.capabilities.length,
+      enabled: enabledCapabilities
+    },
     events: {
       total: recentEvents.length,
       recent: recentEvents.length
@@ -1090,6 +1144,7 @@ export class DashboardService {
         services: [],
         plugins: this.plugins,
         scheduler: this.scheduler,
+        capabilities: [],
         memory: {
           total: 0,
           categories: {
@@ -1169,10 +1224,17 @@ export class DashboardService {
           value: overview.scheduler.status,
           description: `Tasks registradas: ${overview.scheduler.taskCount}.`,
           status: "ready"
+        },
+        {
+          title: "Capabilities",
+          value: `${overview.capabilities.enabled}/${overview.capabilities.total}`,
+          description: "Capacidades registradas no Runtime.",
+          status: "ready"
         }
       ],
       plugins: runtimeSnapshot.plugins,
       scheduler: runtimeSnapshot.scheduler,
+      capabilities: runtimeSnapshot.capabilities,
       recentEvents
     };
   }

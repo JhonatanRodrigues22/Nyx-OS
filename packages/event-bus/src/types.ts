@@ -66,12 +66,19 @@ export type NyxMemoryEventName =
   | "memory.saved"
   | "memory.search";
 
+export type NyxCapabilityEventName =
+  | "capability.registered"
+  | "capability.removed"
+  | "capability.executed"
+  | "capability.failed";
+
 export type NyxSystemEventName =
   | NyxRuntimeEventName
   | NyxServiceEventName
   | NyxPluginEventName
   | NyxSchedulerEventName
-  | NyxMemoryEventName;
+  | NyxMemoryEventName
+  | NyxCapabilityEventName;
 
 export type NyxSystemEvents = Record<NyxSystemEventName, NyxEventPayload>;
 

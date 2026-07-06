@@ -1,4 +1,5 @@
 import { createInMemoryEventBus, type NyxSystemEvents } from "@nyx-os/event-bus";
+import { CapabilityManager } from "@nyx-os/capabilities";
 import { createConsoleLogger } from "@nyx-os/logger";
 import { MemoryManager } from "@nyx-os/memory";
 import { PluginManager, type NyxPlugin, type NyxPluginContext } from "@nyx-os/plugin";
@@ -22,16 +23,48 @@ function createPlugin(id = "test-plugin"): NyxPlugin & { initialized: boolean; d
 
 function createContext(events = createInMemoryEventBus<NyxSystemEvents>()): NyxPluginContext {
   const logger = createConsoleLogger();
+  const memory = new MemoryManager({ events });
+  const scheduler = new SchedulerManager({ events, logger });
+  const capabilities = new CapabilityManager({
+    events,
+    createContext: () => ({
+      runtime: {
+        getEventBus: () => events,
+        getMemory: () => memory
+      },
+      logger,
+      config: {
+        appName: "Nyx OS",
+        version: "0.1.0",
+        environment: "test",
+        enabledModules: ["core", "events", "dashboard"],
+        featureFlags: {
+          useMockData: true,
+          enablePersistentMemory: false,
+          enableAutomation: false,
+          enableAiRuntime: false
+        }
+      },
+      memory,
+      eventBus: events,
+      services: {
+        list: () => []
+      },
+      scheduler
+    })
+  });
 
   return {
     runtime: {
+      getCapabilities: () => capabilities,
       getEventBus: () => events,
-      getMemory: () => new MemoryManager({ events })
+      getMemory: () => memory
     },
+    capabilities,
     events,
     logger,
-    memory: new MemoryManager({ events }),
-    scheduler: new SchedulerManager({ events, logger }),
+    memory,
+    scheduler,
     services: {
       list: () => []
     },
