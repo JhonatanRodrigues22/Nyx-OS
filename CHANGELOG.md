@@ -1,5 +1,34 @@
 # Changelog
 
+## Sprint 14 - Capability Engine
+
+### Adicionado
+
+- `@nyx-os/capabilities` com contratos e implementacao inicial do Capability Engine.
+- `CapabilityManager`, `CapabilityRegistry` e `CapabilityExecutor`.
+- Categorias iniciais de Capability: `system`, `memory`, `diagnostics`, `filesystem`, `network`, `automation` e `custom`.
+- Eventos `capability.registered`, `capability.removed`, `capability.executed` e `capability.failed`.
+- `DiagnosticsCapability` e `MemoryCapability` como capacidades internas minimas de validacao.
+- Bloco simples de Capabilities no Dev Dashboard.
+- Documentacao em `docs/arquitetura/capability-engine.md`.
+- ADR-0019 sobre Capability Engine oficial.
+
+### Alterado
+
+- `NyxRuntime` passou a expor `runtime.getCapabilities()`.
+- Contexto de plugins passou a expor `context.capabilities`.
+- Snapshot do Runtime e Dashboard passou a incluir capacidades registradas.
+- Event Bus oficial passou a tipar eventos `capability.*`.
+- Testes ampliados para registro, execucao, contexto, eventos, Runtime e plugins.
+
+### Fora do escopo
+
+- IA.
+- LLM.
+- Tool Calling.
+- Planejamento.
+- Automacoes reais.
+
 ## Sprint 13 - Memory Engine
 
 ### Criado

@@ -58,6 +58,7 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `arquitetura/scheduler.md`: contrato do Scheduler, ciclo de tarefas e integração com plugins.
 - `arquitetura/dev-dashboard.md`: painel visual de estado do sistema para desenvolvimento.
 - `arquitetura/memory-engine.md`: contrato oficial de memoria textual, busca simples e store em memoria.
+- `arquitetura/capability-engine.md`: contrato oficial de capacidades, execucao e descoberta por Runtime e plugins.
 - `arquitetura/logging.md`: contrato central de logging e Logger Service.
 - `packages/state/README.md`: contrato central de estado do Runtime.
 - `workflow/desenvolvimento.md`: ciclo oficial de branches, commits e Pull Requests.
@@ -68,6 +69,7 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `decisoes/ADR-0016-plugin-framework.md`: decisão de Plugin Framework como mecanismo de expansão.
 - `decisoes/ADR-0017-scheduler-engine.md`: decisão do Scheduler Engine oficial.
 - `decisoes/ADR-0018-memory-engine.md`: decisão do Memory Engine oficial.
+- `decisoes/ADR-0019-capability-engine.md`: decisao do Capability Engine oficial.
 
 ## Decisoes recentes
 
@@ -86,3 +88,4 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `@nyx-os/scheduler` é o mecanismo oficial de execução de tarefas recorrentes.
 - O Dev Dashboard é um painel técnico de estado do sistema e não representa o Cockpit do usuário final.
 - `@nyx-os/memory` é o mecanismo oficial de memoria textual do Runtime.
+- `@nyx-os/capabilities` e o mecanismo oficial de registro, descoberta e execucao de capacidades.

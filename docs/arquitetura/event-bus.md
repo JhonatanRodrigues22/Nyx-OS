@@ -70,6 +70,10 @@ O Runtime emite automaticamente:
 - `memory.loaded`;
 - `memory.saved`;
 - `memory.search`.
+- `capability.registered`;
+- `capability.removed`;
+- `capability.executed`;
+- `capability.failed`.
 
 Esses eventos descrevem lifecycle técnico e mudanças de infraestrutura. Eventos específicos de IA continuam fora do escopo atual.
 

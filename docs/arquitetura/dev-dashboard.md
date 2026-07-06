@@ -13,6 +13,7 @@ Ele existe para que a pessoa desenvolvedora consiga abrir `npm run dev` e entend
 - tempo online;
 - servicos registrados;
 - plugins carregados;
+- Capabilities registradas;
 - Scheduler;
 - tasks registradas;
 - eventos recentes.
@@ -57,6 +58,7 @@ O snapshot reune dados vindos de:
 - `ServiceManager`;
 - `PluginManager`;
 - `SchedulerManager`;
+- `CapabilityManager`;
 - `EventService`;
 - `ConfigService`.
 
@@ -75,6 +77,7 @@ No modo vivo, a pagina cria um `NyxRuntime`, inicia o ciclo do Runtime e atualiz
 - status do Runtime;
 - status de servicos;
 - status de plugins;
+- status de Capabilities;
 - status do Scheduler;
 - eventos oficiais observados.
 
@@ -90,6 +93,7 @@ Exemplos:
 - infraestrutura calculada a partir de modulos, servicos, plugins e Scheduler;
 - quantidade de servicos ativos;
 - quantidade de plugins inicializados;
+- quantidade de Capabilities habilitadas;
 - quantidade de tasks registradas;
 - quantidade de eventos recentes.
 

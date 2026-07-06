@@ -114,7 +114,7 @@ describe("Nyx runtime foundation", () => {
     const snapshot = createDashboardSnapshot();
 
     expect(snapshot.runtime.name).toBe("Nyx OS");
-    expect(snapshot.cards).toHaveLength(5);
+    expect(snapshot.cards).toHaveLength(6);
     expect(snapshot.plugins.map((plugin) => plugin.id)).toContain("runtime-diagnostics");
     expect(snapshot.scheduler.status).toBe("idle");
     expect(snapshot.navigation.map((item) => item.label)).toContain("Memória");

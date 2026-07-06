@@ -9,7 +9,8 @@ const cardKinds: Record<string, string> = {
   Servicos: "services",
   Infraestrutura: "infra",
   Plugins: "plugins",
-  Scheduler: "scheduler"
+  Scheduler: "scheduler",
+  Capabilities: "capabilities"
 };
 
 export function DashboardCardGrid({ cards }: DashboardCardGridProps) {
