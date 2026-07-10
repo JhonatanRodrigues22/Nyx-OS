@@ -1,5 +1,16 @@
 # Changelog
 
+## Limpeza Pre-Sprint 16
+
+### Corrigido
+
+- Build do app web ajustado para Next.js 16 com Turbopack (`efec778`, PR #19).
+- Jest ajustado para transformar pacotes internos `@nyx-os/*` vindos do workspace (`e647750`, PR #19).
+
+### Integracao
+
+- PR #19 aberto de `feat/sprint-15-tool-calling-engine` para `main`, sincronizando as Sprints 14 e 15 sem merge automatico.
+
 ## Sprint 15 - Tool Calling Engine
 
 ### Adicionado
