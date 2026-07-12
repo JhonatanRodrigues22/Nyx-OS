@@ -1,11 +1,20 @@
 import type { NyxToolManager, ToolSnapshot } from "@nyx-os/tools";
 import { AiProviderRegistry } from "./AiProviderRegistry";
-import type { AiConversationOptions, AiConversationResult, AiMessage, AiResponse } from "./AiTypes";
+import type {
+  AiConversationOptions,
+  AiConversationResult,
+  AiMessage,
+  AiResponse,
+  AiSystemPromptReference,
+  AiSystemPromptResolver
+} from "./AiTypes";
 
 export type AiConversationManagerOptions = {
   providers: AiProviderRegistry;
   tools: NyxToolManager;
   systemPrompt?: string;
+  systemPromptTemplate?: AiSystemPromptReference;
+  systemPromptResolver?: AiSystemPromptResolver;
   maxIterations?: number;
 };
 
@@ -13,6 +22,8 @@ export class AiConversationManager {
   private readonly providers: AiProviderRegistry;
   private readonly tools: NyxToolManager;
   private readonly defaultSystemPrompt: string;
+  private readonly defaultSystemPromptTemplate: AiSystemPromptReference | undefined;
+  private readonly systemPromptResolver: AiSystemPromptResolver | undefined;
   private readonly defaultMaxIterations: number;
   private readonly history: AiMessage[] = [];
 
@@ -20,6 +31,8 @@ export class AiConversationManager {
     this.providers = options.providers;
     this.tools = options.tools;
     this.defaultSystemPrompt = options.systemPrompt ?? "You are Nyx OS. Use available tools only when needed.";
+    this.defaultSystemPromptTemplate = options.systemPromptTemplate;
+    this.systemPromptResolver = options.systemPromptResolver;
     this.defaultMaxIterations = options.maxIterations ?? 10;
   }
 
@@ -45,7 +58,7 @@ export class AiConversationManager {
   async run(options: AiConversationOptions = {}): Promise<AiConversationResult> {
     const provider = this.providers.getActive();
     const maxIterations = options.maxIterations ?? this.defaultMaxIterations;
-    const systemPrompt = options.systemPrompt ?? this.defaultSystemPrompt;
+    const systemPrompt = this.resolveSystemPrompt(options);
     const tools = options.tools ?? this.tools.list();
     let iterations = 0;
 
@@ -93,5 +106,23 @@ export class AiConversationManager {
       },
       ...this.history
     ];
+  }
+
+  private resolveSystemPrompt(options: AiConversationOptions): string {
+    if (options.systemPrompt) {
+      return options.systemPrompt;
+    }
+
+    const templateReference = options.systemPromptTemplate ?? this.defaultSystemPromptTemplate;
+
+    if (templateReference) {
+      if (!this.systemPromptResolver) {
+        throw new Error("AI system prompt template requires a system prompt resolver");
+      }
+
+      return this.systemPromptResolver.renderSystemPrompt(templateReference);
+    }
+
+    return this.defaultSystemPrompt;
   }
 }
