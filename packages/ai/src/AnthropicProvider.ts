@@ -24,6 +24,49 @@ type AnthropicResponse = {
   stop_reason?: string;
 };
 
+type AnthropicToolMapping = {
+  tools: ReturnType<typeof createAnthropicTool>[];
+  nameToToolId: Map<string, string>;
+};
+
+function createSafeToolName(toolId: string, usedNames: Set<string>): string {
+  const normalized = toolId.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 64) || "tool";
+  let candidate = normalized;
+  let suffix = 1;
+
+  while (usedNames.has(candidate)) {
+    const suffixText = `_${suffix}`;
+
+    candidate = `${normalized.slice(0, 64 - suffixText.length)}${suffixText}`;
+    suffix += 1;
+  }
+
+  usedNames.add(candidate);
+  return candidate;
+}
+
+function createAnthropicTool(tool: NonNullable<AiRequest["tools"]>[number], name: string) {
+  return {
+    name,
+    description: tool.description,
+    input_schema: {
+      type: "object",
+      properties: Object.fromEntries(
+        Object.entries(tool.parameters).map(([parameterName, parameter]) => [
+          parameterName,
+          {
+            type: parameter.type,
+            description: parameter.description
+          }
+        ])
+      ),
+      required: Object.entries(tool.parameters)
+        .filter(([, parameter]) => parameter.required)
+        .map(([parameterName]) => parameterName)
+    }
+  };
+}
+
 function toAnthropicMessages(messages: AiMessage[]) {
   return messages
     .filter((message) => message.role !== "system")
@@ -42,33 +85,27 @@ function toAnthropicMessages(messages: AiMessage[]) {
     }));
 }
 
-function toAnthropicTools(request: AiRequest) {
-  return (request.tools ?? []).map((tool) => ({
-    name: tool.id,
-    description: tool.description,
-    input_schema: {
-      type: "object",
-      properties: Object.fromEntries(
-        Object.entries(tool.parameters).map(([name, parameter]) => [
-          name,
-          {
-            type: parameter.type,
-            description: parameter.description
-          }
-        ])
-      ),
-      required: Object.entries(tool.parameters)
-        .filter(([, parameter]) => parameter.required)
-        .map(([name]) => name)
-    }
-  }));
+function toAnthropicTools(request: AiRequest): AnthropicToolMapping {
+  const usedNames = new Set<string>();
+  const nameToToolId = new Map<string, string>();
+  const tools = (request.tools ?? []).map((tool) => {
+    const name = createSafeToolName(tool.id, usedNames);
+
+    nameToToolId.set(name, tool.id);
+    return createAnthropicTool(tool, name);
+  });
+
+  return {
+    tools,
+    nameToToolId
+  };
 }
 
 function getSystemPrompt(messages: AiMessage[]): string | undefined {
   return messages.find((message) => message.role === "system")?.content;
 }
 
-function parseAnthropicResponse(response: AnthropicResponse): AiResponse {
+function parseAnthropicResponse(response: AnthropicResponse, nameToToolId: Map<string, string>): AiResponse {
   const content = response.content ?? [];
   const text = content
     .filter((block): block is Extract<AnthropicContentBlock, { type: "text" }> => block.type === "text")
@@ -77,8 +114,9 @@ function parseAnthropicResponse(response: AnthropicResponse): AiResponse {
   const toolCalls: AiToolCall[] = content
     .filter((block): block is Extract<AnthropicContentBlock, { type: "tool_use" }> => block.type === "tool_use")
     .map((block) => ({
-      toolId: block.name,
-      input: block.input
+      toolId: nameToToolId.get(block.name) ?? block.name,
+      input: block.input,
+      toolCallId: block.id
     }));
 
   return {
@@ -109,6 +147,7 @@ export class AnthropicProvider implements AiProvider {
   }
 
   async complete(request: AiRequest): Promise<AiResponse> {
+    const anthropicTools = toAnthropicTools(request);
     const response = await this.fetchImpl(this.apiUrl, {
       method: "POST",
       headers: {
@@ -121,7 +160,7 @@ export class AnthropicProvider implements AiProvider {
         max_tokens: request.maxTokens ?? 1024,
         system: getSystemPrompt(request.messages),
         messages: toAnthropicMessages(request.messages),
-        tools: toAnthropicTools(request)
+        tools: anthropicTools.tools
       })
     });
 
@@ -129,7 +168,7 @@ export class AnthropicProvider implements AiProvider {
       throw new Error(`Anthropic provider request failed: ${response.status}`);
     }
 
-    return parseAnthropicResponse((await response.json()) as AnthropicResponse);
+    return parseAnthropicResponse((await response.json()) as AnthropicResponse, anthropicTools.nameToToolId);
   }
 
   async *stream(request: AiRequest): AsyncIterable<AiChunk> {

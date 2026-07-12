@@ -11,6 +11,7 @@ export type AiMessage = {
 export type AiToolCall<TInput = unknown> = {
   toolId: string;
   input?: TInput;
+  toolCallId?: string;
 };
 
 export type AiRequest = {
