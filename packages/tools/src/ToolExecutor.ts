@@ -3,7 +3,7 @@ import type { NyxEventBus, NyxSystemEvents } from "@nyx-os/event-bus";
 import type { NyxTool } from "./Tool";
 import type { ToolContext } from "./ToolContext";
 import { emitToolEvent } from "./ToolEvents";
-import type { ToolExecution, ToolParameterDefinition, ToolParameters } from "./ToolTypes";
+import type { ToolExecution, ToolExecutionOptions, ToolParameterDefinition, ToolParameters } from "./ToolTypes";
 
 export type ToolExecutorOptions = {
   events: NyxEventBus<NyxSystemEvents>;
@@ -55,20 +55,21 @@ export class ToolExecutor {
   async execute<TResult = unknown, TInput = unknown>(
     tool: NyxTool<TInput, TResult>,
     context: ToolContext,
-    input?: TInput
+    input?: TInput,
+    options: ToolExecutionOptions = {}
   ): Promise<ToolExecution<TResult>> {
     if (!tool.enabled) {
-      return this.fail(tool, `Tool disabled: ${tool.id}`);
+      return this.fail(tool, `Tool disabled: ${tool.id}`, options);
     }
 
     if (!this.capabilities.isAvailable(tool.capabilityId)) {
-      return this.fail(tool, `Tool ${tool.id} requires unavailable capability: ${tool.capabilityId}`);
+      return this.fail(tool, `Tool ${tool.id} requires unavailable capability: ${tool.capabilityId}`, options);
     }
 
     const validationError = validateParameters(tool.parameters, input);
 
     if (validationError) {
-      return this.fail(tool, validationError);
+      return this.fail(tool, validationError, options);
     }
 
     try {
@@ -77,6 +78,7 @@ export class ToolExecutor {
         toolId: tool.id,
         capabilityId: tool.capabilityId,
         status: "success",
+        ...options,
         result,
         executedAt: this.now()
       };
@@ -84,15 +86,16 @@ export class ToolExecutor {
       emitToolEvent(this.events, "tool.executed", { execution });
       return execution;
     } catch (error) {
-      return this.fail(tool, error instanceof Error ? error.message : "Unknown tool failure");
+      return this.fail(tool, error instanceof Error ? error.message : "Unknown tool failure", options);
     }
   }
 
-  private fail<TResult>(tool: NyxTool, error: string): Promise<ToolExecution<TResult>> {
+  private fail<TResult>(tool: NyxTool, error: string, options: ToolExecutionOptions = {}): Promise<ToolExecution<TResult>> {
     const execution: ToolExecution<TResult> = {
       toolId: tool.id,
       capabilityId: tool.capabilityId,
       status: "failed",
+      ...options,
       error,
       executedAt: this.now()
     };

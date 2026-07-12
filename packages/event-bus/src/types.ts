@@ -4,6 +4,8 @@ export type NyxEventName<TEvents extends NyxEventMap> = Extract<keyof TEvents, s
 
 export type NyxEventPayload = {
   timestamp: string;
+  source?: string;
+  automationId?: string;
   service?: string;
   plugin?: string;
   task?: string;

@@ -189,6 +189,33 @@ describe("Nyx automation engine", () => {
     ]);
   });
 
+  it("does not retrigger itself from tool executions originated by automation", async () => {
+    const { automations, executions, tools } = createHarness();
+
+    automations.register(
+      createAutomation({
+        trigger: {
+          onEvent: "tool.executed"
+        }
+      })
+    );
+
+    await tools.execute("automation.test.tool");
+    await flushPromises();
+
+    expect(executions).toHaveLength(2);
+    expect(automations.getHistory()).toEqual([
+      expect.objectContaining({
+        automationId: "automation.test",
+        status: "success",
+        toolExecution: expect.objectContaining({
+          source: "automation",
+          automationId: "automation.test"
+        })
+      })
+    ]);
+  });
+
   it("executes an automation when its schedule ticks", async () => {
     jest.useFakeTimers();
     const { automations, executions, scheduler } = createHarness();

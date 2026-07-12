@@ -30,7 +30,10 @@ export class AutomationExecutor {
     }
 
     try {
-      const toolExecution = await this.tools.execute<TResult>(automation.action.toolId, automation.action.input);
+      const toolExecution = await this.tools.execute<TResult>(automation.action.toolId, automation.action.input, {
+        source: "automation",
+        automationId: automation.id
+      });
       const execution: AutomationExecution<TResult> = {
         automationId: automation.id,
         toolId: automation.action.toolId,

@@ -18,6 +18,8 @@ export function emitToolEvent(
     event,
     createNyxEventPayload({
       status: input.execution?.status ?? event,
+      source: input.execution?.source,
+      automationId: input.execution?.automationId,
       metadata: {
         tool: input.tool?.id ?? input.execution?.toolId ?? input.id,
         capability: input.tool?.capabilityId ?? input.execution?.capabilityId ?? input.capabilityId,

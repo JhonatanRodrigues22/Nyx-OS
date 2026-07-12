@@ -147,7 +147,11 @@ export class AutomationManager implements NyxAutomationManager {
     }
 
     const eventName = automation.trigger.onEvent;
-    const unsubscribe = this.events.on(eventName, () => {
+    const unsubscribe = this.events.on(eventName, (event) => {
+      if (event.payload?.source === "automation") {
+        return;
+      }
+
       void this.executeEvent(eventName).catch(() => undefined);
     });
 
