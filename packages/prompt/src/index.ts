@@ -1,3 +1,4 @@
+export { PromptRegistry } from "./PromptRegistry";
 export type {
   PromptSection,
   PromptTemplate,
