@@ -5,6 +5,7 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "dependencies": {
+    "@nyx-os/ai": "0.1.0",
     "@nyx-os/automation": "0.1.0",
     "@nyx-os/capabilities": "0.1.0",
     "@nyx-os/config": "0.1.0",

@@ -20,6 +20,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
+      "@nyx-os/ai": ["../../packages/ai/src/index.ts"],
       "@nyx-os/automation": ["../../packages/automation/src/index.ts"],
       "@nyx-os/config": ["../../packages/config/src/index.ts"],
       "@nyx-os/core": ["../../packages/core/src/index.ts"],

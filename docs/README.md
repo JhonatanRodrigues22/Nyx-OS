@@ -61,6 +61,7 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `arquitetura/capability-engine.md`: contrato oficial de capacidades, execucao e descoberta por Runtime e plugins.
 - `arquitetura/tool-calling-engine.md`: contrato oficial de Tools, validacao e execucao desacoplada.
 - `arquitetura/automation-engine.md`: contrato oficial de automacoes por evento ou schedule usando Tools existentes.
+- `arquitetura/ai-runtime.md`: contrato oficial de provider de IA, conversa e tool calling desacoplado de fornecedor.
 - `arquitetura/logging.md`: contrato central de logging e Logger Service.
 - `packages/state/README.md`: contrato central de estado do Runtime.
 - `workflow/desenvolvimento.md`: ciclo oficial de branches, commits e Pull Requests.
@@ -94,3 +95,4 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `@nyx-os/capabilities` e o mecanismo oficial de registro, descoberta e execucao de capacidades.
 - `@nyx-os/tools` e a API publica executavel do Nyx OS para clientes futuros, incluindo o AI Runtime.
 - `@nyx-os/automation` e o mecanismo oficial para disparar Tools a partir de eventos ou schedules.
+- `@nyx-os/ai` e a camada oficial de provider de IA e tool calling por contrato.

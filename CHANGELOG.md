@@ -1,5 +1,30 @@
 # Changelog
 
+## Sprint 17 - AI Runtime
+
+### Adicionado
+
+- `@nyx-os/ai` com contratos `AiProvider`, `AiMessage`, `AiRequest`, `AiResponse` e `AiChunk` (`b33dbd5`, PR #23).
+- `AiProviderRegistry` para registrar providers e trocar provider ativo sem acoplar o Runtime a fornecedor especifico (`b33dbd5`, PR #23).
+- `AiConversationManager` com historico em memoria, montagem de `AiRequest` e loop agente com limite de iteracoes (`b33dbd5`, PR #23).
+- `AnthropicProvider` como adapter real, mantendo detalhes de vendor dentro do adapter (`b33dbd5`, PR #23).
+- `FakeAiProvider` para testes automatizados sem chamadas externas (`b33dbd5`, PR #23).
+- Documentacao em `docs/arquitetura/ai-runtime.md` (`6282257`, PR #23).
+
+### Alterado
+
+- `NyxRuntime` passou a aceitar `registerAiRuntime`, desabilitado por padrao, e expor `runtime.getAi()` quando habilitado (`11a65da`, PR #23).
+- Configuracao passou a documentar `NYX_AI_PROVIDER`, `NYX_AI_MODEL` e `ANTHROPIC_API_KEY` apenas como placeholders (`11a65da`, PR #23).
+- Testes ampliados para conversa simples, tool call com resposta final, limite de iteracoes e erro de provider propagado (`b02b7b3`, PR #23).
+
+### Fora do escopo
+
+- UI de chat.
+- Prompt Engine formal.
+- Knowledge Engine.
+- Multiplos providers simultaneos em producao.
+- Chamadas reais de IA em testes.
+
 ## Sprint 16 - Automation Engine
 
 ### Adicionado

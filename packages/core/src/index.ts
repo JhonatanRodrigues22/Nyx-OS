@@ -1,4 +1,10 @@
 import {
+  AiConversationManager,
+  AiProviderRegistry,
+  AnthropicProvider,
+  type AiProvider
+} from "@nyx-os/ai";
+import {
   AutomationManager,
   type AutomationSnapshot,
   type NyxAutomationManager
@@ -100,7 +106,7 @@ export type SystemEvent = {
   source: string;
 };
 
-export type ConfigServiceSnapshot = Pick<NyxConfig, "appName" | "version" | "environment" | "enabledModules" | "featureFlags">;
+export type ConfigServiceSnapshot = Pick<NyxConfig, "appName" | "version" | "environment" | "enabledModules" | "ai" | "featureFlags">;
 
 export type ConfigServiceOptions = {
   env?: NyxConfigEnvironment;
@@ -339,6 +345,7 @@ export class ConfigService extends BaseNyxService {
       version: config.version,
       environment: config.environment,
       enabledModules: config.enabledModules,
+      ai: config.ai,
       featureFlags: config.featureFlags
     };
   }
@@ -516,6 +523,7 @@ export type NyxRuntimeOptions = {
   registerBaseCapabilities?: boolean;
   registerBaseTools?: boolean;
   registerBaseAutomations?: boolean;
+  registerAiRuntime?: boolean;
   registerBasePlugins?: boolean;
   events?: NyxEventBus<NyxSystemEvents>;
   loggerService?: LoggerService;
@@ -525,6 +533,9 @@ export type NyxRuntimeOptions = {
   capabilities?: NyxCapabilityManager;
   tools?: NyxToolManager;
   automations?: NyxAutomationManager;
+  ai?: AiConversationManager | null;
+  aiProviders?: AiProviderRegistry;
+  aiProvider?: AiProvider;
   scheduler?: NyxScheduler;
   memory?: NyxMemoryService;
 };
@@ -541,6 +552,7 @@ export class NyxRuntime {
   readonly capabilities: NyxCapabilityManager;
   readonly tools: NyxToolManager;
   readonly automations: NyxAutomationManager;
+  readonly ai: AiConversationManager | null;
   readonly scheduler: NyxScheduler;
   readonly memory: NyxMemoryService;
 
@@ -586,6 +598,10 @@ export class NyxRuntime {
         scheduler: this.scheduler,
         tools: this.tools
       });
+    this.ai =
+      options.registerAiRuntime === true
+        ? (options.ai ?? this.createAiRuntime(options))
+        : (options.ai ?? null);
     this.loggerService =
       options.registerBaseServices === false ? null : (options.loggerService ?? new LoggerService());
     this.configService =
@@ -695,6 +711,10 @@ export class NyxRuntime {
 
   getAutomations(): NyxAutomationManager {
     return this.automations;
+  }
+
+  getAi(): AiConversationManager | null {
+    return this.ai;
   }
 
   async start(): Promise<void> {
@@ -847,6 +867,28 @@ export class NyxRuntime {
 
   private getLogger(): NyxLogger {
     return this.loggerService?.getLogger() ?? createConsoleLogger();
+  }
+
+  private createAiRuntime(options: NyxRuntimeOptions): AiConversationManager {
+    const providers = options.aiProviders ?? new AiProviderRegistry();
+    const config = this.configService?.getConfig() ?? getNyxConfig();
+
+    if (options.aiProvider) {
+      providers.register(config.ai.provider, options.aiProvider);
+    } else if (config.ai.provider === "anthropic" && config.ai.apiKey) {
+      providers.register(
+        "anthropic",
+        new AnthropicProvider({
+          apiKey: config.ai.apiKey,
+          model: config.ai.model
+        })
+      );
+    }
+
+    return new AiConversationManager({
+      providers,
+      tools: this.tools
+    });
   }
 
   private initializeRuntimeState(): void {
@@ -1297,6 +1339,10 @@ export class DashboardService {
         version: runtime.version,
         environment: resolveDashboardEnvironment(runtime.environment),
         enabledModules: [],
+        ai: {
+          provider: "anthropic",
+          model: "claude-3-5-sonnet-latest"
+        },
         featureFlags: {
           useMockData: true,
           enablePersistentMemory: false,

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",
+    "@nyx-os/ai": "0.1.0",
     "@nyx-os/automation": "0.1.0",
     "@nyx-os/capabilities": "0.1.0",
     "@nyx-os/config": "0.1.0",
