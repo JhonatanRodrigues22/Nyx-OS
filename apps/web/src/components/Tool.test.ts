@@ -61,6 +61,10 @@ function createHarness(events = createInMemoryEventBus<NyxSystemEvents>()) {
         version: "0.1.0",
         environment: "test",
         enabledModules: ["core", "events", "dashboard"],
+        ai: {
+          provider: "fake",
+          model: "fake"
+        },
         featureFlags: {
           useMockData: true,
           enablePersistentMemory: false,
@@ -91,6 +95,10 @@ function createHarness(events = createInMemoryEventBus<NyxSystemEvents>()) {
         version: "0.1.0",
         environment: "test",
         enabledModules: ["core", "events", "dashboard"],
+        ai: {
+          provider: "fake",
+          model: "fake"
+        },
         featureFlags: {
           useMockData: true,
           enablePersistentMemory: false,

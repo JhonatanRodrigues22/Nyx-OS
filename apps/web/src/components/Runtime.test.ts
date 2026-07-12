@@ -8,6 +8,7 @@ import {
   RuntimeService,
   SystemStatusService
 } from "@nyx-os/core";
+import { FakeAiProvider } from "@nyx-os/ai";
 import { createInMemoryEventBus, type NyxSystemEventName, type NyxSystemEvents } from "@nyx-os/event-bus";
 import { ConsoleLogger, type ConsoleLoggerSink, type NyxLogEntry } from "@nyx-os/logger";
 import type { NyxPlugin } from "@nyx-os/plugin";
@@ -402,6 +403,29 @@ describe("Nyx runtime foundation", () => {
 
     expect(runtime.getCapabilities().list()).toEqual([]);
     expect(runtime.getTools().list()).toEqual([]);
+  });
+
+  it("keeps AI runtime disabled by default and allows explicit provider injection", async () => {
+    const runtime = new NyxRuntime();
+
+    expect(runtime.getAi()).toBeNull();
+
+    const aiRuntime = new NyxRuntime(undefined, {
+      registerAiRuntime: true,
+      aiProvider: new FakeAiProvider([
+        {
+          message: {
+            role: "assistant",
+            content: "AI ready."
+          },
+          stopReason: "stop"
+        }
+      ])
+    });
+
+    const result = await aiRuntime.getAi()?.sendUserMessage("hello");
+
+    expect(result?.response.message.content).toBe("AI ready.");
   });
 
   it("exposes runtime state with service health and metadata", async () => {
