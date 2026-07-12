@@ -3,6 +3,7 @@ import { AiConversationManager, AiProviderRegistry, FakeAiProvider, type AiProvi
 import { createInMemoryEventBus, type NyxSystemEvents } from "@nyx-os/event-bus";
 import { createConsoleLogger } from "@nyx-os/logger";
 import { MemoryManager } from "@nyx-os/memory";
+import { PromptRegistry, PromptRenderer } from "@nyx-os/prompt";
 import { SchedulerManager } from "@nyx-os/scheduler";
 import { ToolManager, type NyxTool, type ToolContext } from "@nyx-os/tools";
 
@@ -127,7 +128,9 @@ function createHarness(provider: AiProvider) {
 
   return {
     ai: new AiConversationManager({ providers, tools, maxIterations: 3 }),
+    providers,
     provider,
+    tools,
     toolInputs
   };
 }
@@ -220,6 +223,74 @@ describe("Nyx AI Runtime", () => {
     const toolMessage = result.messages.find((message) => message.role === "tool");
 
     expect(toolMessage?.toolCallId).toBe("toolu_manager");
+  });
+
+  it("uses an injected prompt template resolver for the system prompt", async () => {
+    const provider = new FakeAiProvider([
+      {
+        message: {
+          role: "assistant",
+          content: "Hello from template."
+        },
+        stopReason: "stop"
+      }
+    ]);
+    const { providers, tools } = createHarness(provider);
+    const registry = new PromptRegistry();
+    const renderer = new PromptRenderer();
+
+    registry.register({
+      id: "nyx.system",
+      version: "1.0.0",
+      description: "System prompt template for AI tests",
+      template: "You are {{name}} in {{mode}} mode.",
+      variables: ["name", "mode"]
+    });
+
+    const templatedAi = new AiConversationManager({
+      providers,
+      tools,
+      systemPromptTemplate: {
+        id: "nyx.system",
+        variables: {
+          name: "Nyx OS",
+          mode: "test"
+        }
+      },
+      systemPromptResolver: {
+        renderSystemPrompt: (reference) =>
+          renderer.render(registry.require(reference.id, reference.version), reference.variables ?? {})
+      }
+    });
+
+    await templatedAi.sendUserMessage("hello");
+
+    expect(provider.requests[0].messages[0]).toEqual({
+      role: "system",
+      content: "You are Nyx OS in test mode."
+    });
+  });
+
+  it("treats an empty system prompt as an explicit override", async () => {
+    const provider = new FakeAiProvider([
+      {
+        message: {
+          role: "assistant",
+          content: "Hello without system prompt."
+        },
+        stopReason: "stop"
+      }
+    ]);
+    const { ai } = createHarness(provider);
+
+    await ai.sendUserMessage("hello", {
+      systemPrompt: ""
+    });
+
+    expect(provider.requests[0].messages[0]).toEqual({
+      role: "system",
+      content: ""
+    });
   });
 
   it("fails explicitly when the tool loop reaches the iteration limit", async () => {

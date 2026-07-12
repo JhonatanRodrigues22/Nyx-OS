@@ -39,8 +39,19 @@ export interface AiProvider {
   stream(request: AiRequest): AsyncIterable<AiChunk>;
 }
 
+export type AiSystemPromptReference = {
+  id: string;
+  version?: string;
+  variables?: Record<string, string | number | boolean | null>;
+};
+
+export interface AiSystemPromptResolver {
+  renderSystemPrompt(reference: AiSystemPromptReference): string;
+}
+
 export type AiConversationOptions = {
   systemPrompt?: string;
+  systemPromptTemplate?: AiSystemPromptReference;
   maxIterations?: number;
   maxTokens?: number;
   tools?: ToolSnapshot[];

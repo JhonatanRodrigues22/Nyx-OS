@@ -18,6 +18,7 @@ const customJestConfig = {
     "^@nyx-os/logger$": "<rootDir>/../../packages/logger/src/index.ts",
     "^@nyx-os/memory$": "<rootDir>/../../packages/memory/src/index.ts",
     "^@nyx-os/plugin$": "<rootDir>/../../packages/plugin/src/index.ts",
+    "^@nyx-os/prompt$": "<rootDir>/../../packages/prompt/src/index.ts",
     "^@nyx-os/scheduler$": "<rootDir>/../../packages/scheduler/src/index.ts",
     "^@nyx-os/state$": "<rootDir>/../../packages/state/src/index.ts",
     "^@nyx-os/tools$": "<rootDir>/../../packages/tools/src/index.ts"

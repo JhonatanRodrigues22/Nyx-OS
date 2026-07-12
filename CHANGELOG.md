@@ -1,5 +1,29 @@
 # Changelog
 
+## Sprint 18 - Prompt Engine
+
+### Adicionado
+
+- `@nyx-os/prompt` com contratos `PromptTemplate`, `PromptSection`, variaveis e referencias de template (`a810b7f`, PR #24).
+- `PromptRegistry` para registrar templates por `id` + `version`, rejeitar duplicidade e resolver a versao mais recente por `id` (`47f997c`, PR #24).
+- `PromptRenderer` para substituir `{{variavel}}` com erro explicito quando faltar variavel declarada (`55d1f38`, PR #24).
+- `PromptComposer` para combinar secoes renderizadas em ordem com separador consistente (`55d1f38`, PR #24).
+- Documentacao em `docs/arquitetura/prompt-engine.md` (`951fbac`, PR #24).
+
+### Alterado
+
+- `AiConversationManager` passou a aceitar template de system prompt por resolver injetado, sem dependencia obrigatoria de `@nyx-os/prompt` (`0ce65cb`, PR #24).
+- Workspace web passou a resolver e transpilar `@nyx-os/prompt` nos testes e no build (`64d715c`, PR #24).
+- Testes ampliados para registro valido, rejeicao de duplicidade, resolucao da versao mais recente, renderizacao, erro de variavel ausente, composicao de secoes e integracao opcional com AI Runtime (`64d715c`, PR #24).
+
+### Fora do escopo
+
+- Knowledge Engine.
+- Context Engine.
+- UI de edicao de prompts.
+- Templates reais de produto.
+- Persistencia duravel de templates.
+
 ## Sprint 17 - AI Runtime
 
 ### Adicionado

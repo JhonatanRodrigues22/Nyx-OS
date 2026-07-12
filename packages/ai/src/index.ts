@@ -13,5 +13,7 @@ export type {
   AiRequest,
   AiResponse,
   AiStopReason,
+  AiSystemPromptReference,
+  AiSystemPromptResolver,
   AiToolCall
 } from "./AiTypes";
