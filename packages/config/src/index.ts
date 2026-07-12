@@ -7,6 +7,11 @@ export type NyxConfig = {
   version: string;
   environment: NyxEnvironment;
   enabledModules: NyxModuleId[];
+  ai: {
+    provider: string;
+    model: string;
+    apiKey?: string;
+  };
   featureFlags: {
     useMockData: boolean;
     enablePersistentMemory: boolean;
@@ -65,6 +70,11 @@ export function getNyxConfig(env: NyxConfigEnvironment = process.env): NyxConfig
     version: env.NYX_VERSION || "0.1.0",
     environment: resolveEnvironment(env.NYX_ENV ?? env.NODE_ENV),
     enabledModules: resolveEnabledModules(env.NYX_ENABLED_MODULES),
+    ai: {
+      provider: env.NYX_AI_PROVIDER || "anthropic",
+      model: env.NYX_AI_MODEL || "claude-3-5-sonnet-latest",
+      apiKey: env.ANTHROPIC_API_KEY
+    },
     featureFlags: {
       useMockData: resolveBoolean(env.NYX_USE_MOCK_DATA, true),
       enablePersistentMemory: resolveBoolean(env.NYX_ENABLE_PERSISTENT_MEMORY, false),
