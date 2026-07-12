@@ -9,6 +9,7 @@ const customJestConfig = {
   testEnvironment: "jest-environment-jsdom",
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
+    "^@nyx-os/automation$": "<rootDir>/../../packages/automation/src/index.ts",
     "^@nyx-os/capabilities$": "<rootDir>/../../packages/capabilities/src/index.ts",
     "^@nyx-os/config$": "<rootDir>/../../packages/config/src/index.ts",
     "^@nyx-os/core$": "<rootDir>/../../packages/core/src/index.ts",
