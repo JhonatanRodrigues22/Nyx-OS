@@ -1,5 +1,3 @@
 # @nyx-os/automation
 
-Responsável por automações futuras.
-
-Automações devem ser auditáveis, seguras e alinhadas aos limites definidos em `docs/seguranca/dados-e-privacidade.md`.
+Automation Engine package for registering event-driven and schedule-driven automations.
