@@ -43,7 +43,14 @@ export type ToolExecution<TResult = unknown> = {
   toolId: string;
   capabilityId: string;
   status: ToolExecutionStatus;
+  source?: string;
+  automationId?: string;
   result?: TResult;
   error?: string;
   executedAt: string;
+};
+
+export type ToolExecutionOptions = {
+  source?: string;
+  automationId?: string;
 };

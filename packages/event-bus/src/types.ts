@@ -4,6 +4,8 @@ export type NyxEventName<TEvents extends NyxEventMap> = Extract<keyof TEvents, s
 
 export type NyxEventPayload = {
   timestamp: string;
+  source?: string;
+  automationId?: string;
   service?: string;
   plugin?: string;
   task?: string;
@@ -74,6 +76,14 @@ export type NyxCapabilityEventName =
 
 export type NyxToolEventName = "tool.registered" | "tool.removed" | "tool.executed" | "tool.failed";
 
+export type NyxAutomationEventName =
+  | "automation.registered"
+  | "automation.removed"
+  | "automation.enabled"
+  | "automation.disabled"
+  | "automation.executed"
+  | "automation.failed";
+
 export type NyxSystemEventName =
   | NyxRuntimeEventName
   | NyxServiceEventName
@@ -81,7 +91,8 @@ export type NyxSystemEventName =
   | NyxSchedulerEventName
   | NyxMemoryEventName
   | NyxCapabilityEventName
-  | NyxToolEventName;
+  | NyxToolEventName
+  | NyxAutomationEventName;
 
 export type NyxSystemEvents = Record<NyxSystemEventName, NyxEventPayload>;
 

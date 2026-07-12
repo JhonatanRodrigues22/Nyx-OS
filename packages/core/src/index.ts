@@ -1,4 +1,9 @@
 import {
+  AutomationManager,
+  type AutomationSnapshot,
+  type NyxAutomationManager
+} from "@nyx-os/automation";
+import {
   CapabilityManager,
   DiagnosticsCapability,
   MemoryCapability,
@@ -78,6 +83,7 @@ export type NyxRuntimeSnapshot = {
   };
   capabilities: CapabilitySnapshot[];
   tools: ToolSnapshot[];
+  automations: AutomationSnapshot[];
   memory: MemorySnapshot;
   events: SystemEvent[];
   state: NyxRuntimeState | null;
@@ -201,6 +207,7 @@ export type DashboardSnapshot = {
   };
   capabilities: CapabilitySnapshot[];
   tools: ToolSnapshot[];
+  automations: AutomationSnapshot[];
   recentEvents: SystemEvent[];
 };
 
@@ -495,13 +502,20 @@ const recordedSystemEventNames: NyxSystemEventName[] = [
   "tool.registered",
   "tool.removed",
   "tool.executed",
-  "tool.failed"
+  "tool.failed",
+  "automation.registered",
+  "automation.removed",
+  "automation.enabled",
+  "automation.disabled",
+  "automation.executed",
+  "automation.failed"
 ];
 
 export type NyxRuntimeOptions = {
   registerBaseServices?: boolean;
   registerBaseCapabilities?: boolean;
   registerBaseTools?: boolean;
+  registerBaseAutomations?: boolean;
   registerBasePlugins?: boolean;
   events?: NyxEventBus<NyxSystemEvents>;
   loggerService?: LoggerService;
@@ -510,6 +524,7 @@ export type NyxRuntimeOptions = {
   pluginManager?: PluginManager;
   capabilities?: NyxCapabilityManager;
   tools?: NyxToolManager;
+  automations?: NyxAutomationManager;
   scheduler?: NyxScheduler;
   memory?: NyxMemoryService;
 };
@@ -525,6 +540,7 @@ export class NyxRuntime {
   readonly pluginManager: PluginManager;
   readonly capabilities: NyxCapabilityManager;
   readonly tools: NyxToolManager;
+  readonly automations: NyxAutomationManager;
   readonly scheduler: NyxScheduler;
   readonly memory: NyxMemoryService;
 
@@ -562,6 +578,13 @@ export class NyxRuntime {
       new SchedulerManager({
         events: this.events,
         logger: options.loggerService?.getLogger()
+      });
+    this.automations =
+      options.automations ??
+      new AutomationManager({
+        events: this.events,
+        scheduler: this.scheduler,
+        tools: this.tools
       });
     this.loggerService =
       options.registerBaseServices === false ? null : (options.loggerService ?? new LoggerService());
@@ -604,6 +627,10 @@ export class NyxRuntime {
       if (this.capabilities.get("memory.search")) {
         this.tools.register(new MemorySearchTool());
       }
+    }
+
+    if (options.registerBaseAutomations !== false) {
+      // Base automation infrastructure is registered here; product automations remain out of scope for Sprint 16.
     }
 
     if (options.registerBasePlugins !== false) {
@@ -664,6 +691,10 @@ export class NyxRuntime {
 
   getTools(): NyxToolManager {
     return this.tools;
+  }
+
+  getAutomations(): NyxAutomationManager {
+    return this.automations;
   }
 
   async start(): Promise<void> {
@@ -741,6 +772,7 @@ export class NyxRuntime {
       },
       capabilities: this.capabilities.list(),
       tools: this.tools.list(),
+      automations: this.automations.list(),
       memory: this.memory.snapshot(),
       events: this.recentEvents,
       state: this.stateService?.getRuntimeState() ?? null
@@ -767,6 +799,7 @@ export class NyxRuntime {
   private createPluginContext(): NyxPluginContext {
     return {
       runtime: this,
+      automations: this.automations,
       capabilities: this.capabilities,
       events: this.events,
       logger: this.getLogger(),
@@ -1237,6 +1270,7 @@ export class DashboardService {
         scheduler: this.scheduler,
         capabilities: [],
         tools: [],
+        automations: [],
         memory: {
           total: 0,
           categories: {
@@ -1334,6 +1368,7 @@ export class DashboardService {
       scheduler: runtimeSnapshot.scheduler,
       capabilities: runtimeSnapshot.capabilities,
       tools: runtimeSnapshot.tools,
+      automations: runtimeSnapshot.automations,
       recentEvents
     };
   }

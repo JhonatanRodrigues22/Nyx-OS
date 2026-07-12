@@ -1,3 +1,4 @@
+import type { NyxAutomationManager } from "@nyx-os/automation";
 import type { NyxCapabilityManager } from "@nyx-os/capabilities";
 import type { NyxEventBus, NyxSystemEvents } from "@nyx-os/event-bus";
 import type { NyxLogger } from "@nyx-os/logger";
@@ -23,6 +24,7 @@ export type NyxPluginServiceRegistry<TService = unknown> = {
 
 export type NyxPluginRuntimeHost = {
   getCapabilities(): NyxCapabilityManager;
+  getAutomations(): NyxAutomationManager;
   getEventBus(): NyxEventBus<NyxSystemEvents>;
   getMemory(): NyxMemoryService;
   getTools(): NyxToolManager;
@@ -32,6 +34,7 @@ export type NyxPluginRuntimeHost = {
 export type NyxPluginContext = {
   runtime: NyxPluginRuntimeHost;
   capabilities: NyxCapabilityManager;
+  automations: NyxAutomationManager;
   events: NyxEventBus<NyxSystemEvents>;
   logger: NyxLogger;
   memory: NyxMemoryService;

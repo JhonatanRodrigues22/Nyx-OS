@@ -5,7 +5,7 @@ import type { ToolContext } from "./ToolContext";
 import { emitToolEvent } from "./ToolEvents";
 import { ToolExecutor } from "./ToolExecutor";
 import { ToolRegistry } from "./ToolRegistry";
-import type { ToolCategory, ToolExecution, ToolSnapshot } from "./ToolTypes";
+import type { ToolCategory, ToolExecution, ToolExecutionOptions, ToolSnapshot } from "./ToolTypes";
 
 export type ToolManagerOptions = {
   events: NyxEventBus<NyxSystemEvents>;
@@ -22,7 +22,11 @@ export interface NyxToolManager {
   list(): ToolSnapshot[];
   findByCategory(category: ToolCategory): ToolSnapshot[];
   isAvailable(id: string): boolean;
-  execute<TResult = unknown, TInput = unknown>(id: string, input?: TInput): Promise<ToolExecution<TResult>>;
+  execute<TResult = unknown, TInput = unknown>(
+    id: string,
+    input?: TInput,
+    options?: ToolExecutionOptions
+  ): Promise<ToolExecution<TResult>>;
 }
 
 export class ToolManager implements NyxToolManager {
@@ -71,9 +75,13 @@ export class ToolManager implements NyxToolManager {
     return this.registry.isAvailable(id);
   }
 
-  async execute<TResult = unknown, TInput = unknown>(id: string, input?: TInput): Promise<ToolExecution<TResult>> {
+  async execute<TResult = unknown, TInput = unknown>(
+    id: string,
+    input?: TInput,
+    options?: ToolExecutionOptions
+  ): Promise<ToolExecution<TResult>> {
     const tool = this.registry.require(id) as NyxTool<TInput, TResult>;
-    const execution = await this.executor.execute(tool, this.createContext(), input);
+    const execution = await this.executor.execute(tool, this.createContext(), input, options);
 
     this.registry.recordExecution(execution);
 

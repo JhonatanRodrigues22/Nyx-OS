@@ -1,5 +1,34 @@
 # Changelog
 
+## Sprint 16 - Automation Engine
+
+### Adicionado
+
+- `@nyx-os/automation` com contratos e implementacao inicial do Automation Engine (`2d553bc`, PR #22).
+- `AutomationRegistry`, `AutomationExecutor` e `AutomationManager`.
+- Triggers por evento do `@nyx-os/event-bus` e por schedule reaproveitando `@nyx-os/scheduler`.
+- Actions baseadas em Tools existentes por `toolId`, sem reimplementar execucao (`2d553bc`, PR #22).
+- Historico recente de execucoes em memoria.
+- Eventos `automation.registered`, `automation.removed`, `automation.enabled`, `automation.disabled`, `automation.executed` e `automation.failed` (`14bcf48`, PR #22).
+- Documentacao em `docs/arquitetura/automation-engine.md` (`8ecadf3`, PR #22).
+
+### Alterado
+
+- `NyxRuntime` passou a expor `runtime.getAutomations()` (`14bcf48`, PR #22).
+- Contexto de plugins passou a expor `context.automations` (`14bcf48`, PR #22).
+- Snapshot do Runtime passou a incluir automacoes registradas (`14bcf48`, PR #22).
+- Testes ampliados para registro valido, rejeicao de tool inexistente, disparo por evento, disparo por schedule e automacao desabilitada (`c492c68`, PR #22).
+
+### Fora do escopo
+
+- UI ou dashboard de automacoes.
+- Automacoes pre-configuradas reais.
+- Persistencia duravel do historico.
+- IA.
+- LLM.
+- Planejamento.
+- Agentes.
+
 ## Limpeza Pre-Sprint 16
 
 ### Corrigido

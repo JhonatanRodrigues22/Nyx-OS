@@ -12,6 +12,7 @@ const nextConfig = {
   reactStrictMode: true,
   turbopack: {},
   transpilePackages: [
+    "@nyx-os/automation",
     "@nyx-os/capabilities",
     "@nyx-os/config",
     "@nyx-os/core",
