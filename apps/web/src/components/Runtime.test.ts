@@ -402,6 +402,15 @@ describe("Nyx runtime foundation", () => {
     expect(entries.map((entry) => entry.message)).toContain("Runtime stopped");
   });
 
+  it("skips base tools when their required base capabilities are disabled", () => {
+    expect(() => new NyxRuntime(createEventBus(), undefined, { registerBaseCapabilities: false })).not.toThrow();
+
+    const runtime = new NyxRuntime(createEventBus(), undefined, { registerBaseCapabilities: false });
+
+    expect(runtime.getCapabilities().list()).toEqual([]);
+    expect(runtime.getTools().list()).toEqual([]);
+  });
+
   it("exposes runtime state with service health and metadata", async () => {
     const { runtime } = createRuntimeWithMemoryLogger();
 

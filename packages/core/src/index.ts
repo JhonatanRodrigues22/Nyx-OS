@@ -543,8 +543,13 @@ export class NyxRuntime {
     }
 
     if (options.registerBaseTools !== false) {
-      this.tools.register(new RuntimeDiagnosticsTool());
-      this.tools.register(new MemorySearchTool());
+      if (this.capabilities.get("diagnostics.runtime")) {
+        this.tools.register(new RuntimeDiagnosticsTool());
+      }
+
+      if (this.capabilities.get("memory.search")) {
+        this.tools.register(new MemorySearchTool());
+      }
     }
 
     if (options.registerBasePlugins !== false) {
