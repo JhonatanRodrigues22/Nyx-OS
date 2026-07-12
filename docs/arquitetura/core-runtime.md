@@ -21,7 +21,6 @@ Ele inicializa, coordena e encerra serviços internos sem conhecer clientes espe
 
 - `@nyx-os/config`: configuração central do sistema.
 - `@nyx-os/event-bus`: Event Bus oficial e tipado para comunicação desacoplada entre Runtime e serviços.
-- `@nyx-os/events`: stream em memória de eventos recentes usado por snapshots e dashboard.
 - `@nyx-os/logger`: contrato central de logging e implementação inicial em console.
 - `@nyx-os/memory`: contrato oficial de memoria textual, store em memoria e busca simples.
 - `@nyx-os/capabilities`: contrato oficial de capacidades executaveis e descobertas pelo Runtime.
@@ -148,7 +147,7 @@ Ele permite:
 
 Os payloads são pequenos e tipados, com `timestamp`, `service`, `status` e `metadata`.
 
-O stream em `@nyx-os/events` continua existindo para eventos recentes do dashboard e snapshots legados, mas não é o contrato oficial de comunicação entre serviços.
+Os eventos recentes exibidos pelo dashboard são derivados do `@nyx-os/event-bus`, sem um segundo barramento paralelo.
 
 Ele ainda não é persistente, distribuído ou conectado a integrações externas.
 

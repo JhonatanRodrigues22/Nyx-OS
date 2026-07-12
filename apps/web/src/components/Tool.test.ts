@@ -1,7 +1,6 @@
 import { CapabilityManager, type CapabilityContext, type NyxCapability } from "@nyx-os/capabilities";
 import { NyxRuntime } from "@nyx-os/core";
 import { createInMemoryEventBus, type NyxSystemEvents } from "@nyx-os/event-bus";
-import { createEventBus } from "@nyx-os/events";
 import { createConsoleLogger } from "@nyx-os/logger";
 import { MemoryManager } from "@nyx-os/memory";
 import type { NyxPlugin } from "@nyx-os/plugin";
@@ -183,7 +182,7 @@ describe("Nyx tool calling engine", () => {
   });
 
   it("exposes base tools through the runtime", async () => {
-    const runtime = new NyxRuntime(createEventBus(), undefined, {
+    const runtime = new NyxRuntime(undefined, {
       events: createInMemoryEventBus<NyxSystemEvents>()
     });
 
@@ -205,7 +204,7 @@ describe("Nyx tool calling engine", () => {
   });
 
   it("exposes tools through plugin context", async () => {
-    const runtime = new NyxRuntime(createEventBus(), undefined, {
+    const runtime = new NyxRuntime(undefined, {
       events: createInMemoryEventBus<NyxSystemEvents>(),
       registerBasePlugins: false
     });

@@ -8,7 +8,7 @@ Aceita.
 
 O Nyx OS precisa que Runtime, Service Manager e serviços internos comuniquem mudanças sem depender diretamente uns dos outros.
 
-O pacote `@nyx-os/events` já existia como stream em memória para eventos recentes exibidos pelo dashboard, mas ele mistura emissão, histórico recente e formato visual de evento. Para o lifecycle técnico do Runtime, o projeto precisa de um contrato mais genérico e tipado.
+O projeto tinha um stream em memória para eventos recentes exibidos pelo dashboard, mas ele misturava emissão, histórico recente e formato visual de evento. Para o lifecycle técnico do Runtime, o projeto precisa de um contrato mais genérico e tipado.
 
 ## Decisão
 
@@ -25,11 +25,11 @@ O pacote `@nyx-os/events` já existia como stream em memória para eventos recen
   - `service.started`;
   - `service.stopped`;
   - `service.failed`.
-- Preservar `@nyx-os/events` como stream legado de eventos recentes para snapshots e dashboard.
+- Derivar snapshots e eventos recentes do dashboard a partir do Event Bus oficial, sem manter um segundo barramento de runtime.
 
 ## Alternativas Consideradas
 
-- Evoluir `@nyx-os/events` para assumir também o lifecycle tipado.
+- Evoluir o stream legado para assumir também o lifecycle tipado.
 - Usar diretamente `EventEmitter` do Node.js.
 - Adiar o Event Bus até a chegada de Plugins ou Scheduler.
 

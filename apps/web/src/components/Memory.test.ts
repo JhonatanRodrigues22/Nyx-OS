@@ -1,6 +1,5 @@
 import { NyxRuntime } from "@nyx-os/core";
 import { createInMemoryEventBus, type NyxSystemEvents } from "@nyx-os/event-bus";
-import { createEventBus } from "@nyx-os/events";
 import { MemoryManager } from "@nyx-os/memory";
 import type { NyxPlugin } from "@nyx-os/plugin";
 
@@ -107,7 +106,7 @@ describe("Nyx memory engine", () => {
 
   it("exposes memory through the runtime and plugin context", async () => {
     const events = createInMemoryEventBus<NyxSystemEvents>();
-    const runtime = new NyxRuntime(createEventBus(), undefined, {
+    const runtime = new NyxRuntime(undefined, {
       events,
       registerBasePlugins: false
     });
@@ -140,7 +139,7 @@ describe("Nyx memory engine", () => {
 
   it("initializes the built-in MemoryPlugin without business logic", async () => {
     const events = createInMemoryEventBus<NyxSystemEvents>();
-    const runtime = new NyxRuntime(createEventBus(), undefined, { events });
+    const runtime = new NyxRuntime(undefined, { events });
     const received: string[] = [];
 
     events.on("memory.created", (event) => received.push(event.name));

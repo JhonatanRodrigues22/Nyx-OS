@@ -237,7 +237,7 @@
 - `NyxRuntime` passou a expor `getEventBus()`.
 - Contexto de serviços passou a incluir `context.events`.
 - `ServiceManager` continua emitindo lifecycle interno, agora refletido no Event Bus oficial.
-- `@nyx-os/events` foi mantido como stream legado de eventos recentes para snapshots e dashboard.
+- O stream legado de eventos recentes foi mantido naquela etapa para snapshots e dashboard.
 
 ### Mantido Fora do Escopo
 

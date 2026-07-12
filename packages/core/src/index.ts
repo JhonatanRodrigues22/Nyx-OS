@@ -11,11 +11,11 @@ import { getNyxConfig } from "@nyx-os/config";
 import {
   createInMemoryEventBus,
   createNyxEventPayload,
+  type NyxEventPayload,
   type NyxEventBus,
+  type NyxSystemEventName,
   type NyxSystemEvents
 } from "@nyx-os/event-bus";
-import type { SystemEvent } from "@nyx-os/events";
-import { createEventBus, type EventBus } from "@nyx-os/events";
 import { createConsoleLogger, type NyxLogger } from "@nyx-os/logger";
 import { MemoryManager, type MemorySnapshot, type NyxMemoryService } from "@nyx-os/memory";
 import {
@@ -47,11 +47,10 @@ export type ServiceStatus = "created" | "starting" | "running" | "stopping" | "s
 export type NyxRuntimeStatus = "created" | "starting" | "running" | "stopping" | "stopped" | "failed";
 
 export type NyxServiceContext = {
-  eventBus: EventBus;
   events: NyxEventBus<NyxSystemEvents>;
   logger: NyxLogger;
   state: NyxStateService | null;
-  emit: (input: Omit<Parameters<EventBus["emit"]>[0], "source"> & { source?: string }) => SystemEvent;
+  emit: NyxEventBus<NyxSystemEvents>["emit"];
 };
 
 export interface NyxService {
@@ -82,6 +81,17 @@ export type NyxRuntimeSnapshot = {
   memory: MemorySnapshot;
   events: SystemEvent[];
   state: NyxRuntimeState | null;
+};
+
+export type SystemEventLevel = "info" | "warning" | "error";
+
+export type SystemEvent = {
+  id: string;
+  type: NyxSystemEventName | string;
+  message: string;
+  level: SystemEventLevel;
+  timestamp: string;
+  source: string;
 };
 
 export type ConfigServiceSnapshot = Pick<NyxConfig, "appName" | "version" | "environment" | "enabledModules" | "featureFlags">;
@@ -453,8 +463,62 @@ export class ServiceManager {
   }
 }
 
+const recordedSystemEventNames: NyxSystemEventName[] = [
+  "runtime.started",
+  "runtime.stopped",
+  "runtime.failed",
+  "service.registered",
+  "service.started",
+  "service.stopped",
+  "service.failed",
+  "plugin.registered",
+  "plugin.initialized",
+  "plugin.disposed",
+  "plugin.unregistered",
+  "plugin.failed",
+  "scheduler.started",
+  "scheduler.stopped",
+  "scheduler.task.registered",
+  "scheduler.task.executed",
+  "scheduler.task.failed",
+  "scheduler.task.removed",
+  "memory.created",
+  "memory.updated",
+  "memory.deleted",
+  "memory.loaded",
+  "memory.saved",
+  "memory.search",
+  "capability.registered",
+  "capability.removed",
+  "capability.executed",
+  "capability.failed",
+  "tool.registered",
+  "tool.removed",
+  "tool.executed",
+  "tool.failed"
+];
+
+export type NyxRuntimeOptions = {
+  registerBaseServices?: boolean;
+  registerBaseCapabilities?: boolean;
+  registerBaseTools?: boolean;
+  registerBasePlugins?: boolean;
+  events?: NyxEventBus<NyxSystemEvents>;
+  loggerService?: LoggerService;
+  configService?: ConfigService;
+  stateService?: RuntimeStateService;
+  pluginManager?: PluginManager;
+  capabilities?: NyxCapabilityManager;
+  tools?: NyxToolManager;
+  scheduler?: NyxScheduler;
+  memory?: NyxMemoryService;
+};
+
 export class NyxRuntime {
   private status: NyxRuntimeStatus = "created";
+  private eventSequence = 0;
+  private readonly recentEvents: SystemEvent[] = [];
+  private readonly eventUnsubscribers: Array<() => void>;
   readonly loggerService: LoggerService | null;
   readonly configService: ConfigService | null;
   readonly stateService: RuntimeStateService | null;
@@ -465,25 +529,15 @@ export class NyxRuntime {
   readonly memory: NyxMemoryService;
 
   constructor(
-    readonly eventBus: EventBus = createEventBus(),
     readonly serviceManager: ServiceManager = new ServiceManager(),
-    options: {
-      registerBaseServices?: boolean;
-      registerBaseCapabilities?: boolean;
-      registerBaseTools?: boolean;
-      registerBasePlugins?: boolean;
-      events?: NyxEventBus<NyxSystemEvents>;
-      loggerService?: LoggerService;
-      configService?: ConfigService;
-      stateService?: RuntimeStateService;
-      pluginManager?: PluginManager;
-      capabilities?: NyxCapabilityManager;
-      tools?: NyxToolManager;
-      scheduler?: NyxScheduler;
-      memory?: NyxMemoryService;
-    } = {}
+    options: NyxRuntimeOptions = {}
   ) {
     this.events = options.events ?? createInMemoryEventBus<NyxSystemEvents>();
+    this.eventUnsubscribers = recordedSystemEventNames.map((eventName) =>
+      this.events.on(eventName, (event) => {
+        this.recordEvent(event.name, event.payload);
+      })
+    );
     this.pluginManager = options.pluginManager ?? new PluginManager(this.events);
     this.memory =
       options.memory ??
@@ -622,11 +676,6 @@ export class NyxRuntime {
     this.initializeRuntimeState();
     this.stateService?.getStateStore().updateRuntimeStatus("starting");
     logger.info("Runtime starting", { status: this.status });
-    this.eventBus.emit({
-      type: "runtime.starting",
-      message: "Nyx runtime is starting.",
-      source: "runtime"
-    });
 
     try {
       await this.serviceManager.setupAll(this.createServiceContext());
@@ -637,11 +686,6 @@ export class NyxRuntime {
       this.stateService?.getStateStore().updateRuntimeStatus("running");
       logger.info("Runtime started", { status: this.status });
       this.emitRuntimeEvent("runtime.started", "running");
-      this.eventBus.emit({
-        type: "runtime.started",
-        message: "Nyx runtime started.",
-        source: "runtime"
-      });
     } catch (error) {
       this.status = "failed";
       this.stateService?.getStateStore().updateRuntimeStatus("failed");
@@ -650,12 +694,6 @@ export class NyxRuntime {
       });
       this.emitRuntimeEvent("runtime.failed", "failed", {
         error: error instanceof Error ? error.message : "Unknown runtime failure"
-      });
-      this.eventBus.emit({
-        type: "runtime.failed",
-        message: error instanceof Error ? error.message : "Nyx runtime failed.",
-        level: "error",
-        source: "runtime"
       });
       throw error;
     }
@@ -670,11 +708,6 @@ export class NyxRuntime {
     this.status = "stopping";
     this.stateService?.getStateStore().updateRuntimeStatus("stopping");
     this.getLogger().info("Runtime stopping", { status: this.status });
-    this.eventBus.emit({
-      type: "runtime.stopping",
-      message: "Nyx runtime is stopping.",
-      source: "runtime"
-    });
 
     try {
       this.scheduler.stop();
@@ -684,11 +717,6 @@ export class NyxRuntime {
       this.stateService?.getStateStore().updateRuntimeStatus("stopped");
       this.getLogger().info("Runtime stopped", { status: this.status });
       this.emitRuntimeEvent("runtime.stopped", "stopped");
-      this.eventBus.emit({
-        type: "runtime.stopped",
-        message: "Nyx runtime stopped.",
-        source: "runtime"
-      });
     } catch (error) {
       this.status = "failed";
       this.stateService?.getStateStore().updateRuntimeStatus("failed");
@@ -697,12 +725,6 @@ export class NyxRuntime {
       });
       this.emitRuntimeEvent("runtime.failed", "failed", {
         error: error instanceof Error ? error.message : "Unknown runtime failure"
-      });
-      this.eventBus.emit({
-        type: "runtime.failed",
-        message: error instanceof Error ? error.message : "Nyx runtime failed.",
-        level: "error",
-        source: "runtime"
       });
       throw error;
     }
@@ -720,7 +742,7 @@ export class NyxRuntime {
       capabilities: this.capabilities.list(),
       tools: this.tools.list(),
       memory: this.memory.snapshot(),
-      events: this.eventBus.listRecent(),
+      events: this.recentEvents,
       state: this.stateService?.getRuntimeState() ?? null
     };
   }
@@ -735,15 +757,10 @@ export class NyxRuntime {
 
   private createServiceContext(): NyxServiceContext {
     return {
-      eventBus: this.eventBus,
       events: this.events,
       logger: this.getLogger(),
       state: this.stateService?.getStateStore() ?? null,
-      emit: (input) =>
-        this.eventBus.emit({
-          ...input,
-          source: input.source ?? "service"
-        })
+      emit: (event, payload) => this.events.emit(event, payload)
     };
   }
 
@@ -808,6 +825,14 @@ export class NyxRuntime {
       environment: config.environment,
       services: this.serviceManager.list()
     });
+  }
+
+  private recordEvent(type: NyxSystemEventName, payload?: NyxEventPayload): void {
+    this.eventSequence += 1;
+    const event = createDisplayEvent(type, this.eventSequence, payload);
+
+    this.recentEvents.unshift(event);
+    this.recentEvents.splice(20);
   }
 
   private emitRuntimeEvent(event: "runtime.started" | "runtime.stopped" | "runtime.failed", status: string, metadata = {}) {
@@ -1009,28 +1034,18 @@ export class SystemStatusService {
 }
 
 export class EventService {
-  constructor(private readonly eventBus: EventBus) {}
+  private events: SystemEvent[] = [];
 
   startRuntime(): void {
-    this.eventBus.emit({
-      type: "runtime.started",
-      message: "Nyx runtime initialized.",
-      source: "runtime"
-    });
-    this.eventBus.emit({
-      type: "module.ready",
-      message: "Core, events and dashboard modules are ready.",
-      source: "runtime"
-    });
-    this.eventBus.emit({
-      type: "dashboard.loaded",
-      message: "Dashboard snapshot prepared from mock services.",
-      source: "dashboard"
-    });
+    this.events = [
+      createDisplayEvent("dashboard.loaded", 3, undefined, "Dashboard snapshot prepared from runtime services."),
+      createDisplayEvent("module.ready", 2, undefined, "Core, events and dashboard modules are ready."),
+      createDisplayEvent("runtime.started", 1, undefined, "Nyx runtime initialized.")
+    ];
   }
 
   listRecent(): SystemEvent[] {
-    return this.eventBus.listRecent();
+    return this.events;
   }
 }
 
@@ -1084,19 +1099,26 @@ function getRuntimeUptime(runtimeSnapshot: NyxRuntimeSnapshot, runtime: RuntimeS
   return 0;
 }
 
-function createSyntheticEvent(type: string, index: number): SystemEvent {
+function createDisplayEvent(
+  type: string,
+  sequence: number,
+  payload?: NyxEventPayload,
+  message = "Evento emitido pelo barramento oficial do Runtime."
+): SystemEvent {
+  const source = payload?.service ?? payload?.plugin ?? payload?.task ?? type.split(".")[0] ?? "runtime";
+
   return {
-    id: `system-${index}-${type}`,
+    id: `system-${sequence}-${type}`,
     type,
-    message: "Evento emitido pelo barramento oficial do Runtime.",
+    message,
     level: type.endsWith(".failed") ? "error" : "info",
-    source: type.split(".")[0] ?? "runtime",
-    timestamp: new Date().toISOString()
+    source,
+    timestamp: payload?.timestamp ?? new Date().toISOString()
   };
 }
 
 function mergeRecentEvents(runtimeEvents: SystemEvent[], officialEventTypes: readonly string[] = []): SystemEvent[] {
-  const officialEvents = officialEventTypes.map((type, index) => createSyntheticEvent(type, index));
+  const officialEvents = officialEventTypes.map((type, index) => createDisplayEvent(type, index));
   const events = [...officialEvents, ...runtimeEvents];
   const seen = new Set<string>();
 
@@ -1232,7 +1254,7 @@ export class DashboardService {
         events: this.eventService.listRecent(),
         state: null
       } satisfies NyxRuntimeSnapshot);
-    const runtimeEvents = runtimeSnapshot.events.length > 0 ? runtimeSnapshot.events : this.eventService.listRecent();
+    const runtimeEvents = [...this.eventService.listRecent(), ...runtimeSnapshot.events];
     const recentEvents = mergeRecentEvents(runtimeEvents, this.officialEventTypes);
     const config =
       this.configSnapshot ??
@@ -1325,7 +1347,7 @@ export function createDashboardSnapshotFromRuntime(
   const runtimeSnapshot = runtime.getSnapshot();
   const runtimeService = new RuntimeService(config);
   const systemStatusService = new SystemStatusService();
-  const eventService = new EventService(runtime.eventBus);
+  const eventService = new EventService();
   const dashboardService = new DashboardService(
     runtimeService,
     systemStatusService,
@@ -1342,9 +1364,8 @@ export function createDashboardSnapshotFromRuntime(
 
 export function createDashboardSnapshot(): DashboardSnapshot {
   const config = getNyxConfig();
-  const eventBus = createEventBus();
-  const eventService = new EventService(eventBus);
-  const runtime = new NyxRuntime(eventBus);
+  const eventService = new EventService();
+  const runtime = new NyxRuntime();
   const runtimeService = new RuntimeService(config);
   const systemStatusService = new SystemStatusService();
   const dashboardService = new DashboardService(

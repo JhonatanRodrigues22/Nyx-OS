@@ -129,8 +129,8 @@ events.once("runtime.started", (event) => {
 - Eventos internos não devem carregar regra de produto.
 - O Event Bus não substitui o State Service; eventos comunicam mudanças, estado representa a situação atual.
 
-## Relação com `@nyx-os/events`
+## Histórico de eventos recentes
 
 `@nyx-os/event-bus` é o barramento oficial de comunicação tipada.
 
-`@nyx-os/events` permanece como stream em memória de eventos recentes usado pelo dashboard e por snapshots legados. Ele não deve receber novas responsabilidades de lifecycle do Runtime.
+O histórico recente usado pelo dashboard é derivado do próprio barramento oficial. O projeto não mantém mais um package separado para eventos legados de runtime.
