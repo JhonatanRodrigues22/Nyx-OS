@@ -114,7 +114,7 @@ describe("Nyx runtime foundation", () => {
     const snapshot = createDashboardSnapshot();
 
     expect(snapshot.runtime.name).toBe("Nyx OS");
-    expect(snapshot.cards).toHaveLength(6);
+    expect(snapshot.cards).toHaveLength(7);
     expect(snapshot.plugins.map((plugin) => plugin.id)).toContain("runtime-diagnostics");
     expect(snapshot.scheduler.status).toBe("idle");
     expect(snapshot.navigation.map((item) => item.label)).toContain("Memória");
@@ -400,6 +400,15 @@ describe("Nyx runtime foundation", () => {
     expect(runtime.getSnapshot().services.map((service) => service.status)).toEqual(["stopped", "stopped", "stopped"]);
     expect(runtime.getRuntimeState()?.status).toBe("stopped");
     expect(entries.map((entry) => entry.message)).toContain("Runtime stopped");
+  });
+
+  it("skips base tools when their required base capabilities are disabled", () => {
+    expect(() => new NyxRuntime(createEventBus(), undefined, { registerBaseCapabilities: false })).not.toThrow();
+
+    const runtime = new NyxRuntime(createEventBus(), undefined, { registerBaseCapabilities: false });
+
+    expect(runtime.getCapabilities().list()).toEqual([]);
+    expect(runtime.getTools().list()).toEqual([]);
   });
 
   it("exposes runtime state with service health and metadata", async () => {

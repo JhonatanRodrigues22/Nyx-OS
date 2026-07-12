@@ -12,6 +12,7 @@ import { ModuleGrid } from "@/components/ModuleGrid";
 import { PluginList } from "@/components/PluginList";
 import { SchedulerList } from "@/components/SchedulerList";
 import { StatusPanel } from "@/components/StatusPanel";
+import { ToolList } from "@/components/ToolList";
 
 type HomeProps = {
   snapshot: DashboardSnapshot;
@@ -40,7 +41,11 @@ const observedEvents: NyxSystemEventName[] = [
   "capability.registered",
   "capability.removed",
   "capability.executed",
-  "capability.failed"
+  "capability.failed",
+  "tool.registered",
+  "tool.removed",
+  "tool.executed",
+  "tool.failed"
 ];
 
 export default function Home({ snapshot, enableLiveRuntime = true }: HomeProps) {
@@ -118,6 +123,7 @@ export default function Home({ snapshot, enableLiveRuntime = true }: HomeProps) 
               overview={dashboardSnapshot.overview}
               capabilities={dashboardSnapshot.capabilities}
             />
+            <ToolList overview={dashboardSnapshot.overview} tools={dashboardSnapshot.tools} />
             <PluginList overview={dashboardSnapshot.overview} plugins={dashboardSnapshot.plugins} />
             <EventList overview={dashboardSnapshot.overview} events={dashboardSnapshot.recentEvents} />
           </div>

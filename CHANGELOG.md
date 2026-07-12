@@ -1,5 +1,51 @@
 # Changelog
 
+## Limpeza Pre-Sprint 16
+
+### Corrigido
+
+- Build do app web ajustado para Next.js 16 com Turbopack (`ee24f4a`, PR #20).
+- Jest ajustado para transformar pacotes internos `@nyx-os/*` vindos do workspace (`4a999ba`, PR #20).
+- `transpilePackages` passou a incluir `@nyx-os/capabilities`, `@nyx-os/memory` e `@nyx-os/tools` (`2aaec27`, PR #20).
+- Line endings normalizados por `.gitattributes` com LF (`9047352`, PR #20).
+
+### Integracao
+
+- PR #19 fechado sem merge apos rebase sobre `origin/main`.
+- PR #20 aberto de `feat/sprint-15-tool-calling-engine` para `main`, sincronizando a Sprint 15 sobre a base que ja contem a Sprint 14, sem merge automatico.
+
+## Sprint 15 - Tool Calling Engine
+
+### Adicionado
+
+- `@nyx-os/tools` com contratos e implementacao inicial do Tool Calling Engine.
+- `ToolManager`, `ToolRegistry` e `ToolExecutor`.
+- Categorias iniciais de Tool: `memory`, `system`, `diagnostics`, `filesystem`, `network`, `automation` e `custom`.
+- Validacao simples de parametros por contrato.
+- Eventos `tool.registered`, `tool.removed`, `tool.executed` e `tool.failed`.
+- Tools internas `memory.search` e `diagnostics.runtime` como validacao arquitetural minima.
+- Bloco simples de Tools no Dev Dashboard.
+- Documentacao em `docs/arquitetura/tool-calling-engine.md`.
+- ADR-0020 sobre Tool Calling Engine oficial.
+
+### Alterado
+
+- `NyxRuntime` passou a expor `runtime.getTools()`.
+- Contexto de plugins passou a expor `context.tools`.
+- Snapshot do Runtime e Dashboard passou a incluir Tools registradas.
+- Event Bus oficial passou a tipar eventos `tool.*`.
+- Testes ampliados para registro, execucao, validacao, eventos, Runtime, plugins e integracao com Capability Engine.
+
+### Fora do escopo
+
+- IA.
+- LLM.
+- Prompts.
+- Planejamento.
+- Raciocinio.
+- Agentes.
+- Automacoes inteligentes.
+
 ## Sprint 14 - Capability Engine
 
 ### Adicionado

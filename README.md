@@ -114,6 +114,7 @@ Use `npm run start` depois de executar `npm run build`.
 - 12: Nyx Visual Overhaul.
 - 13: Memory Engine.
 - 14: Capability Engine.
+- 15: Tool Calling Engine.
 
 A Sprint 04 introduziu a primeira base executável do Nyx OS: core runtime, serviços internos, event bus em memória e dashboard visual com dados mockados isolados.
 
@@ -125,6 +126,8 @@ A Sprint 13 introduziu o Memory Engine oficial com memória textual, CRUD, busca
 A Sprint 12 redesenhou visualmente o Dev Dashboard com identidade Nyx premium, glassmorphism, neon roxo, magenta, azul elétrico, gauges, microindicadores e animações discretas, sem alterar a arquitetura do Runtime.
 
 A Sprint 14 introduziu o Capability Engine oficial com registro, descoberta, execucao e observabilidade de capacidades por contrato, eventos `capability.*`, `runtime.getCapabilities()` e `context.capabilities`.
+
+A Sprint 15 introduziu o Tool Calling Engine oficial com registro, descoberta, validacao e execucao de Tools por contrato, eventos `tool.*`, `runtime.getTools()` e `context.tools`.
 
 ## Stack
 
@@ -168,6 +171,7 @@ Leitura recomendada:
 9. `docs/workflow/dx-validation.md`
 10. `docs/arquitetura/dev-dashboard.md`
 11. `docs/arquitetura/capability-engine.md`
+12. `docs/arquitetura/tool-calling-engine.md`
 
 ## Contributing
 

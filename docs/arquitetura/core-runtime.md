@@ -25,6 +25,7 @@ Ele inicializa, coordena e encerra serviços internos sem conhecer clientes espe
 - `@nyx-os/logger`: contrato central de logging e implementação inicial em console.
 - `@nyx-os/memory`: contrato oficial de memoria textual, store em memoria e busca simples.
 - `@nyx-os/capabilities`: contrato oficial de capacidades executaveis e descobertas pelo Runtime.
+- `@nyx-os/tools`: contrato oficial de Tools executaveis, validacao e chamada por clientes futuros.
 - `@nyx-os/plugin`: contrato oficial de plugins e manager de lifecycle.
 - `@nyx-os/scheduler`: contrato oficial de tarefas recorrentes e manager de agendamento.
 - `@nyx-os/state`: contrato central de estado do Runtime e serviços.
@@ -197,6 +198,18 @@ Plugins recebem `context.capabilities` durante a inicializacao.
 Nesta fase, ele implementa registro, remocao, descoberta, execucao, consulta por categoria e eventos `capability.registered`, `capability.removed`, `capability.executed` e `capability.failed`.
 
 As capacidades internas `DiagnosticsCapability` e `MemoryCapability` existem apenas para validar a arquitetura. Elas nao implementam IA, planejamento, tool calling ou automacao.
+
+## Tool Calling Engine
+
+O Tool Calling Engine vive em `@nyx-os/tools` e e exposto pelo Runtime por `runtime.getTools()`.
+
+Plugins recebem `context.tools` durante a inicializacao.
+
+Nesta fase, ele implementa registro, remocao, descoberta, validacao simples de parametros, execucao e eventos `tool.registered`, `tool.removed`, `tool.executed` e `tool.failed`.
+
+Toda Tool deve possuir `capabilityId` apontando para uma Capability registrada. Tools orfas sao recusadas pelo registry.
+
+As Tools internas `memory.search` e `diagnostics.runtime` existem apenas para validar a arquitetura. Elas nao implementam IA, LLM, prompts, planejamento, raciocinio ou agentes.
 
 ## Dados Mockados
 

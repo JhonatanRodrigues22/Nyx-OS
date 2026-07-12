@@ -13,6 +13,7 @@
     "@nyx-os/memory": "0.1.0",
     "@nyx-os/plugin": "0.1.0",
     "@nyx-os/scheduler": "0.1.0",
-    "@nyx-os/state": "0.1.0"
+    "@nyx-os/state": "0.1.0",
+    "@nyx-os/tools": "0.1.0"
   }
 }

@@ -4,7 +4,7 @@
 
 O Capability Engine e o mecanismo oficial para registrar, descobrir, executar e observar capacidades do Nyx OS.
 
-Ele nao implementa IA, LLM, planejamento, automacoes ou tool calling.
+Ele nao implementa IA, LLM, planejamento ou automacoes.
 
 Seu papel e criar um contrato estavel para que componentes futuros possam executar funcionalidades do sistema sem depender diretamente de implementacoes concretas.
 
@@ -76,6 +76,14 @@ Toda Capability recebe um `CapabilityContext` padrao com:
 - `scheduler`.
 
 Esse contexto e controlado pelo Runtime. Capabilities devem depender desses contratos e evitar acesso direto a implementacoes concretas.
+
+## Relacao Com Tools
+
+Capabilities descrevem o que o sistema pode fazer.
+
+Tools representam como executar essas capacidades.
+
+Toda Tool deve declarar `capabilityId` apontando para uma Capability registrada. O Tool Calling Engine recusa Tools orfas.
 
 ## Eventos
 

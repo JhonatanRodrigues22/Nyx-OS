@@ -74,6 +74,10 @@ O Runtime emite automaticamente:
 - `capability.removed`;
 - `capability.executed`;
 - `capability.failed`.
+- `tool.registered`;
+- `tool.removed`;
+- `tool.executed`;
+- `tool.failed`.
 
 Esses eventos descrevem lifecycle técnico e mudanças de infraestrutura. Eventos específicos de IA continuam fora do escopo atual.
 

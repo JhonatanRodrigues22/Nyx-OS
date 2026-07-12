@@ -10,6 +10,7 @@ export type {
   NyxEventUnsubscribe,
   NyxCapabilityEventName,
   NyxMemoryEventName,
+  NyxToolEventName,
   NyxPluginEventName,
   NyxRuntimeEventName,
   NyxSchedulerEventName,
