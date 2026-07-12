@@ -8,11 +8,14 @@
 - Jest ajustado para transformar pacotes internos `@nyx-os/*` vindos do workspace (`4a999ba`, PR #20).
 - `transpilePackages` passou a incluir `@nyx-os/capabilities`, `@nyx-os/memory` e `@nyx-os/tools` (`2aaec27`, PR #20).
 - Line endings normalizados por `.gitattributes` com LF (`9047352`, PR #20).
+- Event Bus duplicado removido do Runtime; `@nyx-os/event-bus` passa a ser o unico canal de lifecycle (`0232d42`, PR #21).
+- Pacotes-fantasma `packages/plugins` e `packages/logging` removidos (`e071efc`, PR #21).
 
 ### Integracao
 
 - PR #19 fechado sem merge apos rebase sobre `origin/main`.
-- PR #20 aberto de `feat/sprint-15-tool-calling-engine` para `main`, sincronizando a Sprint 15 sobre a base que ja contem a Sprint 14, sem merge automatico.
+- PR #20 mergeado em `main`, sincronizando a Sprint 15 sobre a base que ja contem a Sprint 14.
+- PR #21 aberto de `refactor/pre-sprint-16-cleanup-event-bus-stubs` para `main`, fechando os itens 5 e 6 sem merge automatico.
 
 ## Sprint 15 - Tool Calling Engine
 
