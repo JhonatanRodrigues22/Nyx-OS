@@ -60,6 +60,7 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `arquitetura/memory-engine.md`: contrato oficial de memoria textual, busca simples e store em memoria.
 - `arquitetura/capability-engine.md`: contrato oficial de capacidades, execucao e descoberta por Runtime e plugins.
 - `arquitetura/tool-calling-engine.md`: contrato oficial de Tools, validacao e execucao desacoplada.
+- `arquitetura/automation-engine.md`: contrato oficial de automacoes por evento ou schedule usando Tools existentes.
 - `arquitetura/logging.md`: contrato central de logging e Logger Service.
 - `packages/state/README.md`: contrato central de estado do Runtime.
 - `workflow/desenvolvimento.md`: ciclo oficial de branches, commits e Pull Requests.
@@ -92,3 +93,4 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `@nyx-os/memory` é o mecanismo oficial de memoria textual do Runtime.
 - `@nyx-os/capabilities` e o mecanismo oficial de registro, descoberta e execucao de capacidades.
 - `@nyx-os/tools` e a API publica executavel do Nyx OS para clientes futuros, incluindo o AI Runtime.
+- `@nyx-os/automation` e o mecanismo oficial para disparar Tools a partir de eventos ou schedules.
