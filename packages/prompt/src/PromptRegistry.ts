@@ -67,17 +67,17 @@ export class PromptRegistry {
   }
 
   list(): PromptTemplate[] {
-    return Array.from(this.templates.values()).map((template) => this.clone(template));
+    return Array.from(this.templates.values()).map((template) => this.cloneTemplate(template));
   }
 
-  private clone(template: PromptTemplate | undefined): PromptTemplate | undefined {
-    if (!template) {
-      return undefined;
-    }
-
+  private cloneTemplate(template: PromptTemplate): PromptTemplate {
     return {
       ...template,
       variables: [...template.variables]
     };
+  }
+
+  private clone(template: PromptTemplate | undefined): PromptTemplate | undefined {
+    return template ? this.cloneTemplate(template) : undefined;
   }
 }
