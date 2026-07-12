@@ -18,7 +18,7 @@ export class PromptRenderer {
 
     return template.template.replace(/\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}/g, (match, variable: string) => {
       if (!(variable in variables)) {
-        return match;
+        throw new Error(`Missing prompt variable: ${variable}`);
       }
 
       return stringifyPromptValue(variables[variable]);

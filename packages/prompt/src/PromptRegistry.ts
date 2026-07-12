@@ -27,6 +27,12 @@ function compareVersion(left: string, right: string): number {
   return 0;
 }
 
+function extractPlaceholders(template: string): string[] {
+  const matches = template.matchAll(/\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}/g);
+
+  return Array.from(new Set(Array.from(matches).map((match) => String(match[1]))));
+}
+
 export class PromptRegistry {
   private readonly templates = new Map<string, PromptTemplate>();
 
@@ -35,6 +41,13 @@ export class PromptRegistry {
 
     if (this.templates.has(key)) {
       throw new Error(`Prompt template already registered: ${template.id}@${template.version}`);
+    }
+
+    const declaredVariables = new Set(template.variables);
+    const undeclaredVariables = extractPlaceholders(template.template).filter((variable) => !declaredVariables.has(variable));
+
+    if (undeclaredVariables.length > 0) {
+      throw new Error(`Prompt template ${template.id}@${template.version} has undeclared variables: ${undeclaredVariables.join(", ")}`);
     }
 
     this.templates.set(key, {

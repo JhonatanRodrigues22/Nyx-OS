@@ -64,6 +64,32 @@ describe("Prompt Engine", () => {
     ).toThrow("Missing prompt variable: mode");
   });
 
+  it("throws an explicit error when a placeholder has no provided value", () => {
+    const renderer = new PromptRenderer();
+    const template = createTemplate({
+      template: "You are {{name}} running in {{mode}}.",
+      variables: ["name"]
+    });
+
+    expect(() =>
+      renderer.render(template, {
+        name: "Nyx OS"
+      })
+    ).toThrow("Missing prompt variable: mode");
+  });
+
+  it("rejects templates with undeclared placeholders on registration", () => {
+    const registry = new PromptRegistry();
+    const template = createTemplate({
+      template: "You are {{name}} running in {{mode}}.",
+      variables: ["name"]
+    });
+
+    expect(() => registry.register(template)).toThrow(
+      "Prompt template nyx.system@1.0.0 has undeclared variables: mode"
+    );
+  });
+
   it("composes multiple sections in order", () => {
     const composer = new PromptComposer();
 
