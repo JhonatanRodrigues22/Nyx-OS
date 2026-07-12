@@ -188,6 +188,40 @@ describe("Nyx AI Runtime", () => {
     expect(result.messages.map((message) => message.role)).toEqual(["user", "assistant", "tool", "assistant"]);
   });
 
+  it("preserves provider tool call IDs in tool result messages", async () => {
+    const provider = new FakeAiProvider([
+      {
+        message: {
+          role: "assistant",
+          content: ""
+        },
+        toolCalls: [
+          {
+            toolId: "ai.test.tool",
+            toolCallId: "toolu_manager",
+            input: {
+              value: "nyx"
+            }
+          }
+        ],
+        stopReason: "tool_call"
+      },
+      {
+        message: {
+          role: "assistant",
+          content: "Tool result consumed."
+        },
+        stopReason: "stop"
+      }
+    ]);
+    const { ai } = createHarness(provider);
+
+    const result = await ai.sendUserMessage("use a tool");
+    const toolMessage = result.messages.find((message) => message.role === "tool");
+
+    expect(toolMessage?.toolCallId).toBe("toolu_manager");
+  });
+
   it("fails explicitly when the tool loop reaches the iteration limit", async () => {
     const provider = new FakeAiProvider([
       {

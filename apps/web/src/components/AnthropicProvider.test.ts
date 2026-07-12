@@ -77,4 +77,74 @@ describe("AnthropicProvider", () => {
       }
     ]);
   });
+
+  it("preserves Anthropic tool_use IDs through a tool result round trip", async () => {
+    const requests: unknown[] = [];
+    const fetchImpl: typeof fetch = async (_url, init) => {
+      const body = JSON.parse(String(init?.body));
+
+      requests.push(body);
+
+      if (requests.length === 1) {
+        return createResponse({
+          content: [
+            {
+              type: "tool_use",
+              id: "toolu_original",
+              name: body.tools[0].name,
+              input: {
+                value: "first"
+              }
+            }
+          ],
+          stop_reason: "tool_use"
+        });
+      }
+
+      return createResponse({
+        content: [
+          {
+            type: "text",
+            text: "done"
+          }
+        ],
+        stop_reason: "end_turn"
+      });
+    };
+    const provider = new AnthropicProvider({
+      apiKey: "test-key",
+      model: "test-model",
+      fetchImpl
+    });
+    const first = await provider.complete({
+      messages: [{ role: "user", content: "run diagnostics" }],
+      tools: [createTool("diagnostics.runtime")]
+    });
+
+    await provider.complete({
+      messages: [
+        { role: "user", content: "run diagnostics" },
+        first.message,
+        {
+          role: "tool",
+          toolCallId: first.toolCalls?.[0]?.toolCallId,
+          content: "{\"ok\":true}"
+        }
+      ],
+      tools: [createTool("diagnostics.runtime")]
+    });
+
+    const secondRequest = requests[1] as {
+      messages: Array<{ content: Array<{ type: string; tool_use_id?: string }> | string }>;
+    };
+    const toolResultMessage = secondRequest.messages.at(-1);
+
+    expect(toolResultMessage?.content).toEqual([
+      {
+        type: "tool_result",
+        tool_use_id: "toolu_original",
+        content: "{\"ok\":true}"
+      }
+    ]);
+  });
 });

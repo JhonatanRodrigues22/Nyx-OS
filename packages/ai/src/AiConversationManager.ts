@@ -74,7 +74,7 @@ export class AiConversationManager {
         });
         const toolMessage: AiMessage = {
           role: "tool",
-          toolCallId: `${toolCall.toolId}:${iterations}:${index}`,
+          toolCallId: toolCall.toolCallId ?? `${toolCall.toolId}:${iterations}:${index}`,
           content: JSON.stringify(result.result ?? null)
         };
 
