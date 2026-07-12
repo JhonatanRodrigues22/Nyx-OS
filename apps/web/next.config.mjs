@@ -12,14 +12,17 @@ const nextConfig = {
   reactStrictMode: true,
   turbopack: {},
   transpilePackages: [
+    "@nyx-os/capabilities",
     "@nyx-os/config",
     "@nyx-os/core",
     "@nyx-os/event-bus",
     "@nyx-os/events",
     "@nyx-os/logger",
+    "@nyx-os/memory",
     "@nyx-os/plugin",
     "@nyx-os/scheduler",
-    "@nyx-os/state"
+    "@nyx-os/state",
+    "@nyx-os/tools"
   ]
 };
 
