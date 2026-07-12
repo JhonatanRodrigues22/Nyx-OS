@@ -4,12 +4,15 @@
 
 ### Corrigido
 
-- Build do app web ajustado para Next.js 16 com Turbopack (`efec778`, PR #19).
-- Jest ajustado para transformar pacotes internos `@nyx-os/*` vindos do workspace (`e647750`, PR #19).
+- Build do app web ajustado para Next.js 16 com Turbopack (`ee24f4a`, PR #20).
+- Jest ajustado para transformar pacotes internos `@nyx-os/*` vindos do workspace (`4a999ba`, PR #20).
+- `transpilePackages` passou a incluir `@nyx-os/capabilities`, `@nyx-os/memory` e `@nyx-os/tools` (`2aaec27`, PR #20).
+- Line endings normalizados por `.gitattributes` com LF (`9047352`, PR #20).
 
 ### Integracao
 
-- PR #19 aberto de `feat/sprint-15-tool-calling-engine` para `main`, sincronizando as Sprints 14 e 15 sem merge automatico.
+- PR #19 fechado sem merge apos rebase sobre `origin/main`.
+- PR #20 aberto de `feat/sprint-15-tool-calling-engine` para `main`, sincronizando a Sprint 15 sobre a base que ja contem a Sprint 14, sem merge automatico.
 
 ## Sprint 15 - Tool Calling Engine
 
