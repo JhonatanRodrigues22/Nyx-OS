@@ -21,6 +21,7 @@ const nextConfig = {
     "@nyx-os/logger",
     "@nyx-os/memory",
     "@nyx-os/plugin",
+    "@nyx-os/prompt",
     "@nyx-os/scheduler",
     "@nyx-os/state",
     "@nyx-os/tools"
