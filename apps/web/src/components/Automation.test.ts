@@ -247,6 +247,31 @@ describe("Nyx automation engine", () => {
     jest.useRealTimers();
   });
 
+  it("rolls back registration when schedule attachment fails", () => {
+    const { automations } = createHarness();
+
+    expect(() =>
+      automations.register(
+        createAutomation({
+          trigger: {
+            onSchedule: "not-a-number"
+          }
+        })
+      )
+    ).toThrow("Invalid automation schedule interval");
+
+    expect(automations.list()).toEqual([]);
+    expect(() =>
+      automations.register(
+        createAutomation({
+          trigger: {
+            onSchedule: "1000"
+          }
+        })
+      )
+    ).not.toThrow();
+  });
+
   it("does not execute disabled automations", async () => {
     const { automations, events, executions } = createHarness();
 

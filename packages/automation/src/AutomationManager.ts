@@ -54,7 +54,14 @@ export class AutomationManager implements NyxAutomationManager {
   register(automation: Automation): AutomationSnapshot {
     const snapshot = this.registry.register(automation);
 
-    this.attach(automation);
+    try {
+      this.attach(automation);
+    } catch (error) {
+      this.detach(automation.id);
+      this.registry.remove(automation.id);
+      throw error;
+    }
+
     emitAutomationEvent(this.events, "automation.registered", { automation: snapshot });
 
     return snapshot;
