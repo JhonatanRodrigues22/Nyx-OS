@@ -109,7 +109,7 @@ export class AiConversationManager {
   }
 
   private resolveSystemPrompt(options: AiConversationOptions): string {
-    if (options.systemPrompt) {
+    if (options.systemPrompt !== undefined) {
       return options.systemPrompt;
     }
 

@@ -271,6 +271,28 @@ describe("Nyx AI Runtime", () => {
     });
   });
 
+  it("treats an empty system prompt as an explicit override", async () => {
+    const provider = new FakeAiProvider([
+      {
+        message: {
+          role: "assistant",
+          content: "Hello without system prompt."
+        },
+        stopReason: "stop"
+      }
+    ]);
+    const { ai } = createHarness(provider);
+
+    await ai.sendUserMessage("hello", {
+      systemPrompt: ""
+    });
+
+    expect(provider.requests[0].messages[0]).toEqual({
+      role: "system",
+      content: ""
+    });
+  });
+
   it("fails explicitly when the tool loop reaches the iteration limit", async () => {
     const provider = new FakeAiProvider([
       {
