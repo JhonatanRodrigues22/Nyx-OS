@@ -1,5 +1,5 @@
 # @nyx-os/ai
 
-Responsável por contratos entre Nyx OS e camadas de IA.
+AI Runtime package for provider abstraction, conversation loops, and tool-calling through Nyx OS tools.
 
-A IA deve operar sobre APIs e contratos, não acessar dados de forma descontrolada.
+Providers must be accessed through `AiProvider`; vendor-specific request and response formats stay inside adapters.
