@@ -1,5 +1,4 @@
-import type { DashboardOverview } from "@nyx-os/core";
-import type { SystemEvent } from "@nyx-os/events";
+import type { DashboardOverview, SystemEvent } from "@nyx-os/core";
 
 type EventListProps = {
   overview: DashboardOverview;

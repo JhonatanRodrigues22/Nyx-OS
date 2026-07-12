@@ -9,7 +9,6 @@ import {
   SystemStatusService
 } from "@nyx-os/core";
 import { createInMemoryEventBus, type NyxSystemEventName, type NyxSystemEvents } from "@nyx-os/event-bus";
-import { createEventBus } from "@nyx-os/events";
 import { ConsoleLogger, type ConsoleLoggerSink, type NyxLogEntry } from "@nyx-os/logger";
 import type { NyxPlugin } from "@nyx-os/plugin";
 
@@ -35,7 +34,7 @@ function createRuntimeWithMemoryLogger() {
 
   return {
     entries,
-    runtime: new NyxRuntime(createEventBus(), undefined, { events: runtimeEvents, loggerService }),
+    runtime: new NyxRuntime(undefined, { events: runtimeEvents, loggerService }),
     runtimeEvents
   };
 }
@@ -73,29 +72,21 @@ describe("Nyx runtime foundation", () => {
   });
 
   it("stores recent events in memory", () => {
-    const eventBus = createEventBus();
+    const eventBus = createInMemoryEventBus<NyxSystemEvents>();
     const receivedTypes: string[] = [];
 
-    const unsubscribe = eventBus.subscribe("runtime.started", (event) => {
-      receivedTypes.push(event.type);
+    const unsubscribe = eventBus.on("runtime.started", (event) => {
+      receivedTypes.push(event.name);
     });
 
-    const event = eventBus.emit({
-      type: "runtime.started",
-      message: "Runtime started.",
-      source: "runtime"
-    });
+    const event = eventBus.emit("runtime.started");
 
-    expect(eventBus.listRecent()).toEqual([event]);
+    expect(event.name).toBe("runtime.started");
     expect(receivedTypes).toEqual(["runtime.started"]);
 
     unsubscribe();
 
-    eventBus.emit({
-      type: "runtime.started",
-      message: "Runtime started again.",
-      source: "runtime"
-    });
+    eventBus.emit("runtime.started");
 
     expect(receivedTypes).toEqual(["runtime.started"]);
   });
@@ -235,6 +226,8 @@ describe("Nyx runtime foundation", () => {
       name: "runtime.stopped",
       status: "stopped"
     });
+    expect(received.filter((event) => event.name === "runtime.started")).toHaveLength(1);
+    expect(received.filter((event) => event.name === "runtime.stopped")).toHaveLength(1);
   });
 
   it("emits service and runtime failure events", async () => {
@@ -403,9 +396,9 @@ describe("Nyx runtime foundation", () => {
   });
 
   it("skips base tools when their required base capabilities are disabled", () => {
-    expect(() => new NyxRuntime(createEventBus(), undefined, { registerBaseCapabilities: false })).not.toThrow();
+    expect(() => new NyxRuntime(undefined, { registerBaseCapabilities: false })).not.toThrow();
 
-    const runtime = new NyxRuntime(createEventBus(), undefined, { registerBaseCapabilities: false });
+    const runtime = new NyxRuntime(undefined, { registerBaseCapabilities: false });
 
     expect(runtime.getCapabilities().list()).toEqual([]);
     expect(runtime.getTools().list()).toEqual([]);

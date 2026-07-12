@@ -16,7 +16,6 @@ const nextConfig = {
     "@nyx-os/config",
     "@nyx-os/core",
     "@nyx-os/event-bus",
-    "@nyx-os/events",
     "@nyx-os/logger",
     "@nyx-os/memory",
     "@nyx-os/plugin",
