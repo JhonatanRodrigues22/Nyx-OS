@@ -1,3 +1,4 @@
+import { AutomationManager } from "@nyx-os/automation";
 import { createInMemoryEventBus, type NyxSystemEvents } from "@nyx-os/event-bus";
 import { CapabilityManager } from "@nyx-os/capabilities";
 import { createConsoleLogger } from "@nyx-os/logger";
@@ -85,14 +86,17 @@ function createContext(events = createInMemoryEventBus<NyxSystemEvents>()): NyxP
       capabilities
     })
   });
+  const automations = new AutomationManager({ events, scheduler, tools });
 
   return {
     runtime: {
+      getAutomations: () => automations,
       getCapabilities: () => capabilities,
       getEventBus: () => events,
       getMemory: () => memory,
       getTools: () => tools
     },
+    automations,
     capabilities,
     events,
     logger,
