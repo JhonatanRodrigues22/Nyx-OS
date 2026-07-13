@@ -13,6 +13,7 @@ const customJestConfig = {
     "^@nyx-os/automation$": "<rootDir>/../../packages/automation/src/index.ts",
     "^@nyx-os/capabilities$": "<rootDir>/../../packages/capabilities/src/index.ts",
     "^@nyx-os/config$": "<rootDir>/../../packages/config/src/index.ts",
+    "^@nyx-os/context$": "<rootDir>/../../packages/context/src/index.ts",
     "^@nyx-os/core$": "<rootDir>/../../packages/core/src/index.ts",
     "^@nyx-os/event-bus$": "<rootDir>/../../packages/event-bus/src/index.ts",
     "^@nyx-os/knowledge$": "<rootDir>/../../packages/knowledge/src/index.ts",
