@@ -3,6 +3,7 @@ import WebSocket, { type RawData, WebSocketServer } from "ws";
 import {
   LOCAL_PROTOCOL_VERSION,
   hasProtocolEnvelope,
+  isLocalCapabilityDescriptor,
   isLocalCapabilityAnnouncement,
   isLocalCommandResult,
   isLocalHandshake,
@@ -16,6 +17,7 @@ import {
   type LocalServerMessage
 } from "./contracts";
 import { localGatewayError } from "./errors";
+import { LocalGatewayError } from "./errors";
 import { LocalInstanceRegistry, type LocalInstanceSnapshot } from "./LocalInstanceRegistry";
 
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "::1", "localhost"]);
@@ -282,7 +284,44 @@ export class LocalGatewayServer {
       }
 
       if (isLocalCapabilityAnnouncement(message)) {
-        this.capabilityListeners.forEach((listener) => listener(message));
+        const invalidCapability = message.capabilities.find((capability) => !isLocalCapabilityDescriptor(capability));
+        const disallowedCapability = message.capabilities.find(
+          (capability) =>
+            isLocalCapabilityDescriptor(capability) &&
+            !capability.id.startsWith("computer.") &&
+            !capability.id.startsWith("local.")
+        );
+
+        if (invalidCapability) {
+          this.sendError(socket, {
+            code: "INVALID_MESSAGE",
+            message: "Capability announcement contains an invalid descriptor",
+            retryable: false
+          });
+          return;
+        }
+
+        if (disallowedCapability && isLocalCapabilityDescriptor(disallowedCapability)) {
+          this.sendError(socket, {
+            code: "CAPABILITY_NOT_ALLOWED",
+            message: `Capability prefix is not allowed: ${disallowedCapability.id}`,
+            retryable: false,
+            details: { capabilityId: disallowedCapability.id }
+          });
+          return;
+        }
+
+        try {
+          this.capabilityListeners.forEach((listener) => listener(message));
+          this.registry.updateCapabilities(message.instanceId, message.capabilities);
+        } catch (error) {
+          this.sendError(
+            socket,
+            error instanceof LocalGatewayError
+              ? error.toProtocolError()
+              : { code: "INVALID_MESSAGE", message: "Capability announcement was rejected", retryable: false }
+          );
+        }
       } else if (isLocalCommandResult(message)) {
         this.resultListeners.forEach((listener) => listener(message));
       } else if (isLocalHeartbeat(message)) {

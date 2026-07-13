@@ -135,6 +135,18 @@ export function isLocalCapabilityAnnouncement(value: unknown): value is LocalCap
   );
 }
 
+export function isLocalCapabilityDescriptor(value: unknown): value is LocalCapabilityDescriptor {
+  return (
+    isRecord(value) &&
+    typeof value.id === "string" &&
+    typeof value.name === "string" &&
+    typeof value.description === "string" &&
+    typeof value.version === "string" &&
+    (value.parameters === undefined || isRecord(value.parameters)) &&
+    (value.resultDescription === undefined || typeof value.resultDescription === "string")
+  );
+}
+
 export function isLocalCommandResult(value: unknown): value is LocalCommandResult {
   return (
     hasProtocolEnvelope(value) &&
