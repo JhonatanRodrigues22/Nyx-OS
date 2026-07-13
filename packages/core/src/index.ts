@@ -95,6 +95,7 @@ export type NyxRuntimeSnapshot = {
   };
   capabilities: CapabilitySnapshot[];
   tools: ToolSnapshot[];
+  localGateway: NyxRuntimeSnapshot["localGateway"];
   automations: AutomationSnapshot[];
   memory: MemorySnapshot;
   localGateway: {
@@ -1479,6 +1480,7 @@ export class DashboardService {
       scheduler: runtimeSnapshot.scheduler,
       capabilities: runtimeSnapshot.capabilities,
       tools: runtimeSnapshot.tools,
+      localGateway: runtimeSnapshot.localGateway,
       automations: runtimeSnapshot.automations,
       recentEvents
     };

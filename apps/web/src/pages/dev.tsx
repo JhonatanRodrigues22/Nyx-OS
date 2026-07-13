@@ -8,6 +8,7 @@ import { CapabilityList } from "@/components/CapabilityList";
 import { DashboardCardGrid } from "@/components/DashboardCardGrid";
 import { EventList } from "@/components/EventList";
 import { InfrastructurePanel } from "@/components/InfrastructurePanel";
+import { LocalInstanceList } from "@/components/LocalInstanceList";
 import { ModuleGrid } from "@/components/ModuleGrid";
 import { PluginList } from "@/components/PluginList";
 import { SchedulerList } from "@/components/SchedulerList";
@@ -45,7 +46,18 @@ const observedEvents: NyxSystemEventName[] = [
   "tool.registered",
   "tool.removed",
   "tool.executed",
-  "tool.failed"
+  "tool.failed",
+  "local.connected",
+  "local.disconnected",
+  "local.handshake.completed",
+  "local.handshake.failed",
+  "local.capabilities.updated",
+  "local.command.requested",
+  "local.command.started",
+  "local.command.completed",
+  "local.command.failed",
+  "local.command.timed_out",
+  "local.heartbeat.received"
 ];
 
 export default function Home({ snapshot, enableLiveRuntime = true }: HomeProps) {
@@ -119,6 +131,7 @@ export default function Home({ snapshot, enableLiveRuntime = true }: HomeProps) 
           </div>
           <div className="side-stack">
             <SchedulerList overview={dashboardSnapshot.overview} tasks={dashboardSnapshot.scheduler.tasks} />
+            <LocalInstanceList localGateway={dashboardSnapshot.localGateway} />
             <CapabilityList
               overview={dashboardSnapshot.overview}
               capabilities={dashboardSnapshot.capabilities}
