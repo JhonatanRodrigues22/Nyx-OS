@@ -109,7 +109,9 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-export function hasProtocolEnvelope(value: unknown): value is { type: string; protocolVersion: string } {
+export function hasProtocolEnvelope(
+  value: unknown
+): value is Record<string, unknown> & { type: string; protocolVersion: string } {
   return isRecord(value) && typeof value.type === "string" && typeof value.protocolVersion === "string";
 }
 
