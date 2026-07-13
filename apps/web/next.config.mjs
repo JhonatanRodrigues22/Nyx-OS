@@ -22,6 +22,7 @@ const nextConfig = {
     "@nyx-os/event-bus",
     "@nyx-os/knowledge",
     "@nyx-os/logger",
+    "@nyx-os/local-gateway",
     "@nyx-os/memory",
     "@nyx-os/personal-data",
     "@nyx-os/plugin",

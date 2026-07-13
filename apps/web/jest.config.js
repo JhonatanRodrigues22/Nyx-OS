@@ -19,6 +19,7 @@ const customJestConfig = {
     "^@nyx-os/event-bus$": "<rootDir>/../../packages/event-bus/src/index.ts",
     "^@nyx-os/knowledge$": "<rootDir>/../../packages/knowledge/src/index.ts",
     "^@nyx-os/logger$": "<rootDir>/../../packages/logger/src/index.ts",
+    "^@nyx-os/local-gateway$": "<rootDir>/../../packages/local-gateway/src/index.ts",
     "^@nyx-os/memory$": "<rootDir>/../../packages/memory/src/index.ts",
     "^@nyx-os/personal-data$": "<rootDir>/../../packages/personal-data/src/index.ts",
     "^@nyx-os/plugin$": "<rootDir>/../../packages/plugin/src/index.ts",
