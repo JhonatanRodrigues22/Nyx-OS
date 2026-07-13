@@ -1,5 +1,30 @@
 # Changelog
 
+## Sprint 19 - Knowledge Engine
+
+### Adicionado
+
+- `@nyx-os/knowledge` com contratos `KnowledgeDocument`, `KnowledgeChunk`, `ChunkingStrategy` e `KnowledgeSearch` (`c76cef8`, PR #25).
+- `FixedSizeChunkingStrategy` para dividir documentos por tamanho fixo com overlap configuravel (`c46d316`, PR #25).
+- `InMemoryKnowledgeStore` para armazenar documentos e chunks em memoria, com rejeicao explicita de documento duplicado (`4e50226`, PR #25).
+- `KnowledgeIngestor` para aplicar chunking e persistir chunks gerados (`3897f11`, PR #25).
+- `KeywordKnowledgeSearch` e `KnowledgeSearchEngine` para busca textual simples ordenada por score (`9f42bc8`, PR #25).
+- Documentacao em `docs/arquitetura/knowledge-engine.md` (`52ca688`, PR #25).
+- ADR-0021 registrando a decisao de busca inicial por palavra-chave em vez de embeddings (`52ca688`, PR #25).
+
+### Alterado
+
+- Workspace web passou a resolver e transpilar `@nyx-os/knowledge` nos testes e no build (`c2996e9`, PR #25).
+- Testes ampliados para ingestao com tamanho/overlap, busca ordenada por relevancia, busca sem resultado e rejeicao de documento duplicado (`c2996e9`, PR #25).
+
+### Fora do escopo
+
+- Embeddings reais.
+- Context Engine.
+- Upload de arquivos via UI.
+- Persistencia duravel.
+- Banco vetorial.
+
 ## Sprint 18 - Prompt Engine
 
 ### Adicionado
