@@ -1,5 +1,28 @@
 # Changelog
 
+## Sprint 20 - Context Engine
+
+### Adicionado
+
+- `@nyx-os/context` com contratos `ContextSource`, `ContextContribution`, `ContextRequest` e `ContextResult` (`1e9b5b2`, PR #26).
+- `RuntimeStateContextSource`, `MemoryContextSource` e `KnowledgeContextSource` para coletar contexto de `@nyx-os/state`, `@nyx-os/memory` e `@nyx-os/knowledge` (`0dcf19b`, PR #26).
+- `ContextEngine` para coletar fontes, isolar falhas, ordenar por prioridade e aplicar orcamento de caracteres com `truncated` e `omittedSources` (`99c91bb`, PR #26).
+- Helper `toPromptSection` para converter `ContextResult` em secao de prompt sem dependencia obrigatoria de `@nyx-os/prompt` (`79fba6e`, PR #26).
+- Documentacao em `docs/arquitetura/context-engine.md` (`4dc9a0b`, PR #26).
+
+### Alterado
+
+- Workspace web passou a resolver e transpilar `@nyx-os/context` nos testes e no build (`86a0da9`, PR #26).
+- Testes ampliados para contexto dentro do orcamento, corte por prioridade, isolamento de falha de fonte e integracao opcional com PromptSection (`86a0da9`, PR #26).
+
+### Fora do escopo
+
+- Workflow Engine.
+- UI de contexto.
+- Ranking sofisticado alem das fontes.
+- Busca semantica.
+- Persistencia de contexto montado.
+
 ## Sprint 19 - Knowledge Engine
 
 ### Adicionado
