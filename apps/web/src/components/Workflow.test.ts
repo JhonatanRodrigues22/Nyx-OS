@@ -330,8 +330,49 @@ describe("Workflow Engine", () => {
     const resumed = await manager.resume("wf-pause");
 
     expect(resumed.status).toBe("completed");
-    expect(resumed.history.map((entry) => entry.attempt)).toEqual([1, 1]);
+    expect(resumed.history.map((entry) => entry.attempt)).toEqual([1, 2]);
     expect(calls.map((call) => call.toolId)).toEqual(["step.pause-retry", "step.pause-retry"]);
+  });
+
+  it("preserves retry attempts across pause and resume", async () => {
+    const { calls, events, failTimes, tools } = createHarness();
+
+    failTimes("step.pause-limit", 2);
+
+    const manager = new WorkflowManager({
+      events,
+      tools,
+      idFactory: () => "wf-pause-limit",
+      executor: new WorkflowExecutor({
+        events,
+        tools,
+        wait: async () => {
+          manager.pause("wf-pause-limit");
+        }
+      })
+    });
+
+    manager.register({
+      id: "workflow.pause-limit",
+      name: "Pause Limit Workflow",
+      steps: [
+        {
+          id: "pause-limit",
+          name: "Pause Limit",
+          toolId: "step.pause-limit",
+          next: null,
+          retry: { maxAttempts: 2, backoffMs: 1 }
+        }
+      ]
+    });
+
+    const paused = await manager.start("workflow.pause-limit");
+    const resumed = await manager.resume("wf-pause-limit");
+
+    expect(paused.status).toBe("paused");
+    expect(resumed.status).toBe("failed");
+    expect(resumed.history.map((entry) => entry.attempt)).toEqual([1, 2]);
+    expect(calls.map((call) => call.toolId)).toEqual(["step.pause-limit", "step.pause-limit"]);
   });
 
   it("rejects a static next step that does not exist", () => {

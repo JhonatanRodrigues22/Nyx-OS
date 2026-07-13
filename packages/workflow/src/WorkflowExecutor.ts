@@ -71,8 +71,9 @@ export class WorkflowExecutor {
     options: WorkflowRunOptions
   ): Promise<boolean> {
     const maxAttempts = step.retry?.maxAttempts ?? 1;
+    const completedAttempts = instance.history.filter((entry) => entry.stepId === step.id).length;
 
-    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    for (let attempt = completedAttempts + 1; attempt <= maxAttempts; attempt += 1) {
       const startedAt = this.now();
 
       try {
