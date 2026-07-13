@@ -1,0 +1,16 @@
+{
+  "name": "@nyx-os/local-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@nyx-os/capabilities": "0.1.0",
+    "@nyx-os/event-bus": "0.1.0",
+    "@nyx-os/tools": "0.1.0",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.1"
+  }
+}

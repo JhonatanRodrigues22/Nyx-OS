@@ -18,11 +18,14 @@ describe("Dashboard", () => {
     const scheduler = screen.getByLabelText("Scheduler");
     const capabilities = screen.getByLabelText("Capabilities registradas");
     const tools = screen.getByLabelText("Tools registradas");
+    const localInstances = screen.getByLabelText("Instâncias Nyx Local");
 
     expect(within(scheduler).getByRole("heading", { name: "Scheduler" })).toBeInTheDocument();
     expect(within(scheduler).getByText("Tasks Registradas")).toBeInTheDocument();
     expect(within(capabilities).getByRole("heading", { name: "Capabilities" })).toBeInTheDocument();
     expect(within(tools).getByRole("heading", { name: "Tools" })).toBeInTheDocument();
+    expect(within(localInstances).getByRole("heading", { name: "Nyx Local" })).toBeInTheDocument();
+    expect(within(localInstances).getByText("Nenhuma instância local conectada.")).toBeInTheDocument();
     expect(within(plugins).getByRole("heading", { name: "Plugins" })).toBeInTheDocument();
     expect(within(plugins).getByText("Runtime Diagnostics")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Eventos Recentes" })).toBeInTheDocument();

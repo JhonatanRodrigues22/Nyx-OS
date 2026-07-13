@@ -28,6 +28,12 @@ import {
   type NyxSystemEvents
 } from "@nyx-os/event-bus";
 import { createConsoleLogger, type NyxLogger } from "@nyx-os/logger";
+import type {
+  LocalCapabilityBridge,
+  LocalGatewayServer,
+  LocalGatewayServerOptions,
+  LocalInstanceSnapshot
+} from "@nyx-os/local-gateway";
 import { MemoryManager, type MemorySnapshot, type NyxMemoryService } from "@nyx-os/memory";
 import {
   PluginManager,
@@ -91,6 +97,10 @@ export type NyxRuntimeSnapshot = {
   tools: ToolSnapshot[];
   automations: AutomationSnapshot[];
   memory: MemorySnapshot;
+  localGateway: {
+    enabled: boolean;
+    instances: LocalInstanceSnapshot[];
+  };
   events: SystemEvent[];
   state: NyxRuntimeState | null;
 };
@@ -213,6 +223,7 @@ export type DashboardSnapshot = {
   };
   capabilities: CapabilitySnapshot[];
   tools: ToolSnapshot[];
+  localGateway: NyxRuntimeSnapshot["localGateway"];
   automations: AutomationSnapshot[];
   recentEvents: SystemEvent[];
 };
@@ -515,7 +526,18 @@ const recordedSystemEventNames: NyxSystemEventName[] = [
   "automation.enabled",
   "automation.disabled",
   "automation.executed",
-  "automation.failed"
+  "automation.failed",
+  "local.connected",
+  "local.disconnected",
+  "local.handshake.completed",
+  "local.handshake.failed",
+  "local.capabilities.updated",
+  "local.command.requested",
+  "local.command.started",
+  "local.command.completed",
+  "local.command.failed",
+  "local.command.timed_out",
+  "local.heartbeat.received"
 ];
 
 export type NyxRuntimeOptions = {
@@ -524,6 +546,7 @@ export type NyxRuntimeOptions = {
   registerBaseTools?: boolean;
   registerBaseAutomations?: boolean;
   registerAiRuntime?: boolean;
+  registerLocalGateway?: boolean;
   registerBasePlugins?: boolean;
   events?: NyxEventBus<NyxSystemEvents>;
   loggerService?: LoggerService;
@@ -536,6 +559,9 @@ export type NyxRuntimeOptions = {
   ai?: AiConversationManager | null;
   aiProviders?: AiProviderRegistry;
   aiProvider?: AiProvider;
+  localGateway?: LocalGatewayServer | null;
+  localGatewayOptions?: Omit<LocalGatewayServerOptions, "events">;
+  localCommandTimeoutMs?: number;
   scheduler?: NyxScheduler;
   memory?: NyxMemoryService;
 };
@@ -553,6 +579,11 @@ export class NyxRuntime {
   readonly tools: NyxToolManager;
   readonly automations: NyxAutomationManager;
   readonly ai: AiConversationManager | null;
+  private localGateway: LocalGatewayServer | null;
+  private localCapabilityBridge: LocalCapabilityBridge | null = null;
+  private readonly registerLocalGateway: boolean;
+  private readonly localGatewayOptions?: Omit<LocalGatewayServerOptions, "events">;
+  private readonly localCommandTimeoutMs?: number;
   readonly scheduler: NyxScheduler;
   readonly memory: NyxMemoryService;
 
@@ -602,6 +633,10 @@ export class NyxRuntime {
       options.registerAiRuntime === true
         ? (options.ai ?? this.createAiRuntime(options))
         : (options.ai ?? null);
+    this.localGateway = options.localGateway ?? null;
+    this.registerLocalGateway = options.registerLocalGateway === true || options.localGateway != null;
+    this.localGatewayOptions = options.localGatewayOptions;
+    this.localCommandTimeoutMs = options.localCommandTimeoutMs;
     this.loggerService =
       options.registerBaseServices === false ? null : (options.loggerService ?? new LoggerService());
     this.configService =
@@ -717,6 +752,10 @@ export class NyxRuntime {
     return this.ai;
   }
 
+  getLocalGateway(): LocalGatewayServer | null {
+    return this.localGateway;
+  }
+
   async start(): Promise<void> {
     if (this.status === "running" || this.status === "starting") {
       return;
@@ -729,6 +768,8 @@ export class NyxRuntime {
     logger.info("Runtime starting", { status: this.status });
 
     try {
+      await this.ensureLocalGateway();
+      await this.localGateway?.start();
       await this.serviceManager.setupAll(this.createServiceContext());
       await this.serviceManager.startAll();
       await this.pluginManager.initializeAll(this.createPluginContext());
@@ -761,6 +802,7 @@ export class NyxRuntime {
     this.getLogger().info("Runtime stopping", { status: this.status });
 
     try {
+      await this.localGateway?.stop();
       this.scheduler.stop();
       await this.pluginManager.disposeAll(this.createPluginContext());
       await this.serviceManager.stopAll();
@@ -794,6 +836,10 @@ export class NyxRuntime {
       tools: this.tools.list(),
       automations: this.automations.list(),
       memory: this.memory.snapshot(),
+      localGateway: {
+        enabled: this.localGateway !== null,
+        instances: this.localGateway?.registry.list() ?? []
+      },
       events: this.recentEvents,
       state: this.stateService?.getRuntimeState() ?? null
     };
@@ -805,6 +851,22 @@ export class NyxRuntime {
 
   getEventBus(): NyxEventBus<NyxSystemEvents> {
     return this.events;
+  }
+
+  private async ensureLocalGateway(): Promise<void> {
+    if (!this.registerLocalGateway || this.localCapabilityBridge) {
+      return;
+    }
+
+    const { LocalCapabilityBridge, LocalGatewayServer } = await import("@nyx-os/local-gateway");
+    this.localGateway ??= new LocalGatewayServer({ ...this.localGatewayOptions, events: this.events });
+    this.localCapabilityBridge = new LocalCapabilityBridge({
+      server: this.localGateway,
+      capabilities: this.capabilities,
+      tools: this.tools,
+      commandTimeoutMs: this.localCommandTimeoutMs,
+      events: this.events
+    });
   }
 
   private createServiceContext(): NyxServiceContext {
@@ -1327,6 +1389,10 @@ export class DashboardService {
           },
           tags: {}
         },
+        localGateway: {
+          enabled: false,
+          instances: []
+        },
         events: this.eventService.listRecent(),
         state: null
       } satisfies NyxRuntimeSnapshot);
@@ -1414,6 +1480,7 @@ export class DashboardService {
       scheduler: runtimeSnapshot.scheduler,
       capabilities: runtimeSnapshot.capabilities,
       tools: runtimeSnapshot.tools,
+      localGateway: runtimeSnapshot.localGateway,
       automations: runtimeSnapshot.automations,
       recentEvents
     };

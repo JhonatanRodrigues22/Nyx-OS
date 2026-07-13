@@ -1,5 +1,40 @@
 # Changelog
 
+## Sprint 24 - Local Communication Foundation
+
+Branch: `codex/sprint-24-local-gateway`
+PR: #30
+
+### Adicionado
+
+- ADR-0024 adotando WebSocket com envelopes JSON versionados e registrando gRPC, named pipes/IPC, child process, HTTP polling e JSON-RPC formal como alternativas rejeitadas (`328889e`, PR #30).
+- `@nyx-os/local-gateway` com os contratos versionados `LocalHandshake`, `LocalCapabilityAnnouncement`, `LocalCommandRequest`, `LocalCommandResult` e `LocalHeartbeat` (`d8b5517`, PR #30).
+- `LocalGatewayServer` com bind exclusivo em loopback, token obrigatório via ambiente, limite de payload, rejeição de protocolo incompatível, handshake e heartbeat (`3d47ae6`, PR #30).
+- `LocalInstanceRegistry` com identidade, plataforma, versão, capabilities, status e último heartbeat das instâncias (`3d47ae6`, PR #30).
+- `LocalCapabilityBridge` reutilizando o `CapabilityManager` e o `ToolManager` oficiais, com correlação por `requestId`, timeout configurável e erros estruturados em desconexão (`95fea52`, PR #30).
+- Eventos oficiais `local.connected`, `local.disconnected`, `local.handshake.completed`, `local.handshake.failed`, `local.capabilities.updated`, `local.command.requested`, `local.command.started`, `local.command.completed`, `local.command.failed`, `local.command.timed_out` e `local.heartbeat.received` (`06b1a17`, PR #30).
+- Painel Nyx Local no `/dev` com status, plataforma, versão, último heartbeat e capabilities anunciadas, sem alteração no `/cockpit` (`ff65d99`, `c0b5c18`, PR #30).
+- Documentação em `docs/arquitetura/local-communication-foundation.md` e README do pacote (`1a87930`, PR #30).
+
+### Alterado
+
+- `NyxRuntime` passou a aceitar `registerLocalGateway` desabilitado por padrão, gerenciar o lifecycle do gateway e expor `runtime.getLocalGateway()` (`2686f4d`, PR #30).
+- Snapshots do Runtime e do Dev Dashboard passaram a incluir o estado das instâncias locais (`2686f4d`, `ff65d99`, PR #30).
+- Exemplos de ambiente passaram a declarar `NYX_LOCAL_GATEWAY_TOKEN` sem valor padrão (`1a87930`, PR #30).
+
+### Testes
+
+- Handshake válido, token inválido, versão incompatível, heartbeat e expiração, round-trip real pelo Tool Calling Engine, timeout por comando e desconexão durante comando pendente (`f8daae0`, PR #30).
+- Validação final: `npm install`, 113 testes em 20 suites e build de produção do Next.js.
+
+### Fora do escopo
+
+- Automação de sistema operacional.
+- Intelligence Pipeline do Nyx Local.
+- Integração de memória entre projetos.
+- Exposição de rede além de localhost.
+- Superfície no cockpit.
+
 ## Sprint 23 - Nyx Interaction Layer
 
 Branch: `feat/sprint-23-nyx-interaction-layer`

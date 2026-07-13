@@ -92,6 +92,19 @@ export type NyxWorkflowEventName =
   | "workflow.failed"
   | "workflow.completed";
 
+export type NyxLocalEventName =
+  | "local.connected"
+  | "local.disconnected"
+  | "local.handshake.completed"
+  | "local.handshake.failed"
+  | "local.capabilities.updated"
+  | "local.command.requested"
+  | "local.command.started"
+  | "local.command.completed"
+  | "local.command.failed"
+  | "local.command.timed_out"
+  | "local.heartbeat.received";
+
 export type NyxSystemEventName =
   | NyxRuntimeEventName
   | NyxServiceEventName
@@ -101,7 +114,8 @@ export type NyxSystemEventName =
   | NyxCapabilityEventName
   | NyxToolEventName
   | NyxAutomationEventName
-  | NyxWorkflowEventName;
+  | NyxWorkflowEventName
+  | NyxLocalEventName;
 
 export type NyxSystemEvents = Record<NyxSystemEventName, NyxEventPayload>;
 

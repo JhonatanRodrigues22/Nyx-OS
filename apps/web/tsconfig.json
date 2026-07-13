@@ -29,6 +29,7 @@
       "@nyx-os/event-bus": ["../../packages/event-bus/src/index.ts"],
       "@nyx-os/knowledge": ["../../packages/knowledge/src/index.ts"],
       "@nyx-os/logger": ["../../packages/logger/src/index.ts"],
+      "@nyx-os/local-gateway": ["../../packages/local-gateway/src/index.ts"],
       "@nyx-os/plugin": ["../../packages/plugin/src/index.ts"],
       "@nyx-os/personal-data": ["../../packages/personal-data/src/index.ts"],
       "@nyx-os/prompt": ["../../packages/prompt/src/index.ts"],

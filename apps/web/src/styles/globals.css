@@ -458,7 +458,8 @@ dd {
 
 .event-list,
 .plugin-list,
-.scheduler-list {
+.scheduler-list,
+.local-instance-list {
   display: grid;
   gap: var(--space-3);
   margin: var(--space-4) 0 0;
@@ -467,7 +468,8 @@ dd {
 }
 
 .plugin-list li,
-.scheduler-list li {
+.scheduler-list li,
+.local-instance-list li {
   display: flex;
   min-width: 0;
   align-items: center;
@@ -485,6 +487,49 @@ dd {
 .scheduler-list p {
   display: block;
   overflow-wrap: anywhere;
+}
+
+.local-instance-list li {
+  display: grid;
+}
+
+.local-instance-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.local-instance-heading p,
+.local-heartbeat {
+  margin: var(--space-1) 0 0;
+  color: var(--muted);
+}
+
+.local-heartbeat {
+  font-size: 0.78rem;
+}
+
+.local-capabilities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-3);
+}
+
+.local-capability {
+  padding: 0.25rem 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--accent);
+  background: var(--background-strong);
+  font-family: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.72rem;
+}
+
+.local-capability.empty {
+  color: var(--muted);
+  font-family: inherit;
 }
 
 .plugin-list p,
