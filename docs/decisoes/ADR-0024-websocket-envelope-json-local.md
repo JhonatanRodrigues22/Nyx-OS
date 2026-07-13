@@ -25,6 +25,8 @@ Capabilities remotas são adaptadas ao contrato `NyxCapability` e registradas no
 - Somente capabilities com prefixo `computer.` ou `local.` são aceitas.
 - O tamanho máximo de payload é aplicado pelo servidor WebSocket e validado antes do parse.
 - Handshake inválido recebe erro estruturado e a conexão é encerrada.
+- Campos recebidos pela rede são validados em runtime, incluindo descritores, coerência de resultados e todos os campos de `LocalProtocolError`.
+- Erros específicos do runtime executor são normalizados para `REMOTE_COMMAND_FAILED`; o código interno permanece em `error.details.internalCode` sem acoplar o protocolo a implementações de skills.
 - Requests pendentes sempre terminam por result, timeout, parada do gateway ou desconexão.
 
 ## Alternativas rejeitadas

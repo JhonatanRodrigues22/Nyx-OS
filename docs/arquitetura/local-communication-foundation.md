@@ -29,7 +29,9 @@ Todos os contratos carregam `protocolVersion` e um discriminante `type`:
 - `LocalCommandResult` (`local.command.result`)
 - `LocalHeartbeat` (`local.heartbeat`)
 
-O servidor também responde com `local.handshake.accepted` e `local.error`. Erros carregam `code`, `message`, `retryable` e detalhes técnicos opcionais. O token nunca é incluído em respostas, eventos ou snapshots.
+O servidor também responde com `local.handshake.accepted` e `local.error`. Erros carregam `code`, `message`, `retryable` e detalhes técnicos opcionais formados apenas por valores JSON primitivos. O servidor valida em runtime todos esses campos e rejeita códigos fora do protocolo 1.0. O token nunca é incluído em respostas, eventos ou snapshots.
+
+Falhas internas do executor, como skill ausente ou input inválido, não ampliam o protocolo público. O Nyx Local as envia como `REMOTE_COMMAND_FAILED` e preserva o motivo interno em `error.details.internalCode`.
 
 ### Sequência
 
@@ -123,7 +125,7 @@ Não existe superfície correspondente no `/cockpit` nesta sprint.
 
 ## Validação
 
-A suíte cobre handshake válido, token inválido, protocolo incompatível, heartbeat e expiração, registro remoto, round-trip real pelo Tool Calling Engine, timeout por comando e desconexão durante comando pendente. O teste de integração sobe um servidor real e um cliente WebSocket fake no mesmo processo.
+A suíte cobre handshake válido, token inválido, protocolo incompatível, envelopes e erros malformados, heartbeat e expiração, registro remoto, round-trip real pelo Tool Calling Engine, timeout por comando e desconexão durante comando pendente. Além do cliente fake em processo, a integração cross-language sobe o servidor Node e o cliente Python reais e valida tanto sucesso quanto falha estruturada, incluindo correlação e detalhes do erro.
 
 ## Fora do escopo
 
