@@ -1,3 +1,5 @@
+export { FixedSizeChunkingStrategy } from "./FixedSizeChunkingStrategy";
+export type { FixedSizeChunkingOptions } from "./FixedSizeChunkingStrategy";
 export type {
   ChunkingStrategy,
   KnowledgeChunk,
