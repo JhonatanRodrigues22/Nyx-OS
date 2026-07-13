@@ -27,6 +27,7 @@
     "@nyx-os/scheduler": "0.1.0",
     "@nyx-os/state": "0.1.0",
     "@nyx-os/tools": "0.1.0",
+    "@nyx-os/workflow": "0.1.0",
     "@supabase/supabase-js": "^2.45.4",
     "next": "^16.2.10",
     "react": "^19.0.0",

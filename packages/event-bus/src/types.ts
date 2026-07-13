@@ -84,6 +84,14 @@ export type NyxAutomationEventName =
   | "automation.executed"
   | "automation.failed";
 
+export type NyxWorkflowEventName =
+  | "workflow.started"
+  | "workflow.step.completed"
+  | "workflow.paused"
+  | "workflow.resumed"
+  | "workflow.failed"
+  | "workflow.completed";
+
 export type NyxSystemEventName =
   | NyxRuntimeEventName
   | NyxServiceEventName
@@ -92,7 +100,8 @@ export type NyxSystemEventName =
   | NyxMemoryEventName
   | NyxCapabilityEventName
   | NyxToolEventName
-  | NyxAutomationEventName;
+  | NyxAutomationEventName
+  | NyxWorkflowEventName;
 
 export type NyxSystemEvents = Record<NyxSystemEventName, NyxEventPayload>;
 

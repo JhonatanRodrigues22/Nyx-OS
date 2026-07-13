@@ -45,6 +45,9 @@ export type ToolExecution<TResult = unknown> = {
   status: ToolExecutionStatus;
   source?: string;
   automationId?: string;
+  workflowId?: string;
+  workflowInstanceId?: string;
+  workflowStepId?: string;
   result?: TResult;
   error?: string;
   executedAt: string;
@@ -53,4 +56,7 @@ export type ToolExecution<TResult = unknown> = {
 export type ToolExecutionOptions = {
   source?: string;
   automationId?: string;
+  workflowId?: string;
+  workflowInstanceId?: string;
+  workflowStepId?: string;
 };

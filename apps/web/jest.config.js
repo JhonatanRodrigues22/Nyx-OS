@@ -23,7 +23,8 @@ const customJestConfig = {
     "^@nyx-os/prompt$": "<rootDir>/../../packages/prompt/src/index.ts",
     "^@nyx-os/scheduler$": "<rootDir>/../../packages/scheduler/src/index.ts",
     "^@nyx-os/state$": "<rootDir>/../../packages/state/src/index.ts",
-    "^@nyx-os/tools$": "<rootDir>/../../packages/tools/src/index.ts"
+    "^@nyx-os/tools$": "<rootDir>/../../packages/tools/src/index.ts",
+    "^@nyx-os/workflow$": "<rootDir>/../../packages/workflow/src/index.ts"
   },
   transformIgnorePatterns: ["/node_modules/(?!@nyx-os/)"]
 };

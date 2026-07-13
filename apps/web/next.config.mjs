@@ -26,7 +26,8 @@ const nextConfig = {
     "@nyx-os/prompt",
     "@nyx-os/scheduler",
     "@nyx-os/state",
-    "@nyx-os/tools"
+    "@nyx-os/tools",
+    "@nyx-os/workflow"
   ]
 };
 
