@@ -1,6 +1,7 @@
 import type { NyxCapability, NyxCapabilityManager } from "@nyx-os/capabilities";
 import type { CapabilityContext } from "@nyx-os/capabilities";
 import type { NyxTool, NyxToolManager, ToolContext } from "@nyx-os/tools";
+import { createNyxEventPayload, type NyxEventBus, type NyxSystemEvents } from "@nyx-os/event-bus";
 import { randomUUID } from "node:crypto";
 import {
   LOCAL_PROTOCOL_VERSION,
@@ -29,6 +30,7 @@ export type LocalCapabilityBridgeOptions = {
   capabilities: NyxCapabilityManager;
   tools: NyxToolManager;
   commandTimeoutMs?: number;
+  events: NyxEventBus<NyxSystemEvents>;
 };
 
 class RemoteLocalCapability implements NyxCapability<unknown, unknown> {
@@ -97,6 +99,7 @@ export class LocalCapabilityBridge {
   private readonly capabilities: NyxCapabilityManager;
   private readonly tools: NyxToolManager;
   private readonly commandTimeoutMs: number;
+  private readonly events: NyxEventBus<NyxSystemEvents>;
   private readonly pending = new Map<string, PendingCommand>();
   private readonly instanceCapabilities = new Map<string, Set<string>>();
   private readonly capabilityOwners = new Map<string, string>();
@@ -107,6 +110,7 @@ export class LocalCapabilityBridge {
     this.capabilities = options.capabilities;
     this.tools = options.tools;
     this.commandTimeoutMs = options.commandTimeoutMs ?? 10_000;
+    this.events = options.events;
     this.unsubscribers = [
       this.server.onCapabilities((announcement) => this.updateCapabilities(announcement)),
       this.server.onCommandResult((result) => this.completeCommand(result)),
@@ -137,10 +141,20 @@ export class LocalCapabilityBridge {
       capabilityId,
       input
     };
+    const eventMetadata = { requestId, instanceId, capabilityId, timeoutMs };
+
+    this.events.emit(
+      "local.command.requested",
+      createNyxEventPayload({ source: "local-gateway", status: "requested", metadata: eventMetadata })
+    );
 
     return new Promise<unknown>((resolve, reject) => {
       const timer = setTimeout(() => {
         this.pending.delete(requestId);
+        this.events.emit(
+          "local.command.timed_out",
+          createNyxEventPayload({ source: "local-gateway", status: "timed_out", metadata: eventMetadata })
+        );
         reject(
           localGatewayError("COMMAND_TIMEOUT", `Local command timed out: ${capabilityId}`, true, {
             requestId,
@@ -156,9 +170,24 @@ export class LocalCapabilityBridge {
 
       try {
         this.server.sendCommand(request);
+        this.events.emit(
+          "local.command.started",
+          createNyxEventPayload({ source: "local-gateway", status: "started", metadata: eventMetadata })
+        );
       } catch (error) {
         clearTimeout(timer);
         this.pending.delete(requestId);
+        this.events.emit(
+          "local.command.failed",
+          createNyxEventPayload({
+            source: "local-gateway",
+            status: "failed",
+            metadata: {
+              ...eventMetadata,
+              errorCode: error instanceof LocalGatewayError ? error.code : "INSTANCE_NOT_CONNECTED"
+            }
+          })
+        );
         reject(
           error instanceof LocalGatewayError
             ? error
@@ -236,10 +265,35 @@ export class LocalCapabilityBridge {
     this.pending.delete(result.requestId);
 
     if (result.success) {
+      this.events.emit(
+        "local.command.completed",
+        createNyxEventPayload({
+          source: "local-gateway",
+          status: "completed",
+          metadata: {
+            requestId: result.requestId,
+            instanceId: result.instanceId,
+            capabilityId: result.capabilityId
+          }
+        })
+      );
       pending.resolve(result.result);
       return;
     }
 
+    this.events.emit(
+      "local.command.failed",
+      createNyxEventPayload({
+        source: "local-gateway",
+        status: "failed",
+        metadata: {
+          requestId: result.requestId,
+          instanceId: result.instanceId,
+          capabilityId: result.capabilityId,
+          errorCode: result.error?.code ?? "REMOTE_COMMAND_FAILED"
+        }
+      })
+    );
     pending.reject(
       result.error
         ? new LocalGatewayError(result.error)
@@ -275,6 +329,19 @@ export class LocalCapabilityBridge {
 
     clearTimeout(pending.timer);
     this.pending.delete(requestId);
+    this.events.emit(
+      "local.command.failed",
+      createNyxEventPayload({
+        source: "local-gateway",
+        status: "failed",
+        metadata: {
+          requestId,
+          instanceId: pending.instanceId,
+          capabilityId: pending.capabilityId,
+          errorCode: code
+        }
+      })
+    );
     pending.reject(localGatewayError(code, message, retryable, { requestId, instanceId: pending.instanceId }));
   }
 

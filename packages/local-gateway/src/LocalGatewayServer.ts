@@ -1,4 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
+import { createNyxEventPayload, type NyxEventBus, type NyxSystemEvents } from "@nyx-os/event-bus";
 import WebSocket, { type RawData, WebSocketServer } from "ws";
 import {
   LOCAL_PROTOCOL_VERSION,
@@ -25,6 +26,7 @@ const LOOPBACK_HOSTS = new Set(["127.0.0.1", "::1", "localhost"]);
 type Listener<T> = (payload: T) => void;
 
 export type LocalGatewayServerOptions = {
+  events: NyxEventBus<NyxSystemEvents>;
   host?: string;
   port?: number;
   tokenEnvVar?: string;
@@ -51,6 +53,7 @@ export class LocalGatewayServer {
   private readonly heartbeatTimeoutMs: number;
   private readonly heartbeatCheckIntervalMs: number;
   private readonly now: () => Date;
+  private readonly events: NyxEventBus<NyxSystemEvents>;
   private readonly capabilityListeners = new Set<Listener<LocalCapabilityAnnouncement>>();
   private readonly resultListeners = new Set<Listener<LocalCommandResult>>();
   private readonly heartbeatListeners = new Set<Listener<LocalHeartbeat>>();
@@ -59,7 +62,7 @@ export class LocalGatewayServer {
   private server: WebSocketServer | null = null;
   private heartbeatTimer: NodeJS.Timeout | null = null;
 
-  constructor(options: LocalGatewayServerOptions = {}) {
+  constructor(options: LocalGatewayServerOptions) {
     this.host = options.host ?? "127.0.0.1";
     this.port = options.port ?? 4789;
     this.maxPayloadBytes = options.maxPayloadBytes ?? 64 * 1024;
@@ -68,6 +71,7 @@ export class LocalGatewayServer {
     this.heartbeatCheckIntervalMs = options.heartbeatCheckIntervalMs ?? Math.max(250, this.heartbeatTimeoutMs / 2);
     this.registry = options.registry ?? new LocalInstanceRegistry();
     this.now = options.now ?? (() => new Date());
+    this.events = options.events;
 
     if (!LOOPBACK_HOSTS.has(this.host)) {
       throw new Error(`Local gateway host must be loopback: ${this.host}`);
@@ -191,7 +195,7 @@ export class LocalGatewayServer {
           code: "HANDSHAKE_REQUIRED",
           message: "Handshake was not received before the deadline",
           retryable: true
-        });
+        }, true);
       }
     }, this.handshakeTimeoutMs);
     handshakeTimer.unref?.();
@@ -203,7 +207,7 @@ export class LocalGatewayServer {
           message: "Payload exceeds the configured limit",
           retryable: false,
           details: { maxPayloadBytes: this.maxPayloadBytes }
-        });
+        }, !authenticated);
         return;
       }
 
@@ -222,7 +226,7 @@ export class LocalGatewayServer {
             code: "HANDSHAKE_REQUIRED",
             message: "The first message must be a valid handshake",
             retryable: false
-          });
+          }, true);
           return;
         }
 
@@ -232,7 +236,7 @@ export class LocalGatewayServer {
             message: `Unsupported local protocol version: ${message.protocolVersion}`,
             retryable: false,
             details: { supportedProtocolVersion: LOCAL_PROTOCOL_VERSION }
-          });
+          }, true);
           return;
         }
 
@@ -241,7 +245,7 @@ export class LocalGatewayServer {
             code: "AUTHENTICATION_FAILED",
             message: "Local gateway authentication failed",
             retryable: false
-          });
+          }, true);
           return;
         }
 
@@ -261,6 +265,18 @@ export class LocalGatewayServer {
           instanceId
         });
         this.connectedListeners.forEach((listener) => listener(instance));
+        this.events.emit(
+          "local.handshake.completed",
+          createNyxEventPayload({
+            source: "local-gateway",
+            status: "completed",
+            metadata: { instanceId, platform: message.platform, version: message.version }
+          })
+        );
+        this.events.emit(
+          "local.connected",
+          createNyxEventPayload({ source: "local-gateway", status: "connected", metadata: { instanceId } })
+        );
         return;
       }
 
@@ -314,6 +330,17 @@ export class LocalGatewayServer {
         try {
           this.capabilityListeners.forEach((listener) => listener(message));
           this.registry.updateCapabilities(message.instanceId, message.capabilities);
+          this.events.emit(
+            "local.capabilities.updated",
+            createNyxEventPayload({
+              source: "local-gateway",
+              status: "updated",
+              metadata: {
+                instanceId: message.instanceId,
+                capabilityIds: message.capabilities.map((capability) => capability.id)
+              }
+            })
+          );
         } catch (error) {
           this.sendError(
             socket,
@@ -327,6 +354,14 @@ export class LocalGatewayServer {
       } else if (isLocalHeartbeat(message)) {
         this.registry.heartbeat(message.instanceId, this.now().toISOString());
         this.heartbeatListeners.forEach((listener) => listener(message));
+        this.events.emit(
+          "local.heartbeat.received",
+          createNyxEventPayload({
+            source: "local-gateway",
+            status: "received",
+            metadata: { instanceId: message.instanceId, sentAt: message.sentAt }
+          })
+        );
       } else {
         this.sendError(socket, { code: "INVALID_MESSAGE", message: "Unsupported message type", retryable: false });
       }
@@ -342,6 +377,10 @@ export class LocalGatewayServer {
       const instance = this.registry.disconnect(instanceId);
       if (instance) {
         this.disconnectedListeners.forEach((listener) => listener(instance));
+        this.events.emit(
+          "local.disconnected",
+          createNyxEventPayload({ source: "local-gateway", status: instance.status, metadata: { instanceId } })
+        );
       }
     });
 
@@ -402,8 +441,18 @@ export class LocalGatewayServer {
     this.send(socket, envelope);
   }
 
-  private reject(socket: WebSocket, error: LocalProtocolError): void {
+  private reject(socket: WebSocket, error: LocalProtocolError, handshakeFailure: boolean): void {
     this.sendError(socket, error);
+    if (handshakeFailure) {
+      this.events.emit(
+        "local.handshake.failed",
+        createNyxEventPayload({
+          source: "local-gateway",
+          status: "failed",
+          metadata: { errorCode: error.code, retryable: error.retryable }
+        })
+      );
+    }
     socket.close(1008, error.code);
   }
 }

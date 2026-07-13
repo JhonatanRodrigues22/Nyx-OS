@@ -525,7 +525,18 @@ const recordedSystemEventNames: NyxSystemEventName[] = [
   "automation.enabled",
   "automation.disabled",
   "automation.executed",
-  "automation.failed"
+  "automation.failed",
+  "local.connected",
+  "local.disconnected",
+  "local.handshake.completed",
+  "local.handshake.failed",
+  "local.capabilities.updated",
+  "local.command.requested",
+  "local.command.started",
+  "local.command.completed",
+  "local.command.failed",
+  "local.command.timed_out",
+  "local.heartbeat.received"
 ];
 
 export type NyxRuntimeOptions = {
@@ -548,7 +559,7 @@ export type NyxRuntimeOptions = {
   aiProviders?: AiProviderRegistry;
   aiProvider?: AiProvider;
   localGateway?: LocalGatewayServer | null;
-  localGatewayOptions?: LocalGatewayServerOptions;
+  localGatewayOptions?: Omit<LocalGatewayServerOptions, "events">;
   localCommandTimeoutMs?: number;
   scheduler?: NyxScheduler;
   memory?: NyxMemoryService;
@@ -570,7 +581,7 @@ export class NyxRuntime {
   private localGateway: LocalGatewayServer | null;
   private localCapabilityBridge: LocalCapabilityBridge | null = null;
   private readonly registerLocalGateway: boolean;
-  private readonly localGatewayOptions?: LocalGatewayServerOptions;
+  private readonly localGatewayOptions?: Omit<LocalGatewayServerOptions, "events">;
   private readonly localCommandTimeoutMs?: number;
   readonly scheduler: NyxScheduler;
   readonly memory: NyxMemoryService;
@@ -847,12 +858,13 @@ export class NyxRuntime {
     }
 
     const { LocalCapabilityBridge, LocalGatewayServer } = await import("@nyx-os/local-gateway");
-    this.localGateway ??= new LocalGatewayServer(this.localGatewayOptions);
+    this.localGateway ??= new LocalGatewayServer({ ...this.localGatewayOptions, events: this.events });
     this.localCapabilityBridge = new LocalCapabilityBridge({
       server: this.localGateway,
       capabilities: this.capabilities,
       tools: this.tools,
-      commandTimeoutMs: this.localCommandTimeoutMs
+      commandTimeoutMs: this.localCommandTimeoutMs,
+      events: this.events
     });
   }
 
