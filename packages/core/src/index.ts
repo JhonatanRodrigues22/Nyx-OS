@@ -95,7 +95,6 @@ export type NyxRuntimeSnapshot = {
   };
   capabilities: CapabilitySnapshot[];
   tools: ToolSnapshot[];
-  localGateway: NyxRuntimeSnapshot["localGateway"];
   automations: AutomationSnapshot[];
   memory: MemorySnapshot;
   localGateway: {
@@ -224,6 +223,7 @@ export type DashboardSnapshot = {
   };
   capabilities: CapabilitySnapshot[];
   tools: ToolSnapshot[];
+  localGateway: NyxRuntimeSnapshot["localGateway"];
   automations: AutomationSnapshot[];
   recentEvents: SystemEvent[];
 };
