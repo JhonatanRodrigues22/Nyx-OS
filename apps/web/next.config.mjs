@@ -18,6 +18,7 @@ const nextConfig = {
     "@nyx-os/config",
     "@nyx-os/core",
     "@nyx-os/event-bus",
+    "@nyx-os/knowledge",
     "@nyx-os/logger",
     "@nyx-os/memory",
     "@nyx-os/plugin",

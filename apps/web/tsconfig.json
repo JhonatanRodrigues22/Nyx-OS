@@ -25,6 +25,7 @@
       "@nyx-os/config": ["../../packages/config/src/index.ts"],
       "@nyx-os/core": ["../../packages/core/src/index.ts"],
       "@nyx-os/event-bus": ["../../packages/event-bus/src/index.ts"],
+      "@nyx-os/knowledge": ["../../packages/knowledge/src/index.ts"],
       "@nyx-os/logger": ["../../packages/logger/src/index.ts"],
       "@nyx-os/plugin": ["../../packages/plugin/src/index.ts"],
       "@nyx-os/prompt": ["../../packages/prompt/src/index.ts"],
