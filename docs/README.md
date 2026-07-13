@@ -67,6 +67,7 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `arquitetura/context-engine.md`: contrato oficial de montagem, priorizacao e corte de contexto para IA.
 - `arquitetura/workflow-engine.md`: contrato oficial de fluxos multi-etapa com branching, retry e pause/resume em memoria.
 - `arquitetura/personal-data-modules.md`: contrato oficial dos modulos pessoais persistentes de tarefas, habitos, projetos e financas.
+- `arquitetura/nyx-interaction-layer.md`: contrato oficial do cockpit pessoal, chat server-side e feedback de execucao.
 - `arquitetura/logging.md`: contrato central de logging e Logger Service.
 - `packages/state/README.md`: contrato central de estado do Runtime.
 - `workflow/desenvolvimento.md`: ciclo oficial de branches, commits e Pull Requests.
@@ -81,6 +82,7 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `decisoes/ADR-0020-tool-calling-engine.md`: decisao do Tool Calling Engine oficial.
 - `decisoes/ADR-0021-knowledge-search-keyword-first.md`: decisao de busca inicial por palavra-chave no Knowledge Engine.
 - `decisoes/ADR-0022-personal-data-supabase-persistence.md`: decisao de persistencia inicial dos modulos pessoais em Supabase.
+- `decisoes/ADR-0023-interface-propria-nextjs.md`: decisao final do FORK-01 por interface propria em Next.js.
 
 ## Decisoes recentes
 
@@ -108,3 +110,4 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `@nyx-os/context` e o mecanismo oficial de montagem de contexto para conversas com IA.
 - `@nyx-os/workflow` e o mecanismo oficial de orquestracao de fluxos multi-etapa baseados em Tools.
 - `@nyx-os/personal-data` e o pacote oficial para dados pessoais persistentes de tarefas, habitos, projetos e financas.
+- O cockpit pessoal vive em `/cockpit`, enquanto o Dev Dashboard tecnico fica separado em `/dev`.

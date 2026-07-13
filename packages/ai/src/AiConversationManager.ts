@@ -1,6 +1,7 @@
 import type { NyxToolManager, ToolSnapshot } from "@nyx-os/tools";
 import { AiProviderRegistry } from "./AiProviderRegistry";
 import type {
+  AiChunk,
   AiConversationOptions,
   AiConversationResult,
   AiMessage,
@@ -53,6 +54,36 @@ export class AiConversationManager {
     this.history.push(userMessage);
 
     return this.run(options);
+  }
+
+  async *streamUserMessage(content: string, options: AiConversationOptions = {}): AsyncIterable<AiChunk> {
+    const provider = this.providers.getActive();
+    const systemPrompt = this.resolveSystemPrompt(options);
+    const tools = options.tools ?? this.tools.list();
+    const userMessage: AiMessage = {
+      role: "user",
+      content
+    };
+    let assistantContent = "";
+
+    this.history.push(userMessage);
+
+    for await (const chunk of provider.stream({
+      messages: this.buildMessages(systemPrompt),
+      tools,
+      maxTokens: options.maxTokens
+    })) {
+      if (chunk.content) {
+        assistantContent += chunk.content;
+      }
+
+      yield chunk;
+    }
+
+    this.history.push({
+      role: "assistant",
+      content: assistantContent
+    });
   }
 
   async run(options: AiConversationOptions = {}): Promise<AiConversationResult> {

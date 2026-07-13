@@ -1,10 +1,10 @@
 import { createDashboardSnapshot } from "@nyx-os/core";
 import { render, screen, within } from "@testing-library/react";
-import Home from "@/pages/index";
+import DevDashboard from "@/pages/dev";
 
 describe("Dashboard", () => {
   it("renders the development system state panel", () => {
-    render(<Home snapshot={createDashboardSnapshot()} enableLiveRuntime={false} />);
+    render(<DevDashboard snapshot={createDashboardSnapshot()} enableLiveRuntime={false} />);
 
     expect(screen.getByRole("heading", { name: "Nyx OS" })).toBeInTheDocument();
     expect(screen.getByText("Dashboard de Desenvolvimento")).toBeInTheDocument();
