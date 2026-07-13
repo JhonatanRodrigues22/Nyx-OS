@@ -1,5 +1,31 @@
 # Changelog
 
+## Sprint 21 - Workflow Engine
+
+### Adicionado
+
+- `@nyx-os/workflow` com contratos `WorkflowStep`, `WorkflowDefinition`, `WorkflowInstance`, contexto e historico (`7b34826`, PR #27).
+- `WorkflowRegistry` com validacao de Tools existentes, steps duplicados, retry invalido e `next` estatico inexistente (`060a2ad`, PR #27).
+- Eventos oficiais `workflow.started`, `workflow.step.completed`, `workflow.paused`, `workflow.resumed`, `workflow.failed` e `workflow.completed` no Event Bus (`026dff7`, PR #27).
+- `WorkflowExecutor` com execucao por Tools, branching dinamico, retry limitado e falha explicita quando tentativas esgotam (`6e4cd14`, PR #27).
+- `WorkflowManager` com instancias em memoria, start, pause e resume (`03a2a8b`, PR #27).
+- Suporte a metadados de workflow em `ToolExecutionOptions` (`506f86b`, PR #27).
+- Documentacao em `docs/arquitetura/workflow-engine.md`, incluindo a limitacao de persistencia de instancias (`afe605d`, PR #27).
+
+### Alterado
+
+- Pause durante backoff de retry agora suspende antes da proxima tentativa (`d7ac147`, PR #27).
+- Workspace web passou a resolver e transpilar `@nyx-os/workflow` nos testes e no build (`c44ebd7`, PR #27).
+- Testes ampliados para execucao sequencial, branching, retry com sucesso, retry esgotado, pause/resume durante retry e `next` inexistente (`c44ebd7`, PR #27).
+
+### Fora do escopo
+
+- Persistencia duravel de `WorkflowInstance`.
+- UI de workflows.
+- Definicoes reais de produto.
+- Execucao distribuida.
+- Fila externa.
+
 ## Sprint 20 - Context Engine
 
 ### Adicionado
