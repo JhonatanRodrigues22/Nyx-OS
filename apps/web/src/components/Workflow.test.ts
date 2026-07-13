@@ -375,6 +375,62 @@ describe("Workflow Engine", () => {
     expect(calls.map((call) => call.toolId)).toEqual(["step.pause-limit", "step.pause-limit"]);
   });
 
+  it("interrupts retry backoff immediately when pause is requested", async () => {
+    const { calls, events, failTimes, tools } = createHarness();
+    let notifyBackoffStarted: () => void = () => undefined;
+    const backoffStarted = new Promise<void>((resolve) => {
+      notifyBackoffStarted = resolve;
+    });
+
+    failTimes("step.interrupt-backoff", 1);
+
+    const manager = new WorkflowManager({
+      events,
+      tools,
+      idFactory: () => "wf-interrupt-backoff",
+      executor: new WorkflowExecutor({
+        events,
+        tools,
+        wait: async () => {
+          notifyBackoffStarted();
+          return new Promise<void>(() => {
+            // Intentionally unresolved: pause must interrupt this backoff.
+          });
+        }
+      })
+    });
+
+    manager.register({
+      id: "workflow.interrupt-backoff",
+      name: "Interrupt Backoff Workflow",
+      steps: [
+        {
+          id: "interrupt-backoff",
+          name: "Interrupt Backoff",
+          toolId: "step.interrupt-backoff",
+          next: null,
+          retry: { maxAttempts: 2, backoffMs: 60000 }
+        }
+      ]
+    });
+
+    const started = manager.start("workflow.interrupt-backoff");
+
+    await backoffStarted;
+    manager.pause("wf-interrupt-backoff");
+
+    const paused = await started;
+
+    expect(paused.status).toBe("paused");
+    expect(paused.currentStepId).toBe("interrupt-backoff");
+
+    const resumed = await manager.resume("wf-interrupt-backoff");
+
+    expect(resumed.status).toBe("completed");
+    expect(resumed.history.map((entry) => entry.attempt)).toEqual([1, 2]);
+    expect(calls.map((call) => call.toolId)).toEqual(["step.interrupt-backoff", "step.interrupt-backoff"]);
+  });
+
   it("rejects a static next step that does not exist", () => {
     const { events, registerTool, tools } = createHarness();
 

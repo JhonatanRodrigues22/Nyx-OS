@@ -37,6 +37,7 @@ export class WorkflowManager {
   private readonly idFactory: () => string;
   private readonly instances = new Map<string, WorkflowInstance>();
   private readonly pauseRequests = new Set<string>();
+  private readonly pauseResolvers = new Map<string, () => void>();
 
   constructor(options: WorkflowManagerOptions) {
     this.events = options.events;
@@ -80,6 +81,7 @@ export class WorkflowManager {
 
     if (instance.status === "running") {
       this.pauseRequests.add(instanceId);
+      this.pauseResolvers.get(instanceId)?.();
     }
 
     if (instance.status === "paused") {
@@ -115,13 +117,39 @@ export class WorkflowManager {
 
   private async run(instance: WorkflowInstance, definition: WorkflowDefinition): Promise<WorkflowInstance> {
     const result = await this.executor.run(definition, instance, {
-      shouldPause: () => this.pauseRequests.has(instance.id)
+      shouldPause: () => this.pauseRequests.has(instance.id),
+      createPauseSignal: () => this.createPauseSignal(instance.id)
     });
 
     this.instances.set(instance.id, result);
     this.pauseRequests.delete(instance.id);
+    this.pauseResolvers.delete(instance.id);
 
     return cloneInstance(result);
+  }
+
+  private createPauseSignal(instanceId: string) {
+    if (this.pauseRequests.has(instanceId)) {
+      return {
+        promise: Promise.resolve(),
+        cancel: () => undefined
+      };
+    }
+
+    let resolveSignal: () => void = () => undefined;
+    const promise = new Promise<void>((resolve) => {
+      resolveSignal = resolve;
+      this.pauseResolvers.set(instanceId, resolveSignal);
+    });
+
+    return {
+      promise,
+      cancel: () => {
+        if (this.pauseResolvers.get(instanceId) === resolveSignal) {
+          this.pauseResolvers.delete(instanceId);
+        }
+      }
+    };
   }
 
   private requireInstance(id: string): WorkflowInstance {

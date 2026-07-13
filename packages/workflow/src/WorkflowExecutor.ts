@@ -12,6 +12,10 @@ export type WorkflowExecutorOptions = {
 
 export type WorkflowRunOptions = {
   shouldPause?: () => boolean;
+  createPauseSignal?: () => {
+    promise: Promise<void>;
+    cancel: () => void;
+  };
 };
 
 function defaultWait(milliseconds: number): Promise<void> {
@@ -125,8 +129,10 @@ export class WorkflowExecutor {
           return false;
         }
 
-        if (step.retry?.backoffMs) {
-          await this.wait(step.retry.backoffMs);
+        if (step.retry?.backoffMs && (await this.waitForBackoff(step.retry.backoffMs, options))) {
+          instance.status = "paused";
+          emitWorkflowEvent(this.events, "workflow.paused", { instance: cloneInstance(instance), step: entry });
+          return false;
         }
 
         if (options.shouldPause?.()) {
@@ -142,6 +148,24 @@ export class WorkflowExecutor {
 
   private resolveInput(step: WorkflowStep, instance: WorkflowInstance): unknown {
     return typeof step.input === "function" ? step.input(instance.context) : step.input;
+  }
+
+  private async waitForBackoff(milliseconds: number, options: WorkflowRunOptions): Promise<boolean> {
+    const pauseSignal = options.createPauseSignal?.();
+
+    if (!pauseSignal) {
+      await this.wait(milliseconds);
+      return false;
+    }
+
+    try {
+      return await Promise.race([
+        this.wait(milliseconds).then(() => false),
+        pauseSignal.promise.then(() => true)
+      ]);
+    } finally {
+      pauseSignal.cancel();
+    }
   }
 
   private resolveNext(
