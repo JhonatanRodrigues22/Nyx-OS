@@ -1,5 +1,33 @@
 # Changelog
 
+## Sprint 23 - Nyx Interaction Layer
+
+Branch: `feat/sprint-23-nyx-interaction-layer`
+PR: #29
+
+### Adicionado
+
+- ADR-0023 resolvendo o FORK-01 por interface propria em Next.js, com Notion fora da arquitetura principal (`f542f94`, PR #29).
+- Streaming server-side no AI Runtime por `AiConversationManager.streamUserMessage(...)` (`b5abd82`, PR #29).
+- API route `/api/cockpit/chat` para chat streaming via servidor Next.js, mantendo Anthropic e chave de API fora do browser (`b5abd82`, PR #29).
+- API route `/api/cockpit/commands` para comandos rapidos baseados em Tools existentes (`81d7c68`, PR #29).
+- API route `/api/cockpit/events` para transmitir eventos relevantes do Event Bus oficial ao cockpit (`81d7c68`, PR #29).
+- Rota `/cockpit` com chat, comandos rapidos e feedback visual de execucao em identidade visual propria (`f1ff22a`, PR #29).
+- Documentacao em `docs/arquitetura/nyx-interaction-layer.md` (`ea51314`, PR #29).
+
+### Alterado
+
+- A raiz `/` passou a redirecionar para `/cockpit` (`f1ff22a`, PR #29).
+- O Dev Dashboard tecnico passou a coexistir separado em `/dev` (`f1ff22a`, PR #29).
+- Testes do Dashboard foram ajustados para validar `/dev`, enquanto os testes do cockpit cobrem chat server-side, erro tratado de provider e comandos rapidos (`30e859d`, PR #29).
+
+### Fora do escopo
+
+- Nyx Local Integration.
+- UI dos Personal Data Modules.
+- Multiplayer ou multiplos usuarios.
+- Cliente Anthropic no navegador.
+
 ## Sprint 22 - Personal Data Modules
 
 Branch: `feat/sprint-22-personal-data-modules`
