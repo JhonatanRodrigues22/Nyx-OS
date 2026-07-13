@@ -248,7 +248,7 @@ export class LocalCapabilityBridge {
   }
 
   private disconnect(instanceId: string): void {
-    for (const [requestId, pending] of this.pending) {
+    for (const [requestId, pending] of Array.from(this.pending.entries())) {
       if (pending.instanceId === instanceId) {
         this.rejectPending(
           requestId,
@@ -285,7 +285,7 @@ export class LocalCapabilityBridge {
       return;
     }
 
-    for (const capabilityId of capabilityIds) {
+    for (const capabilityId of Array.from(capabilityIds)) {
       if (this.tools.get(capabilityId)) {
         this.tools.remove(capabilityId);
       }

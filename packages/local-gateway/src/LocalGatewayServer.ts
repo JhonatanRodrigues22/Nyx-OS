@@ -124,7 +124,7 @@ export class LocalGatewayServer {
       return;
     }
 
-    for (const client of server.clients) {
+    for (const client of Array.from(server.clients)) {
       client.close(1001, "Gateway stopped");
     }
 
