@@ -64,6 +64,7 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `arquitetura/ai-runtime.md`: contrato oficial de provider de IA, conversa e tool calling desacoplado de fornecedor.
 - `arquitetura/prompt-engine.md`: contrato oficial de templates de prompt com versionamento, renderizacao e composicao.
 - `arquitetura/knowledge-engine.md`: contrato oficial de ingestao de documentos, chunking e busca textual.
+- `arquitetura/context-engine.md`: contrato oficial de montagem, priorizacao e corte de contexto para IA.
 - `arquitetura/logging.md`: contrato central de logging e Logger Service.
 - `packages/state/README.md`: contrato central de estado do Runtime.
 - `workflow/desenvolvimento.md`: ciclo oficial de branches, commits e Pull Requests.
@@ -101,3 +102,4 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `@nyx-os/ai` e a camada oficial de provider de IA e tool calling por contrato.
 - `@nyx-os/prompt` e o mecanismo oficial de templates de prompt com versionamento e composicao.
 - `@nyx-os/knowledge` e o mecanismo oficial de ingestao, chunking e busca textual de documentos.
+- `@nyx-os/context` e o mecanismo oficial de montagem de contexto para conversas com IA.
