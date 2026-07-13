@@ -1,14 +1,13 @@
-import { createClient } from "@supabase/supabase-js";
+import { createNyxSupabaseClient, readSupabaseEnvironment } from "@nyx-os/database";
 
-const supabaseUrl = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_KEY;
+const supabaseEnvironment = readSupabaseEnvironment();
 
 export function createSupabaseClient() {
-  if (!supabaseUrl || !supabaseKey) {
+  if (!supabaseEnvironment) {
     throw new Error("Missing Supabase environment variables.");
   }
 
-  return createClient(supabaseUrl, supabaseKey);
+  return createNyxSupabaseClient(supabaseEnvironment);
 }
 
-export const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
+export const supabase = supabaseEnvironment ? createNyxSupabaseClient(supabaseEnvironment) : null;

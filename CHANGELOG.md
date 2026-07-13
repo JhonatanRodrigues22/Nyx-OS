@@ -1,5 +1,34 @@
 # Changelog
 
+## Sprint 22 - Personal Data Modules
+
+Branch: `feat/sprint-22-personal-data-modules`
+PR: #28
+
+### Adicionado
+
+- ADR-0022 registrando a decisao de usar Supabase como persistencia inicial dos modulos pessoais, com migracao local-first adiada conscientemente (`9b649df`, PR #28).
+- `@nyx-os/database` com factory compartilhado de Supabase via variaveis de ambiente, sem valores hardcoded (`e88dbf5`, PR #28).
+- Schema SQL versionado para `projects`, `tasks`, `habits` e `finance_entries`, a ser aplicado manualmente no Supabase (`991e0db`, PR #28).
+- `@nyx-os/personal-data` com `PersonalDataRepository<T>`, `InMemoryRepository<T>` e `SupabaseRepository<T>` (`254250d`, PR #28).
+- Repositorios tipados `TaskRepository`, `HabitRepository`, `ProjectRepository` e `FinanceRepository`, com validacao explicita por dominio (`94891b3`, PR #28).
+- Documentacao em `docs/arquitetura/personal-data-modules.md` (`3073c4b`, PR #28).
+
+### Alterado
+
+- Workspace web passou a resolver e transpilar `@nyx-os/database` e `@nyx-os/personal-data` nos testes e no build (`b73de69`, PR #28).
+- `apps/web/src/lib/supabase.ts` passou a reutilizar o factory compartilhado de `@nyx-os/database` (`e88dbf5`, PR #28).
+- Testes cobrem CRUD de tarefas e validacoes dos dominios pessoais usando apenas `InMemoryRepository`, sem chamadas ao Supabase real (`b73de69`, PR #28).
+
+### Fora do escopo
+
+- UI.
+- Streaks de habito.
+- Recorrencia de tarefa.
+- Analises ou relatorios financeiros.
+- Multiplos usuarios.
+- Migracao para persistencia local.
+
 ## Sprint 21 - Workflow Engine
 
 ### Adicionado
