@@ -291,11 +291,10 @@ describe("Workflow Engine", () => {
 
   it("pauses during retry backoff and resumes from the same step", async () => {
     const { calls, events, failTimes, tools } = createHarness();
-    let manager: WorkflowManager;
 
     failTimes("step.pause-retry", 1);
 
-    manager = new WorkflowManager({
+    const manager = new WorkflowManager({
       events,
       tools,
       idFactory: () => "wf-pause",
