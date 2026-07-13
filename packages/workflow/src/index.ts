@@ -1,3 +1,4 @@
+export { WorkflowRegistry } from "./WorkflowRegistry";
 export type {
   WorkflowContext,
   WorkflowDefinition,
