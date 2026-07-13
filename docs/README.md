@@ -63,6 +63,7 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `arquitetura/automation-engine.md`: contrato oficial de automacoes por evento ou schedule usando Tools existentes.
 - `arquitetura/ai-runtime.md`: contrato oficial de provider de IA, conversa e tool calling desacoplado de fornecedor.
 - `arquitetura/prompt-engine.md`: contrato oficial de templates de prompt com versionamento, renderizacao e composicao.
+- `arquitetura/knowledge-engine.md`: contrato oficial de ingestao de documentos, chunking e busca textual.
 - `arquitetura/logging.md`: contrato central de logging e Logger Service.
 - `packages/state/README.md`: contrato central de estado do Runtime.
 - `workflow/desenvolvimento.md`: ciclo oficial de branches, commits e Pull Requests.
@@ -75,6 +76,7 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `decisoes/ADR-0018-memory-engine.md`: decisão do Memory Engine oficial.
 - `decisoes/ADR-0019-capability-engine.md`: decisao do Capability Engine oficial.
 - `decisoes/ADR-0020-tool-calling-engine.md`: decisao do Tool Calling Engine oficial.
+- `decisoes/ADR-0021-knowledge-search-keyword-first.md`: decisao de busca inicial por palavra-chave no Knowledge Engine.
 
 ## Decisoes recentes
 
@@ -98,3 +100,4 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `@nyx-os/automation` e o mecanismo oficial para disparar Tools a partir de eventos ou schedules.
 - `@nyx-os/ai` e a camada oficial de provider de IA e tool calling por contrato.
 - `@nyx-os/prompt` e o mecanismo oficial de templates de prompt com versionamento e composicao.
+- `@nyx-os/knowledge` e o mecanismo oficial de ingestao, chunking e busca textual de documentos.
