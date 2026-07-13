@@ -1,3 +1,9 @@
+export { KnowledgeContextSource } from "./KnowledgeContextSource";
+export { MemoryContextSource } from "./MemoryContextSource";
+export { RuntimeStateContextSource } from "./RuntimeStateContextSource";
+export type { KnowledgeContextSourceOptions } from "./KnowledgeContextSource";
+export type { MemoryContextSourceOptions } from "./MemoryContextSource";
+export type { RuntimeStateContextSourceOptions } from "./RuntimeStateContextSource";
 export type {
   ContextContribution,
   ContextPromptSection,
