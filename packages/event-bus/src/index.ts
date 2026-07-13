@@ -12,6 +12,7 @@ export type {
   NyxAutomationEventName,
   NyxMemoryEventName,
   NyxToolEventName,
+  NyxWorkflowEventName,
   NyxPluginEventName,
   NyxRuntimeEventName,
   NyxSchedulerEventName,
