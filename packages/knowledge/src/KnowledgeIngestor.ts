@@ -22,10 +22,9 @@ export class KnowledgeIngestor {
   }
 
   ingest(document: KnowledgeDocument): KnowledgeIngestResult {
-    this.store.saveDocument(document);
-
     const chunks = this.chunking.chunk(document);
 
+    this.store.saveDocument(document);
     this.store.saveChunks(document.id, chunks);
 
     return {

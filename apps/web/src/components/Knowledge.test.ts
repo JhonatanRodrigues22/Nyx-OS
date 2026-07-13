@@ -3,6 +3,7 @@ import {
   InMemoryKnowledgeStore,
   KnowledgeIngestor,
   KnowledgeSearchEngine,
+  type ChunkingStrategy,
   type KnowledgeDocument
 } from "@nyx-os/knowledge";
 
@@ -136,5 +137,32 @@ describe("Knowledge Engine", () => {
     ingestor.ingest(createDocument());
 
     expect(() => ingestor.ingest(createDocument())).toThrow("Knowledge document already exists: doc-1");
+  });
+
+  it("does not leave an orphaned document when chunking fails", () => {
+    const store = new InMemoryKnowledgeStore();
+    const failingChunking: ChunkingStrategy = {
+      chunk() {
+        throw new Error("chunking unavailable");
+      }
+    };
+    const failingIngestor = new KnowledgeIngestor({
+      store,
+      chunking: failingChunking
+    });
+
+    expect(() => failingIngestor.ingest(createDocument())).toThrow("chunking unavailable");
+    expect(store.getDocument("doc-1")).toBeUndefined();
+
+    const retryingIngestor = new KnowledgeIngestor({
+      store,
+      chunking: new FixedSizeChunkingStrategy({
+        chunkSize: 10,
+        overlap: 0
+      })
+    });
+
+    expect(() => retryingIngestor.ingest(createDocument())).not.toThrow();
+    expect(store.getDocument("doc-1")?.id).toBe("doc-1");
   });
 });
