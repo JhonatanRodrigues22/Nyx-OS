@@ -31,7 +31,8 @@
       "@nyx-os/plugin": ["../../packages/plugin/src/index.ts"],
       "@nyx-os/prompt": ["../../packages/prompt/src/index.ts"],
       "@nyx-os/scheduler": ["../../packages/scheduler/src/index.ts"],
-      "@nyx-os/state": ["../../packages/state/src/index.ts"]
+      "@nyx-os/state": ["../../packages/state/src/index.ts"],
+      "@nyx-os/workflow": ["../../packages/workflow/src/index.ts"]
     }
   },
   "include": [
