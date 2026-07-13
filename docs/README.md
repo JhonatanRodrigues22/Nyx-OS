@@ -68,6 +68,7 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `arquitetura/workflow-engine.md`: contrato oficial de fluxos multi-etapa com branching, retry e pause/resume em memoria.
 - `arquitetura/personal-data-modules.md`: contrato oficial dos modulos pessoais persistentes de tarefas, habitos, projetos e financas.
 - `arquitetura/nyx-interaction-layer.md`: contrato oficial do cockpit pessoal, chat server-side e feedback de execucao.
+- `arquitetura/local-communication-foundation.md`: transporte WebSocket local, protocolo versionado, bridge de capabilities e segurança.
 - `arquitetura/logging.md`: contrato central de logging e Logger Service.
 - `packages/state/README.md`: contrato central de estado do Runtime.
 - `workflow/desenvolvimento.md`: ciclo oficial de branches, commits e Pull Requests.
