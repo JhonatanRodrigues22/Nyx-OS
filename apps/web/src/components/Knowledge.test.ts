@@ -66,6 +66,59 @@ describe("Knowledge Engine", () => {
     expect(results[0].score).toBeGreaterThan(0);
   });
 
+  it("does not match chunks when the term only appears in the document title", () => {
+    const store = new InMemoryKnowledgeStore();
+    const ingestor = new KnowledgeIngestor({
+      store,
+      chunking: new FixedSizeChunkingStrategy({
+        chunkSize: 80,
+        overlap: 0
+      })
+    });
+    const search = new KnowledgeSearchEngine({ store });
+
+    ingestor.ingest(
+      createDocument({
+        title: "Semantic Manual",
+        content: "alpha beta gamma"
+      })
+    );
+
+    expect(search.search({ text: "semantic" })).toEqual([]);
+  });
+
+  it("uses title matches only as a boost for chunks with content matches", () => {
+    const store = new InMemoryKnowledgeStore();
+    const ingestor = new KnowledgeIngestor({
+      store,
+      chunking: new FixedSizeChunkingStrategy({
+        chunkSize: 80,
+        overlap: 0
+      })
+    });
+    const search = new KnowledgeSearchEngine({ store });
+
+    ingestor.ingest(
+      createDocument({
+        id: "doc-boosted",
+        title: "Semantic Manual",
+        content: "semantic alpha"
+      })
+    );
+    ingestor.ingest(
+      createDocument({
+        id: "doc-plain",
+        title: "Plain Manual",
+        content: "semantic alpha"
+      })
+    );
+
+    const results = search.search({ text: "semantic" });
+
+    expect(results.map((result) => result.document.id)).toEqual(["doc-boosted", "doc-plain"]);
+    expect(results[0].score).toBeGreaterThan(results[1].score);
+  });
+
   it("returns an empty list when no chunk matches", () => {
     const store = new InMemoryKnowledgeStore();
     const ingestor = new KnowledgeIngestor({ store });

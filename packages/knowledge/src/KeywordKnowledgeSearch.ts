@@ -75,6 +75,10 @@ export class KeywordKnowledgeSearch implements KnowledgeSearch {
       const chunkMatches = countOccurrences(chunkContent, term);
       const titleMatches = countOccurrences(title, term);
 
+      if (chunkMatches === 0) {
+        return score;
+      }
+
       return score + chunkMatches * 10 + titleMatches * 3;
     }, 0);
   }
