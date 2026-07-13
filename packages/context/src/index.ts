@@ -1,8 +1,10 @@
 export { ContextEngine } from "./ContextEngine";
+export { toPromptSection } from "./ContextPromptSection";
 export { KnowledgeContextSource } from "./KnowledgeContextSource";
 export { MemoryContextSource } from "./MemoryContextSource";
 export { RuntimeStateContextSource } from "./RuntimeStateContextSource";
 export type { ContextEngineOptions } from "./ContextEngine";
+export type { ContextPromptSectionOptions } from "./ContextPromptSection";
 export type { KnowledgeContextSourceOptions } from "./KnowledgeContextSource";
 export type { MemoryContextSourceOptions } from "./MemoryContextSource";
 export type { RuntimeStateContextSourceOptions } from "./RuntimeStateContextSource";
