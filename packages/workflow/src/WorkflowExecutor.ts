@@ -127,6 +127,12 @@ export class WorkflowExecutor {
         if (step.retry?.backoffMs) {
           await this.wait(step.retry.backoffMs);
         }
+
+        if (options.shouldPause?.()) {
+          instance.status = "paused";
+          emitWorkflowEvent(this.events, "workflow.paused", { instance: cloneInstance(instance), step: entry });
+          return false;
+        }
       }
     }
 
