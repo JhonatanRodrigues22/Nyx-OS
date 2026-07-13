@@ -83,6 +83,23 @@ export type LocalProtocolErrorCode =
   | "GATEWAY_STOPPED"
   | "REMOTE_COMMAND_FAILED";
 
+const LOCAL_PROTOCOL_ERROR_CODES: ReadonlySet<string> = new Set([
+  "AUTHENTICATION_FAILED",
+  "INCOMPATIBLE_PROTOCOL_VERSION",
+  "HANDSHAKE_REQUIRED",
+  "INVALID_MESSAGE",
+  "PAYLOAD_TOO_LARGE",
+  "CAPABILITY_NOT_ALLOWED",
+  "INSTANCE_NOT_CONNECTED",
+  "COMMAND_TIMEOUT",
+  "CONNECTION_CLOSED",
+  "GATEWAY_STOPPED",
+  "REMOTE_COMMAND_FAILED"
+]);
+
+const LOCAL_PLATFORMS: ReadonlySet<string> = new Set(["windows", "macos", "linux", "unknown"]);
+const LOCAL_PARAMETER_TYPES: ReadonlySet<string> = new Set(["string", "number", "boolean", "object", "array"]);
+
 export type LocalProtocolError = {
   code: LocalProtocolErrorCode;
   message: string;
@@ -109,6 +126,14 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.length > 0;
+}
+
+function isProtocolDetail(value: unknown): value is string | number | boolean | null {
+  return value === null || typeof value === "string" || typeof value === "number" || typeof value === "boolean";
+}
+
 export function hasProtocolEnvelope(
   value: unknown
 ): value is Record<string, unknown> & { type: string; protocolVersion: string } {
@@ -119,10 +144,11 @@ export function isLocalHandshake(value: unknown): value is LocalHandshake {
   return (
     hasProtocolEnvelope(value) &&
     value.type === "local.handshake" &&
-    typeof value.token === "string" &&
-    typeof value.instanceId === "string" &&
-    typeof value.platform === "string" &&
-    typeof value.version === "string"
+    isNonEmptyString(value.token) &&
+    isNonEmptyString(value.instanceId) &&
+    isNonEmptyString(value.platform) &&
+    LOCAL_PLATFORMS.has(value.platform) &&
+    isNonEmptyString(value.version)
   );
 }
 
@@ -130,20 +156,46 @@ export function isLocalCapabilityAnnouncement(value: unknown): value is LocalCap
   return (
     hasProtocolEnvelope(value) &&
     value.type === "local.capabilities.announcement" &&
-    typeof value.instanceId === "string" &&
+    isNonEmptyString(value.instanceId) &&
     Array.isArray(value.capabilities)
+  );
+}
+
+export function isLocalCapabilityParameter(value: unknown): value is LocalCapabilityParameter {
+  return (
+    isRecord(value) &&
+    isNonEmptyString(value.type) &&
+    LOCAL_PARAMETER_TYPES.has(value.type) &&
+    (value.required === undefined || typeof value.required === "boolean") &&
+    (value.description === undefined || typeof value.description === "string")
   );
 }
 
 export function isLocalCapabilityDescriptor(value: unknown): value is LocalCapabilityDescriptor {
   return (
     isRecord(value) &&
-    typeof value.id === "string" &&
-    typeof value.name === "string" &&
-    typeof value.description === "string" &&
-    typeof value.version === "string" &&
-    (value.parameters === undefined || isRecord(value.parameters)) &&
+    isNonEmptyString(value.id) &&
+    isNonEmptyString(value.name) &&
+    isNonEmptyString(value.description) &&
+    isNonEmptyString(value.version) &&
+    (value.parameters === undefined ||
+      (isRecord(value.parameters) &&
+        Object.entries(value.parameters).every(
+          ([name, parameter]) => isNonEmptyString(name) && isLocalCapabilityParameter(parameter)
+        ))) &&
     (value.resultDescription === undefined || typeof value.resultDescription === "string")
+  );
+}
+
+export function isLocalProtocolError(value: unknown): value is LocalProtocolError {
+  return (
+    isRecord(value) &&
+    isNonEmptyString(value.code) &&
+    LOCAL_PROTOCOL_ERROR_CODES.has(value.code) &&
+    isNonEmptyString(value.message) &&
+    typeof value.retryable === "boolean" &&
+    (value.details === undefined ||
+      (isRecord(value.details) && Object.values(value.details).every(isProtocolDetail)))
   );
 }
 
@@ -151,10 +203,13 @@ export function isLocalCommandResult(value: unknown): value is LocalCommandResul
   return (
     hasProtocolEnvelope(value) &&
     value.type === "local.command.result" &&
-    typeof value.requestId === "string" &&
-    typeof value.instanceId === "string" &&
-    typeof value.capabilityId === "string" &&
-    typeof value.success === "boolean"
+    isNonEmptyString(value.requestId) &&
+    isNonEmptyString(value.instanceId) &&
+    isNonEmptyString(value.capabilityId) &&
+    typeof value.success === "boolean" &&
+    (value.success
+      ? value.error === undefined
+      : value.result === undefined && isLocalProtocolError(value.error))
   );
 }
 
@@ -162,7 +217,8 @@ export function isLocalHeartbeat(value: unknown): value is LocalHeartbeat {
   return (
     hasProtocolEnvelope(value) &&
     value.type === "local.heartbeat" &&
-    typeof value.instanceId === "string" &&
-    typeof value.sentAt === "string"
+    isNonEmptyString(value.instanceId) &&
+    isNonEmptyString(value.sentAt) &&
+    !Number.isNaN(Date.parse(value.sentAt))
   );
 }

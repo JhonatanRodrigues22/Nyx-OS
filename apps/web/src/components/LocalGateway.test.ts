@@ -11,7 +11,7 @@ import {
   type LocalServerMessage
 } from "@nyx-os/local-gateway";
 import { randomUUID } from "node:crypto";
-import WebSocket from "ws";
+import WebSocket, { type RawData } from "ws";
 
 type TestHarness = {
   bridge: LocalCapabilityBridge;
@@ -33,8 +33,16 @@ function currentToken(): string {
 
 function nextMessage(client: WebSocket): Promise<LocalServerMessage> {
   return new Promise((resolve, reject) => {
-    client.once("message", (raw) => resolve(JSON.parse(raw.toString()) as LocalServerMessage));
-    client.once("error", reject);
+    const onMessage = (raw: RawData) => {
+      client.off("error", onError);
+      resolve(JSON.parse(raw.toString()) as LocalServerMessage);
+    };
+    const onError = (error: Error) => {
+      client.off("message", onMessage);
+      reject(error);
+    };
+    client.once("message", onMessage);
+    client.once("error", onError);
   });
 }
 
@@ -222,7 +230,60 @@ describe("Local communication foundation", () => {
 
     expect(server.registry.get("local-test-instance")?.lastHeartbeatAt).not.toBe(beforeHeartbeat);
     await waitForClose(client);
+    await waitFor(() => server.registry.get("local-test-instance")?.status === "disconnected");
     expect(server.registry.get("local-test-instance")?.status).toBe("disconnected");
+  });
+
+  it.each([
+    ["code", { code: "SKILL_NOT_FOUND", message: "failed", retryable: false }],
+    ["message", { code: "REMOTE_COMMAND_FAILED", message: 42, retryable: false }],
+    ["retryable", { code: "REMOTE_COMMAND_FAILED", message: "failed", retryable: "no" }],
+    ["details", { code: "REMOTE_COMMAND_FAILED", message: "failed", retryable: false, details: [] }]
+  ])("rejects a command result with invalid error.%s", async (_field, error) => {
+    const server = await createServer();
+    const { client } = await handshake(server);
+    const responsePromise = nextMessage(client);
+
+    client.send(JSON.stringify({
+      type: "local.command.result",
+      protocolVersion: LOCAL_PROTOCOL_VERSION,
+      requestId: "request-invalid",
+      instanceId: "local-test-instance",
+      capabilityId: "local.echo",
+      success: false,
+      error
+    }));
+
+    await expect(responsePromise).resolves.toMatchObject({
+      type: "local.error",
+      error: { code: "INVALID_MESSAGE", retryable: false }
+    });
+  });
+
+  it.each([
+    ["failed result without error", { success: false }],
+    ["successful result with error", {
+      success: true,
+      error: { code: "REMOTE_COMMAND_FAILED", message: "failed", retryable: false }
+    }]
+  ])("rejects an incoherent %s envelope", async (_name, outcome) => {
+    const server = await createServer();
+    const { client } = await handshake(server);
+    const responsePromise = nextMessage(client);
+
+    client.send(JSON.stringify({
+      type: "local.command.result",
+      protocolVersion: LOCAL_PROTOCOL_VERSION,
+      requestId: "request-invalid",
+      instanceId: "local-test-instance",
+      capabilityId: "local.echo",
+      ...outcome
+    }));
+
+    await expect(responsePromise).resolves.toMatchObject({
+      type: "local.error",
+      error: { code: "INVALID_MESSAGE", retryable: false }
+    });
   });
 
   it("registers a remote capability and completes a real Tool Calling round-trip", async () => {
