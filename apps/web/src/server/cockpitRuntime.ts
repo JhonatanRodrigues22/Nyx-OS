@@ -8,6 +8,38 @@ export type CockpitRuntimeHandle = {
 };
 
 let cockpitRuntime: CockpitRuntimeHandle | null = null;
+const globalForCockpitRuntime = globalThis as typeof globalThis & {
+  __nyxCockpitRuntime?: CockpitRuntimeHandle | null;
+};
+
+function isEnabled(value: string | undefined): boolean {
+  return value?.trim().toLowerCase() === "true";
+}
+
+function resolveLocalGatewayOptions() {
+  if (!isEnabled(process.env.NYX_ENABLE_LOCAL_GATEWAY)) {
+    return {
+      registerLocalGateway: false
+    };
+  }
+
+  if (!process.env.NYX_LOCAL_GATEWAY_TOKEN) {
+    throw new Error("NYX_ENABLE_LOCAL_GATEWAY=true requires NYX_LOCAL_GATEWAY_TOKEN.");
+  }
+
+  const port = process.env.NYX_LOCAL_GATEWAY_PORT ? Number(process.env.NYX_LOCAL_GATEWAY_PORT) : 4789;
+
+  if (!Number.isInteger(port) || port < 0 || port > 65535) {
+    throw new Error("NYX_LOCAL_GATEWAY_PORT must be a valid TCP port.");
+  }
+
+  return {
+    registerLocalGateway: true,
+    localGatewayOptions: {
+      port
+    }
+  };
+}
 
 export const cockpitObservedEvents: NyxSystemEventName[] = [
   "tool.executed",
@@ -23,15 +55,19 @@ export const cockpitObservedEvents: NyxSystemEventName[] = [
 ];
 
 export function getCockpitRuntime(): CockpitRuntimeHandle {
+  cockpitRuntime = globalForCockpitRuntime.__nyxCockpitRuntime ?? cockpitRuntime;
+
   if (!cockpitRuntime) {
     const runtime = new NyxRuntime(undefined, {
-      registerAiRuntime: true
+      registerAiRuntime: true,
+      ...resolveLocalGatewayOptions()
     });
 
     cockpitRuntime = {
       runtime,
       ready: runtime.start()
     };
+    globalForCockpitRuntime.__nyxCockpitRuntime = cockpitRuntime;
   }
 
   return cockpitRuntime;
@@ -39,6 +75,17 @@ export function getCockpitRuntime(): CockpitRuntimeHandle {
 
 export function resetCockpitRuntimeForTests(): void {
   cockpitRuntime = null;
+  globalForCockpitRuntime.__nyxCockpitRuntime = null;
+}
+
+export async function stopCockpitRuntimeForTests(): Promise<void> {
+  const handle = globalForCockpitRuntime.__nyxCockpitRuntime ?? cockpitRuntime;
+  cockpitRuntime = null;
+  globalForCockpitRuntime.__nyxCockpitRuntime = null;
+
+  if (handle) {
+    await handle.runtime.stop();
+  }
 }
 
 export function createCockpitSystemPrompt(): string {

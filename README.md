@@ -22,6 +22,21 @@ Copy-Item apps/web/.env.local.example apps/web/.env.local
 
 Depois acesse `http://localhost:3000`.
 
+### First Boot com Nyx Local
+
+Para conectar o Nyx Local durante desenvolvimento, habilite o gateway server-side antes de iniciar o Nyx OS:
+
+```powershell
+$env:NYX_ENABLE_LOCAL_GATEWAY="true"
+$env:NYX_LOCAL_GATEWAY_TOKEN="dev-local-token-123"
+$env:NYX_LOCAL_GATEWAY_PORT="4789"
+npm run dev
+```
+
+Depois inicie o Nyx Local com o mesmo token e URL `ws://127.0.0.1:4789`.
+
+O painel de conexao fica em `http://localhost:3000/dev`. Veja `docs/first-boot.md` para o passo a passo completo.
+
 ## Requisitos
 
 - Git

@@ -19,7 +19,7 @@ export function LocalInstanceList({ localGateway }: LocalInstanceListProps) {
           <h2>Nyx Local</h2>
         </div>
         <span className={`badge ${connected > 0 ? "ready" : "planned"}`}>
-          {connected}/{localGateway.instances.length}
+          {localGateway.enabled ? `enabled ${connected}/${localGateway.instances.length}` : "disabled"}
         </span>
       </div>
       <ul className="local-instance-list">

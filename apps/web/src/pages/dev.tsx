@@ -1,6 +1,6 @@
 import type { DashboardSnapshot } from "@nyx-os/core";
-import { createDashboardSnapshot, createDashboardSnapshotFromRuntime, NyxRuntime } from "@nyx-os/core";
-import type { NyxSystemEventName } from "@nyx-os/event-bus";
+import { createDashboardSnapshotFromRuntime } from "@nyx-os/core";
+import type { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
@@ -14,53 +14,14 @@ import { PluginList } from "@/components/PluginList";
 import { SchedulerList } from "@/components/SchedulerList";
 import { StatusPanel } from "@/components/StatusPanel";
 import { ToolList } from "@/components/ToolList";
+import { getCockpitRuntime } from "@/server/cockpitRuntime";
 
-type HomeProps = {
+type DevDashboardProps = {
   snapshot: DashboardSnapshot;
   enableLiveRuntime?: boolean;
 };
 
-const observedEvents: NyxSystemEventName[] = [
-  "runtime.started",
-  "runtime.stopped",
-  "runtime.failed",
-  "service.registered",
-  "service.started",
-  "service.stopped",
-  "service.failed",
-  "plugin.registered",
-  "plugin.initialized",
-  "plugin.disposed",
-  "plugin.unregistered",
-  "plugin.failed",
-  "scheduler.started",
-  "scheduler.stopped",
-  "scheduler.task.registered",
-  "scheduler.task.executed",
-  "scheduler.task.failed",
-  "scheduler.task.removed",
-  "capability.registered",
-  "capability.removed",
-  "capability.executed",
-  "capability.failed",
-  "tool.registered",
-  "tool.removed",
-  "tool.executed",
-  "tool.failed",
-  "local.connected",
-  "local.disconnected",
-  "local.handshake.completed",
-  "local.handshake.failed",
-  "local.capabilities.updated",
-  "local.command.requested",
-  "local.command.started",
-  "local.command.completed",
-  "local.command.failed",
-  "local.command.timed_out",
-  "local.heartbeat.received"
-];
-
-export default function Home({ snapshot, enableLiveRuntime = true }: HomeProps) {
+export default function DevDashboard({ snapshot, enableLiveRuntime = true }: DevDashboardProps) {
   const [dashboardSnapshot, setDashboardSnapshot] = useState(snapshot);
 
   useEffect(() => {
@@ -68,37 +29,29 @@ export default function Home({ snapshot, enableLiveRuntime = true }: HomeProps) 
       return undefined;
     }
 
-    const runtime = new NyxRuntime();
-    const eventTypes: string[] = [];
     let mounted = true;
+    const refresh = async () => {
+      const response = await fetch("/api/dev/snapshot");
 
-    const refresh = () => {
+      if (!response.ok) {
+        return;
+      }
+
+      const payload = (await response.json()) as { snapshot: DashboardSnapshot };
+
       if (mounted) {
-        setDashboardSnapshot(createDashboardSnapshotFromRuntime(runtime, eventTypes));
+        setDashboardSnapshot(payload.snapshot);
       }
     };
+    const interval = window.setInterval(() => {
+      void refresh();
+    }, 1000);
 
-    const unsubscribers = observedEvents.map((eventName) =>
-      runtime.getEventBus().on(eventName, () => {
-        eventTypes.unshift(eventName);
-        refresh();
-      })
-    );
-    const interval = window.setInterval(refresh, 1000);
-
-    void runtime
-      .start()
-      .then(refresh)
-      .catch(() => {
-        eventTypes.unshift("runtime.failed");
-        refresh();
-      });
+    void refresh();
 
     return () => {
       mounted = false;
       window.clearInterval(interval);
-      unsubscribers.forEach((unsubscribe) => unsubscribe());
-      void runtime.stop();
     };
   }, [enableLiveRuntime]);
 
@@ -146,10 +99,14 @@ export default function Home({ snapshot, enableLiveRuntime = true }: HomeProps) 
   );
 }
 
-export function getStaticProps() {
+export const getServerSideProps: GetServerSideProps<DevDashboardProps> = async () => {
+  const handle = getCockpitRuntime();
+
+  await handle.ready;
+
   return {
     props: {
-      snapshot: createDashboardSnapshot()
+      snapshot: createDashboardSnapshotFromRuntime(handle.runtime)
     }
   };
-}
+};
