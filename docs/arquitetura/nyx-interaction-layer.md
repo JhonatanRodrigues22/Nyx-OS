@@ -14,8 +14,9 @@ Ela contem:
 
 - chat com a Nyx;
 - comandos rapidos baseados em Tools;
-- feedback visual de execucao ao vivo.
+- feedback visual de execucao ao vivo;
 - captura rapida de tarefas;
+- criação rápida de projetos;
 - listagem de tarefas abertas;
 - listagem de projetos ativos.
 
@@ -46,6 +47,8 @@ O streaming tambem respeita essa fronteira:
 
 A resposta volta ao navegador como Server-Sent Events.
 
+Quando o provider solicita uma Tool durante o streaming, o AI Runtime executa a Tool pelo `ToolManager`, registra a resposta como mensagem `tool` e continua o loop com o provider ate chegar em resposta final ou no limite de iteracoes.
+
 Erros de provider sao tratados e enviados como evento `error`, sem stack trace cru e sem segredos.
 
 ## Comandos Rapidos
@@ -73,7 +76,8 @@ Essas Tools usam os contratos de `@nyx-os/personal-data` e ficam disponiveis par
 
 `/api/projects` expõe:
 
-- `GET` para listar projetos ativos.
+- `GET` para listar projetos ativos;
+- `POST` para criar projeto ativo.
 
 No recorte inicial da Sprint 25, esses dados usam repositórios em memoria no servidor Next.js. Isso permite desenvolvimento local sem Supabase real, mas ainda nao e persistencia duravel.
 
