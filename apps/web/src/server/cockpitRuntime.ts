@@ -1,6 +1,7 @@
 import { PromptRegistry, PromptRenderer } from "@nyx-os/prompt";
 import { createNyxEventPayload, type NyxEventPayload, type NyxSystemEventName } from "@nyx-os/event-bus";
 import { NyxRuntime } from "@nyx-os/core";
+import { registerCockpitPersonalData } from "./personalDataRuntime";
 
 export type CockpitRuntimeHandle = {
   runtime: NyxRuntime;
@@ -62,6 +63,8 @@ export function getCockpitRuntime(): CockpitRuntimeHandle {
       registerAiRuntime: true,
       ...resolveLocalGatewayOptions()
     });
+
+    registerCockpitPersonalData(runtime);
 
     cockpitRuntime = {
       runtime,

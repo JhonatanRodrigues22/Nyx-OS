@@ -15,6 +15,9 @@ Ela contem:
 - chat com a Nyx;
 - comandos rapidos baseados em Tools;
 - feedback visual de execucao ao vivo.
+- captura rapida de tarefas;
+- listagem de tarefas abertas;
+- listagem de projetos ativos.
 
 `/dev` permanece como Dev Dashboard tecnico.
 
@@ -53,6 +56,29 @@ Isso e usado para acoes deterministicas que nao precisam passar pelo raciocinio 
 
 As execucoes sao marcadas com `source: "cockpit.quick-command"`.
 
+Tools de produto registradas no Cockpit:
+
+- `task.create`;
+- `task.listOpen`;
+- `project.listActive`.
+
+Essas Tools usam os contratos de `@nyx-os/personal-data` e ficam disponiveis para comandos deterministas e para o AI Runtime.
+
+## Dados Operacionais
+
+`/api/tasks` expõe:
+
+- `GET` para listar tarefas abertas;
+- `POST` para criar tarefa aberta.
+
+`/api/projects` expõe:
+
+- `GET` para listar projetos ativos.
+
+No recorte inicial da Sprint 25, esses dados usam repositórios em memoria no servidor Next.js. Isso permite desenvolvimento local sem Supabase real, mas ainda nao e persistencia duravel.
+
+A persistencia duravel em Supabase continua sendo a direcao oficial registrada em `docs/arquitetura/personal-data-modules.md` e ADR-0022.
+
 ## Eventos de Execucao
 
 `/api/cockpit/events` assina o Event Bus oficial e transmite eventos relevantes para a UI.
@@ -72,6 +98,7 @@ O cockpit usa composicao visual propria, cyberpunk/glassmorphism/neon, e nao rea
 ## Fora do Escopo
 
 - Nyx Local Integration.
-- UI dos Personal Data Modules.
+- UI completa dos Personal Data Modules.
+- Persistencia duravel dos dados operacionais do Cockpit.
 - Multiplayer ou multiplos usuarios.
 - Cliente Anthropic no browser.

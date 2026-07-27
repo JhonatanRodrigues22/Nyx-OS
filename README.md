@@ -130,6 +130,9 @@ Use `npm run start` depois de executar `npm run build`.
 - 13: Memory Engine.
 - 14: Capability Engine.
 - 15: Tool Calling Engine.
+- 23: Nyx Interaction Layer.
+- 24: Local Communication Foundation.
+- 25: Cockpit Operacional Basico.
 
 A Sprint 04 introduziu a primeira base executável do Nyx OS: core runtime, serviços internos, event bus em memória e dashboard visual com dados mockados isolados.
 
@@ -143,6 +146,8 @@ A Sprint 12 redesenhou visualmente o Dev Dashboard com identidade Nyx premium, g
 A Sprint 14 introduziu o Capability Engine oficial com registro, descoberta, execucao e observabilidade de capacidades por contrato, eventos `capability.*`, `runtime.getCapabilities()` e `context.capabilities`.
 
 A Sprint 15 introduziu o Tool Calling Engine oficial com registro, descoberta, validacao e execucao de Tools por contrato, eventos `tool.*`, `runtime.getTools()` e `context.tools`.
+
+A Sprint 25 iniciou o Cockpit operacional com captura rapida de tarefas, listagem de tarefas abertas, listagem de projetos ativos, APIs server-side e Tools `task.create`, `task.listOpen` e `project.listActive`. Neste recorte, os dados ficam em memoria no servidor Next.js; persistencia duravel em Supabase permanece como proximo passo.
 
 ## Stack
 
