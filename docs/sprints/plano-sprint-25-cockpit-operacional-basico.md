@@ -25,6 +25,7 @@ O proximo passo e expor um recorte pequeno desses fundamentos no uso diario.
 ### Produto
 
 - Captura rapida de tarefa no Cockpit.
+- Captura rapida de projeto no Cockpit.
 - Listagem de tarefas abertas no Cockpit.
 - Listagem de projetos ativos no Cockpit.
 - Feedback visual simples para sucesso e falha.
@@ -33,6 +34,7 @@ O proximo passo e expor um recorte pequeno desses fundamentos no uso diario.
 
 - API server-side para criar tarefa.
 - API server-side para listar tarefas abertas.
+- API server-side para criar projeto ativo.
 - API server-side para listar projetos ativos.
 - Uso dos repositorios de `@nyx-os/personal-data`.
 
@@ -64,8 +66,10 @@ O proximo passo e expor um recorte pequeno desses fundamentos no uso diario.
 - O usuario consegue abrir `/cockpit`.
 - O usuario consegue criar uma tarefa pela interface.
 - A tarefa criada aparece na listagem de tarefas abertas.
+- O usuario consegue criar um projeto pela interface.
 - Projetos ativos podem ser listados no Cockpit.
 - Pelo menos uma Tool de produto pode ser executada via comando deterministico.
+- Tool calls solicitadas pela IA durante streaming sao executadas pelo AI Runtime antes da resposta final.
 - O comportamento novo possui testes proporcionais ao risco.
 - A documentacao relevante foi atualizada.
 - `npm run lint`, `npm test` e `npm run build` passam ou possuem bloqueio registrado.
@@ -81,6 +85,21 @@ O proximo passo e expor um recorte pequeno desses fundamentos no uso diario.
 7. Atualizar documentacao e changelog.
 8. Validar localmente.
 9. Commitar, publicar branch e abrir PR.
+
+## Incremento pós-merge do PR 33
+
+Depois do merge inicial da Sprint 25, o review automatico apontou tres lacunas operacionais:
+
+- o streaming do AI Runtime anunciava Tool calls, mas nao executava as Tools antes de continuar a conversa;
+- projetos ativos podiam ser listados, mas nao havia caminho de producao para cria-los;
+- falhas de refresh depois de uma criacao bem-sucedida podiam ser comunicadas como falha da criacao.
+
+O proximo incremento da sprint corrige esses pontos com:
+
+- loop de Tool calls em `streamUserMessage`;
+- `POST /api/projects`;
+- captura rapida de projeto no Cockpit;
+- atualização otimista apos criar tarefa ou projeto, com erro de sincronizacao separado do erro de criacao.
 
 ## Riscos
 
