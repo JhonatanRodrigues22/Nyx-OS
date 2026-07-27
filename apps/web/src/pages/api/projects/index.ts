@@ -1,27 +1,22 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { supabase } from "@/lib/supabase";
+import { listCockpitActiveProjects } from "@/server/personalDataRuntime";
 
 type ApiResponse = {
-  message: string;
-  supportedMethods?: string[];
-  supabaseReady?: boolean;
+  projects?: Awaited<ReturnType<typeof listCockpitActiveProjects>>["projects"];
+  total?: number;
+  error?: string;
 };
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ApiResponse>
 ) {
-  if (!["GET", "POST", "PUT", "PATCH", "DELETE"].includes(req.method ?? "")) {
-    res.setHeader("Allow", ["GET", "POST", "PUT", "PATCH", "DELETE"]);
-    return res.status(405).json({ message: "Method not allowed." });
+  if (req.method === "GET") {
+    const result = await listCockpitActiveProjects();
+
+    return res.status(200).json(result);
   }
 
-  // Example Supabase touchpoint for future CRUD implementation.
-  const supabaseReady = supabase !== null;
-
-  return res.status(501).json({
-    message: "Projects API not implemented yet.",
-    supportedMethods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    supabaseReady
-  });
+  res.setHeader("Allow", ["GET"]);
+  return res.status(405).json({ error: "Method not allowed." });
 }
