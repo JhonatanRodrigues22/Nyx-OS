@@ -1,5 +1,5 @@
 import { CapabilityManager, type CapabilityContext, type NyxCapability } from "@nyx-os/capabilities";
-import { AiConversationManager, AiProviderRegistry, FakeAiProvider, type AiProvider } from "@nyx-os/ai";
+import { AiConversationManager, AiProviderRegistry, FakeAiProvider, type AiChunk, type AiProvider } from "@nyx-os/ai";
 import { createInMemoryEventBus, type NyxSystemEvents } from "@nyx-os/event-bus";
 import { createConsoleLogger } from "@nyx-os/logger";
 import { MemoryManager } from "@nyx-os/memory";
@@ -189,6 +189,61 @@ describe("Nyx AI Runtime", () => {
     expect(result.response.message.content).toBe("Tool result consumed.");
     expect(result.iterations).toBe(2);
     expect(result.messages.map((message) => message.role)).toEqual(["user", "assistant", "tool", "assistant"]);
+  });
+
+  it("executes tool calls during streaming and continues the provider loop", async () => {
+    const provider = new FakeAiProvider([
+      {
+        message: {
+          role: "assistant",
+          content: ""
+        },
+        toolCalls: [
+          {
+            toolId: "ai.test.tool",
+            toolCallId: "toolu_stream",
+            input: {
+              value: "stream"
+            }
+          }
+        ],
+        stopReason: "tool_call"
+      },
+      {
+        message: {
+          role: "assistant",
+          content: "Streaming tool result consumed."
+        },
+        stopReason: "stop"
+      }
+    ]);
+    const { ai, toolInputs } = createHarness(provider);
+    const chunks: AiChunk[] = [];
+
+    for await (const chunk of ai.streamUserMessage("use a streaming tool")) {
+      chunks.push(chunk);
+    }
+
+    expect(toolInputs).toEqual([{ value: "stream" }]);
+    expect(chunks).toEqual([
+      {
+        toolCall: {
+          toolId: "ai.test.tool",
+          toolCallId: "toolu_stream",
+          input: {
+            value: "stream"
+          }
+        }
+      },
+      {
+        content: "Streaming tool result consumed."
+      },
+      {
+        done: true
+      }
+    ]);
+    expect(ai.getHistory().map((message) => message.role)).toEqual(["user", "assistant", "tool", "assistant"]);
+    expect(ai.getHistory().find((message) => message.role === "tool")?.toolCallId).toBe("toolu_stream");
   });
 
   it("preserves provider tool call IDs in tool result messages", async () => {
