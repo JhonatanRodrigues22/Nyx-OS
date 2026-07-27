@@ -147,7 +147,7 @@ A Sprint 14 introduziu o Capability Engine oficial com registro, descoberta, exe
 
 A Sprint 15 introduziu o Tool Calling Engine oficial com registro, descoberta, validacao e execucao de Tools por contrato, eventos `tool.*`, `runtime.getTools()` e `context.tools`.
 
-A Sprint 25 iniciou o Cockpit operacional com captura rapida de tarefas, listagem de tarefas abertas, listagem de projetos ativos, APIs server-side e Tools `task.create`, `task.listOpen` e `project.listActive`. Neste recorte, os dados ficam em memoria no servidor Next.js; persistencia duravel em Supabase permanece como proximo passo.
+A Sprint 25 iniciou o Cockpit operacional com captura rapida de tarefas, captura rapida de projetos, listagem de tarefas abertas, listagem de projetos ativos, APIs server-side e Tools `task.create`, `task.listOpen` e `project.listActive`. O streaming do AI Runtime tambem executa Tool calls antes de continuar a resposta final. Neste recorte, os dados ficam em memoria no servidor Next.js; persistencia duravel em Supabase permanece como proximo passo.
 
 ## Stack
 
@@ -188,33 +188,3 @@ Leitura recomendada:
 6. `docs/fundamentos/glossario.md`
 7. `docs/arquitetura/fundacao-tecnica.md`
 8. `docs/workflow/desenvolvimento.md`
-9. `docs/workflow/dx-validation.md`
-10. `docs/arquitetura/dev-dashboard.md`
-11. `docs/arquitetura/capability-engine.md`
-12. `docs/arquitetura/tool-calling-engine.md`
-
-## Contributing
-
-Antes de abrir uma Pull Request, garanta que você consegue seguir este README a partir de um ambiente limpo. Se o setup documentado deixou de funcionar, atualize a documentação como parte da sua contribuição.
-
-Toda Sprint, hotfix, refactor ou mudança significativa deve usar o workflow oficial:
-
-```text
-main
-  -> nova branch
-  -> implementacao
-  -> commit
-  -> push
-  -> Pull Request para main
-  -> review
-  -> merge
-  -> exclusao da branch
-```
-
-Cada branch de Sprint deve ser criada diretamente a partir de `main`. Cada Pull Request deve apontar para `main`. Branches empilhadas só são permitidas quando houver necessidade técnica explícita e autorização prévia.
-
-Antes de considerar uma Sprint concluída, execute a Developer Experience Validation documentada em `docs/workflow/dx-validation.md`.
-
-## Aviso
-
-Este repositório está em fase inicial. A prioridade atual é manter uma base limpa, compreensível e segura para evolução gradual.
