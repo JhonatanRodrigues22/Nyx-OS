@@ -1,5 +1,7 @@
 import Head from "next/head";
+import type { GetServerSideProps } from "next";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { listCockpitActiveProjects, listCockpitOpenTasks } from "@/server/personalDataRuntime";
 import styles from "@/styles/cockpit-operational.module.css";
 
 type ChatMessage = {
@@ -34,6 +36,11 @@ type QuickCommand = {
   label: string;
   toolId: string;
   input?: unknown;
+};
+
+type CockpitPageProps = {
+  initialTasks: CockpitTask[];
+  initialProjects: CockpitProject[];
 };
 
 const quickCommands: QuickCommand[] = [
@@ -73,7 +80,18 @@ function parseSsePayload(rawEvent: string): { event: string; data: unknown } | n
   };
 }
 
-export default function CockpitPage() {
+export const getServerSideProps: GetServerSideProps<CockpitPageProps> = async () => {
+  const [{ tasks }, { projects }] = await Promise.all([listCockpitOpenTasks(), listCockpitActiveProjects()]);
+
+  return {
+    props: {
+      initialTasks: tasks,
+      initialProjects: projects
+    }
+  };
+};
+
+export default function CockpitPage({ initialTasks, initialProjects }: CockpitPageProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
@@ -85,8 +103,8 @@ export default function CockpitPage() {
   const [chatError, setChatError] = useState<string | null>(null);
   const [commandStatus, setCommandStatus] = useState<string>("Pronto");
   const [events, setEvents] = useState<ExecutionEvent[]>([]);
-  const [tasks, setTasks] = useState<CockpitTask[]>([]);
-  const [projects, setProjects] = useState<CockpitProject[]>([]);
+  const [tasks, setTasks] = useState<CockpitTask[]>(initialTasks);
+  const [projects, setProjects] = useState<CockpitProject[]>(initialProjects);
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDueDate, setTaskDueDate] = useState("");
   const [taskProjectId, setTaskProjectId] = useState("");
@@ -136,10 +154,6 @@ export default function CockpitPage() {
     return () => {
       source.close();
     };
-  }, []);
-
-  useEffect(() => {
-    void refreshPersonalData();
   }, []);
 
   async function sendMessage(event: FormEvent<HTMLFormElement>) {
@@ -312,6 +326,10 @@ export default function CockpitPage() {
     }
   }
 
+  function getTaskProjectLabel(projectId: string): string {
+    return projects.find((project) => project.id === projectId)?.name ?? projectId;
+  }
+
   return (
     <>
       <Head>
@@ -383,7 +401,7 @@ export default function CockpitPage() {
                         <strong>{task.title}</strong>
                         <span>
                           {task.dueDate ?? "sem data"}
-                          {task.projectId ? ` - ${projects.find((project) => project.id === task.projectId)?.name ?? task.projectId}` : ""}
+                          {task.projectId ? ` - ${getTaskProjectLabel(task.projectId)}` : ""}
                         </span>
                       </li>
                     ))
