@@ -1,5 +1,6 @@
 import Head from "next/head";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import styles from "@/styles/cockpit-operational.module.css";
 
 type ChatMessage = {
   role: "user" | "assistant" | "system";
@@ -12,6 +13,21 @@ type ExecutionEvent = {
   timestamp: string;
   source: string;
   status: string;
+};
+
+type CockpitTask = {
+  id: string;
+  title: string;
+  done: boolean;
+  dueDate?: string;
+  projectId?: string;
+};
+
+type CockpitProject = {
+  id: string;
+  name: string;
+  status: "active" | "paused" | "completed" | "archived";
+  description?: string;
 };
 
 type QuickCommand = {
@@ -31,6 +47,14 @@ const quickCommands: QuickCommand[] = [
     input: {
       text: "runtime"
     }
+  },
+  {
+    label: "Listar tarefas abertas",
+    toolId: "task.listOpen"
+  },
+  {
+    label: "Listar projetos ativos",
+    toolId: "project.listActive"
   }
 ];
 
@@ -61,9 +85,32 @@ export default function CockpitPage() {
   const [chatError, setChatError] = useState<string | null>(null);
   const [commandStatus, setCommandStatus] = useState<string>("Pronto");
   const [events, setEvents] = useState<ExecutionEvent[]>([]);
+  const [tasks, setTasks] = useState<CockpitTask[]>([]);
+  const [projects, setProjects] = useState<CockpitProject[]>([]);
+  const [taskTitle, setTaskTitle] = useState("");
+  const [taskDueDate, setTaskDueDate] = useState("");
+  const [taskProjectId, setTaskProjectId] = useState("");
+  const [taskStatus, setTaskStatus] = useState("Pronto para capturar");
+  const [isCreatingTask, setIsCreatingTask] = useState(false);
   const assistantDraftRef = useRef("");
 
   const latestStatus = useMemo(() => events[0]?.name ?? "cockpit.idle", [events]);
+
+  async function refreshPersonalData() {
+    const [taskResponse, projectResponse] = await Promise.all([fetch("/api/tasks"), fetch("/api/projects")]);
+
+    if (taskResponse.ok) {
+      const payload = (await taskResponse.json()) as { tasks?: CockpitTask[] };
+
+      setTasks(payload.tasks ?? []);
+    }
+
+    if (projectResponse.ok) {
+      const payload = (await projectResponse.json()) as { projects?: CockpitProject[] };
+
+      setProjects(payload.projects ?? []);
+    }
+  }
 
   useEffect(() => {
     const source = new EventSource("/api/cockpit/events");
@@ -89,6 +136,10 @@ export default function CockpitPage() {
     return () => {
       source.close();
     };
+  }, []);
+
+  useEffect(() => {
+    void refreshPersonalData();
   }, []);
 
   async function sendMessage(event: FormEvent<HTMLFormElement>) {
@@ -196,15 +247,68 @@ export default function CockpitPage() {
           input: command.input
         })
       });
-      const payload = (await response.json()) as { execution?: { status: string }; error?: string };
+      const payload = (await response.json()) as {
+        execution?: { status: string; result?: { total?: number } };
+        error?: string;
+      };
 
       if (!response.ok) {
         throw new Error(payload.error ?? "Comando falhou.");
       }
 
-      setCommandStatus(`${command.label}: ${payload.execution?.status ?? "ok"}`);
+      const total = payload.execution?.result?.total;
+
+      setCommandStatus(
+        `${command.label}: ${payload.execution?.status ?? "ok"}${typeof total === "number" ? ` (${total})` : ""}`
+      );
+
+      if (command.toolId === "task.listOpen" || command.toolId === "project.listActive") {
+        await refreshPersonalData();
+      }
     } catch (error) {
       setCommandStatus(error instanceof Error ? error.message : "Comando falhou.");
+    }
+  }
+
+  async function createTask(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const title = taskTitle.trim();
+
+    if (!title || isCreatingTask) {
+      return;
+    }
+
+    setIsCreatingTask(true);
+    setTaskStatus("Capturando tarefa...");
+
+    try {
+      const response = await fetch("/api/tasks", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({
+          title,
+          dueDate: taskDueDate || undefined,
+          projectId: taskProjectId || undefined
+        })
+      });
+      const payload = (await response.json()) as { task?: CockpitTask; error?: string };
+
+      if (!response.ok || !payload.task) {
+        throw new Error(payload.error ?? "Nao foi possivel criar a tarefa.");
+      }
+
+      setTaskTitle("");
+      setTaskDueDate("");
+      setTaskProjectId("");
+      setTaskStatus(`Tarefa capturada: ${payload.task.title}`);
+      await refreshPersonalData();
+    } catch (error) {
+      setTaskStatus(error instanceof Error ? error.message : "Nao foi possivel criar a tarefa.");
+    } finally {
+      setIsCreatingTask(false);
     }
   }
 
@@ -232,6 +336,80 @@ export default function CockpitPage() {
 
         <section className="cockpit-layout" aria-label="Console de interacao">
           <div className="chat-window">
+            <section className={styles.operationalPanel} aria-labelledby="quick-capture-title">
+              <div>
+                <p className="cockpit-kicker">Captura rapida</p>
+                <h2 id="quick-capture-title">Tarefa</h2>
+              </div>
+              <form className={styles.taskCaptureForm} onSubmit={createTask}>
+                <input
+                  aria-label="Titulo da tarefa"
+                  value={taskTitle}
+                  onChange={(event) => setTaskTitle(event.target.value)}
+                  placeholder="Nova tarefa..."
+                />
+                <input
+                  aria-label="Data da tarefa"
+                  type="date"
+                  value={taskDueDate}
+                  onChange={(event) => setTaskDueDate(event.target.value)}
+                />
+                <select
+                  aria-label="Projeto da tarefa"
+                  value={taskProjectId}
+                  onChange={(event) => setTaskProjectId(event.target.value)}
+                >
+                  <option value="">Sem projeto</option>
+                  {projects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+                <button type="submit" disabled={isCreatingTask || taskTitle.trim().length === 0}>
+                  {isCreatingTask ? "Salvando" : "Capturar"}
+                </button>
+              </form>
+              <strong className="command-status">{taskStatus}</strong>
+            </section>
+
+            <section className={styles.operationalGrid} aria-label="Dados operacionais">
+              <div className={styles.operationalPanel}>
+                <p className="cockpit-kicker">Tarefas abertas</p>
+                <ol className={styles.personalDataList}>
+                  {tasks.length > 0 ? (
+                    tasks.map((task) => (
+                      <li key={task.id}>
+                        <strong>{task.title}</strong>
+                        <span>
+                          {task.dueDate ?? "sem data"}
+                          {task.projectId ? ` - ${projects.find((project) => project.id === task.projectId)?.name ?? task.projectId}` : ""}
+                        </span>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="empty-row">Nenhuma tarefa aberta.</li>
+                  )}
+                </ol>
+              </div>
+
+              <div className={styles.operationalPanel}>
+                <p className="cockpit-kicker">Projetos ativos</p>
+                <ol className={styles.personalDataList}>
+                  {projects.length > 0 ? (
+                    projects.map((project) => (
+                      <li key={project.id}>
+                        <strong>{project.name}</strong>
+                        <span>{project.description ?? project.status}</span>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="empty-row">Nenhum projeto ativo.</li>
+                  )}
+                </ol>
+              </div>
+            </section>
+
             <div className="chat-history" aria-live="polite">
               {messages.map((message, index) => (
                 <article className={`chat-message ${message.role}`} key={`${message.role}-${index}`}>
