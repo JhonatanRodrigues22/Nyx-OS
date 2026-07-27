@@ -110,6 +110,10 @@ export default function CockpitPage({ initialTasks, initialProjects }: CockpitPa
   const [taskProjectId, setTaskProjectId] = useState("");
   const [taskStatus, setTaskStatus] = useState("Pronto para capturar");
   const [isCreatingTask, setIsCreatingTask] = useState(false);
+  const [projectName, setProjectName] = useState("");
+  const [projectDescription, setProjectDescription] = useState("");
+  const [projectStatus, setProjectStatus] = useState("Pronto para criar projeto");
+  const [isCreatingProject, setIsCreatingProject] = useState(false);
   const assistantDraftRef = useRef("");
 
   const latestStatus = useMemo(() => events[0]?.name ?? "cockpit.idle", [events]);
@@ -314,15 +318,72 @@ export default function CockpitPage({ initialTasks, initialProjects }: CockpitPa
         throw new Error(payload.error ?? "Nao foi possivel criar a tarefa.");
       }
 
+      const createdTask = payload.task;
+
       setTaskTitle("");
       setTaskDueDate("");
       setTaskProjectId("");
-      setTaskStatus(`Tarefa capturada: ${payload.task.title}`);
-      await refreshPersonalData();
+      setTaskStatus(`Tarefa capturada: ${createdTask.title}`);
+      setTasks((current) => [createdTask, ...current.filter((task) => task.id !== createdTask.id)]);
+
+      try {
+        await refreshPersonalData();
+      } catch {
+        setTaskStatus(`Tarefa capturada: ${createdTask.title}. Sincronizacao pendente.`);
+      }
     } catch (error) {
       setTaskStatus(error instanceof Error ? error.message : "Nao foi possivel criar a tarefa.");
     } finally {
       setIsCreatingTask(false);
+    }
+  }
+
+  async function createProject(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const name = projectName.trim();
+    const description = projectDescription.trim();
+
+    if (!name || isCreatingProject) {
+      return;
+    }
+
+    setIsCreatingProject(true);
+    setProjectStatus("Criando projeto...");
+
+    try {
+      const response = await fetch("/api/projects", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({
+          name,
+          description: description || undefined
+        })
+      });
+      const payload = (await response.json()) as { project?: CockpitProject; error?: string };
+
+      if (!response.ok || !payload.project) {
+        throw new Error(payload.error ?? "Nao foi possivel criar o projeto.");
+      }
+
+      const createdProject = payload.project;
+
+      setProjectName("");
+      setProjectDescription("");
+      setProjectStatus(`Projeto criado: ${createdProject.name}`);
+      setProjects((current) => [createdProject, ...current.filter((project) => project.id !== createdProject.id)]);
+
+      try {
+        await refreshPersonalData();
+      } catch {
+        setProjectStatus(`Projeto criado: ${createdProject.name}. Sincronizacao pendente.`);
+      }
+    } catch (error) {
+      setProjectStatus(error instanceof Error ? error.message : "Nao foi possivel criar o projeto.");
+    } finally {
+      setIsCreatingProject(false);
     }
   }
 
@@ -389,6 +450,31 @@ export default function CockpitPage({ initialTasks, initialProjects }: CockpitPa
                 </button>
               </form>
               <strong className="command-status">{taskStatus}</strong>
+            </section>
+
+            <section className={styles.operationalPanel} aria-labelledby="project-capture-title">
+              <div>
+                <p className="cockpit-kicker">Projeto rapido</p>
+                <h2 id="project-capture-title">Projeto</h2>
+              </div>
+              <form className={styles.projectCaptureForm} onSubmit={createProject}>
+                <input
+                  aria-label="Nome do projeto"
+                  value={projectName}
+                  onChange={(event) => setProjectName(event.target.value)}
+                  placeholder="Novo projeto..."
+                />
+                <input
+                  aria-label="Descricao do projeto"
+                  value={projectDescription}
+                  onChange={(event) => setProjectDescription(event.target.value)}
+                  placeholder="Descricao opcional"
+                />
+                <button type="submit" disabled={isCreatingProject || projectName.trim().length === 0}>
+                  {isCreatingProject ? "Salvando" : "Criar"}
+                </button>
+              </form>
+              <strong className="command-status">{projectStatus}</strong>
             </section>
 
             <section className={styles.operationalGrid} aria-label="Dados operacionais">

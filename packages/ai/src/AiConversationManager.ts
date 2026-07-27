@@ -64,26 +64,61 @@ export class AiConversationManager {
       role: "user",
       content
     };
-    let assistantContent = "";
+    const maxIterations = options.maxIterations ?? this.defaultMaxIterations;
+    let iterations = 0;
 
     this.history.push(userMessage);
 
-    for await (const chunk of provider.stream({
-      messages: this.buildMessages(systemPrompt),
-      tools,
-      maxTokens: options.maxTokens
-    })) {
-      if (chunk.content) {
-        assistantContent += chunk.content;
+    while (iterations < maxIterations) {
+      const toolCalls: NonNullable<AiResponse["toolCalls"]> = [];
+      let assistantContent = "";
+
+      iterations += 1;
+
+      for await (const chunk of provider.stream({
+        messages: this.buildMessages(systemPrompt),
+        tools,
+        maxTokens: options.maxTokens
+      })) {
+        if (chunk.content) {
+          assistantContent += chunk.content;
+          yield chunk;
+        }
+
+        if (chunk.toolCall) {
+          toolCalls.push(chunk.toolCall);
+          yield chunk;
+        }
       }
 
-      yield chunk;
+      this.history.push({
+        role: "assistant",
+        content: assistantContent
+      });
+
+      if (toolCalls.length === 0) {
+        yield {
+          done: true
+        };
+        return;
+      }
+
+      for (let index = 0; index < toolCalls.length; index += 1) {
+        const toolCall = toolCalls[index];
+        const result = await this.tools.execute(toolCall.toolId, toolCall.input, {
+          source: "ai"
+        });
+        const toolMessage: AiMessage = {
+          role: "tool",
+          toolCallId: toolCall.toolCallId ?? `${toolCall.toolId}:${iterations}:${index}`,
+          content: JSON.stringify(result.result ?? null)
+        };
+
+        this.history.push(toolMessage);
+      }
     }
 
-    this.history.push({
-      role: "assistant",
-      content: assistantContent
-    });
+    throw new Error(`AI tool loop exceeded max iterations: ${maxIterations}`);
   }
 
   async run(options: AiConversationOptions = {}): Promise<AiConversationResult> {

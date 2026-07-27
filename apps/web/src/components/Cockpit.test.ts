@@ -5,7 +5,6 @@ import { createCockpitCommandsHandler } from "@/pages/api/cockpit/commands";
 import projectsHandler from "@/pages/api/projects";
 import tasksHandler from "@/pages/api/tasks";
 import {
-  createCockpitProject,
   registerCockpitPersonalData,
   resetCockpitPersonalDataRuntimeForTests
 } from "@/server/personalDataRuntime";
@@ -187,8 +186,23 @@ describe("Nyx Interaction Layer API", () => {
   });
 
   it("lists active projects through the Cockpit projects API", async () => {
-    await createCockpitProject({
-      name: "Nyx OS"
+    const createResponsePayload = createResponse();
+
+    await projectsHandler(
+      createRequest({
+        name: "Nyx OS",
+        description: "Cockpit project"
+      }),
+      createResponsePayload
+    );
+
+    expect(createResponsePayload.statusCodeValue).toBe(201);
+    expect(createResponsePayload.jsonPayload).toMatchObject({
+      project: {
+        name: "Nyx OS",
+        status: "active",
+        description: "Cockpit project"
+      }
     });
 
     const response = createResponse();
@@ -201,7 +215,8 @@ describe("Nyx Interaction Layer API", () => {
       projects: [
         {
           name: "Nyx OS",
-          status: "active"
+          status: "active",
+          description: "Cockpit project"
         }
       ]
     });

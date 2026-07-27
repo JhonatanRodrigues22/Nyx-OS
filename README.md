@@ -147,7 +147,7 @@ A Sprint 14 introduziu o Capability Engine oficial com registro, descoberta, exe
 
 A Sprint 15 introduziu o Tool Calling Engine oficial com registro, descoberta, validacao e execucao de Tools por contrato, eventos `tool.*`, `runtime.getTools()` e `context.tools`.
 
-A Sprint 25 iniciou o Cockpit operacional com captura rapida de tarefas, listagem de tarefas abertas, listagem de projetos ativos, APIs server-side e Tools `task.create`, `task.listOpen` e `project.listActive`. Neste recorte, os dados ficam em memoria no servidor Next.js; persistencia duravel em Supabase permanece como proximo passo.
+A Sprint 25 iniciou o Cockpit operacional com captura rapida de tarefas, captura rapida de projetos, listagem de tarefas abertas, listagem de projetos ativos, APIs server-side e Tools `task.create`, `task.listOpen` e `project.listActive`. O streaming do AI Runtime tambem executa Tool calls antes de continuar a resposta final. Neste recorte, os dados ficam em memoria no servidor Next.js; persistencia duravel em Supabase permanece como proximo passo.
 
 ## Stack
 
