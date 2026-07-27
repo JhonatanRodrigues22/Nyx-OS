@@ -87,6 +87,14 @@ O procedimento oficial esta em `docs/workflow/dx-validation.md`.
 
 O objetivo e confirmar que um novo desenvolvedor consegue instalar, executar e validar o projeto seguindo apenas o README e a documentacao oficial.
 
+## Continuidade e publicacao
+
+O protocolo de continuidade vive em `docs/workflow/continuidade.md`.
+
+Ele deve ser consultado quando uma mudanca precisar sair do estado de edicao local e virar entrega rastreavel no GitHub.
+
+Em resumo, uma mudanca so deve ser tratada como concluida quando escopo, documentacao, validacao, commit, push e Pull Request estiverem resolvidos ou quando o bloqueio estiver registrado explicitamente.
+
 ## Idioma da documentação
 
 A documentação oficial do Nyx OS deve ser escrita em Português do Brasil.

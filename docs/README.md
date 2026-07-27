@@ -41,6 +41,7 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `workflow/qualidade.md`: checks de qualidade e criterios gerais.
 - `workflow/dx-validation.md`: procedimento obrigatorio para validar onboarding.
 - `workflow/configuracao.md`: configuracao inicial do ambiente.
+- `workflow/continuidade.md`: protocolo de continuidade, documentacao, validacao e publicacao no GitHub.
 - `workflow/engineering-manifesto.md`: principios de engenharia.
 
 ## Documentos adicionados nas Sprints recentes
@@ -51,6 +52,7 @@ Prompts, conversas e arquivos auxiliares podem ajudar, mas nao substituem esta d
 - `arquitetura/nyx-local.md`: papel futuro da Nyx Local e decisao de nao implementar agora.
 - `seguranca/dados-e-privacidade.md`: principios iniciais de seguranca, privacidade e acesso da IA.
 - `sprints/plano-sprint-01.md`: ordem oficial para a proxima sprint.
+- `sprints/plano-sprint-25-cockpit-operacional-basico.md`: proxima entrega recomendada para tornar o Cockpit utilizavel no dia a dia.
 - `arquitetura/fundacao-tecnica.md`: stack oficial, monorepo, packages, dependencias e qualidade.
 - `arquitetura/core-runtime.md`: runtime base, event bus, services e dashboard executavel.
 - `arquitetura/event-bus.md`: contrato oficial de eventos, lifecycle e boas praticas.
